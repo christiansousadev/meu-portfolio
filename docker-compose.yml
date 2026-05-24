@@ -55,7 +55,7 @@ services:
     container_name: portfolio-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8081:80"
       # Habilite 443 quando integrar Traefik/Caddy com TLS
     networks:
       - portfolio-net
