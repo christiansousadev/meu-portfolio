@@ -240,7 +240,7 @@ async def update_config(req: ConfigUpdateRequest, admin: str = Depends(verify_to
             "payload rejeitado pela validacao",
             extra={
                 "event": "config_validation_failed",
-                "filename": req.filename.value,
+                "file_name": req.filename.value,
                 "actor": admin,
                 "errors": exc.errors(),
             },

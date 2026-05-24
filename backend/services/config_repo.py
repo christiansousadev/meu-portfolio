@@ -55,7 +55,7 @@ def read_config(filename: AllowedConfigFile) -> dict:
     if not path.exists():
         logging.warning(
             "arquivo de configuracao ausente",
-            extra={"event": "config_read_missing", "filename": filename.value, "path": str(path)},
+            extra={"event": "config_read_missing", "file_name": filename.value, "path": str(path)},
         )
         return {}
 

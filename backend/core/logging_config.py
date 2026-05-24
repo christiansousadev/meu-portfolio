@@ -139,7 +139,7 @@ def audit_file_write(
         "file_write_audit",
         extra={
             "event": "file_write",
-            "filename": filename,
+            "file_name": filename,
             "resource_path": resource_path,
             "actor": actor,
             "bytes_written": bytes_written,
