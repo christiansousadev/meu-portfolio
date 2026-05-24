@@ -8,6 +8,14 @@
 *.key
 
 # ============================================================
+# Governanca do ambiente de desenvolvimento (Claude Code)
+# Nao expor ao publico: contem diretrizes internas e ignore-rules
+# ============================================================
+CLAUDE.md
+.claudeignore
+.claude/
+
+# ============================================================
 # Backend - Python
 # ============================================================
 backend/venv/
