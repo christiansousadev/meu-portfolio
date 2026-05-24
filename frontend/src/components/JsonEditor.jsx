@@ -3,15 +3,13 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
 // duracao em ms que o toast permanece visivel antes de auto-fechar
 const TOAST_TTL_MS = 4000;
 
-// helper que sempre envia o cookie http-only nas chamadas admin;
+// helper same-origin que envia o cookie http-only de sessao em toda chamada;
 // substitui o uso anterior de Authorization: Bearer via localStorage
 const adminFetch = (path, options = {}) =>
-  fetch(`${API_URL}${path}`, {
+  fetch(path, {
     ...options,
     credentials: "include",
     headers: {

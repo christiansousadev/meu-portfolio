@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import JsonEditor from "./JsonEditor";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-// helper de fetch que injeta credentials para que o navegador envie o
-// cookie http-only de sessao automaticamente em todas as chamadas admin
+// helper de fetch same-origin que injeta credentials para que o navegador
+// envie o cookie http-only de sessao automaticamente em todas as chamadas;
+// o nginx do container resolve /api/ -> backend:8000 via rede docker interna
 const adminFetch = (path, options = {}) =>
-  fetch(`${API_URL}${path}`, {
+  fetch(path, {
     ...options,
     credentials: "include",
     headers: {

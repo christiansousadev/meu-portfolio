@@ -31,10 +31,8 @@ export default function ChatWidget({ data, theme }) {
     setLoading(true);
 
     try {
-      // fallback de env facilita a transicao entre ambientes locais e prod
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-      const response = await fetch(`${apiUrl}/api/chat`, {
+      // chamada same-origin: nginx do container faz proxy /api/ -> backend
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg.content })

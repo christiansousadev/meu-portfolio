@@ -23,11 +23,10 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
+    // chamadas same-origin: o nginx do container faz proxy /api/ -> backend:8000
     const fetchPortfolio = async () => {
       try {
-        const res = await fetch(`${apiUrl}/api/portfolio`);
+        const res = await fetch("/api/portfolio");
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
         setPortfolioData(data);
@@ -40,12 +39,10 @@ export default function App() {
 
     fetchPortfolio();
 
-
-    // dispara telemetria com tratamento de falhas e fallback
+    // dispara telemetria com tratamento de falhas para nao quebrar a ux
     const trackAccess = async () => {
       try {
-
-        await fetch(`${apiUrl}/api/analytics/track`, {
+        await fetch("/api/analytics/track", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

@@ -48,15 +48,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        # URL publica da API (injetada no bundle Vite em build-time)
-        VITE_API_URL: ${VITE_API_URL:-https://api.seu-dominio.com.br}
     image: portfolio-frontend:latest
     container_name: portfolio-frontend
     restart: unless-stopped
     ports:
+      # exposto na vps em 127.0.0.1:8081; o nginx do host faz proxy
+      # de https://madebychristian.fusaotecno.com -> 127.0.0.1:8081
       - "8081:80"
-      # Habilite 443 quando integrar Traefik/Caddy com TLS
     networks:
       - portfolio-net
     depends_on:
