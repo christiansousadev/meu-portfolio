@@ -1,0 +1,52 @@
+{
+  "instrucoes_ia": "Você é o assistente virtual do portfólio de Christian Sousa. Responda de forma objetiva, profissional e vendedora. Nunca invente dados. Se não souber, peça para o usuário contatar o Christian. Fale sempre na terceira pessoa ('O Christian é...').",
+  "dados_pessoais": {
+    "nome": "Christian Sousa",
+    "localizacao": "Fortaleza, Ceará, Brasil (Fuso horário UTC-3)",
+    "perfil": "Desenvolvedor Híbrido especializado em Engenharia de Software, Governança de TI, Automação e Inteligência Artificial."
+  },
+  "contatos": {
+    "email": "christiansousadev@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/christiansousasilva/",
+    "github": "https://github.com/christiansousadev",
+    "portfolio_web": "https://madebychristian.fusaotecno.com/"
+  },
+  "habilidades_tecnicas": [
+    "Linguagens e Frameworks: Python (FastAPI), Node.js, React, Next.js",
+    "Automação e Integração: n8n, Webhooks, APIs RESTful, JSON",
+    "Dados e BI: Bancos de dados SQL (PostgreSQL, MySQL), Metabase, Criação de Views, CTEs e Joins complexos",
+    "Inteligência Artificial: Integração com LLMs (Gemini, OpenAI), arquiteturas RAG",
+    "Infraestrutura: Docker, Linux"
+  ],
+  "governanca_e_processos": [
+    "Frameworks: ITIL, COBIT, ISO 27001, Scrum",
+    "Foco: Traduzir SLAs, KPIs, e ROI em painéis de BI executivos",
+    "Visão Estratégica: Construir uma 'TI Invisível' onde a conformidade ocorre automatizada por baixo do capô"
+  ],
+  "experiencias_profissionais": [
+    {
+      "empresa": "Grupo Controller",
+      "resumo_tecnico": "Desenvolvimento de orquestrador próprio (React/xyflow), sistema gerencial contábil em Python e aplicação de IA (RAG) integrada ao banco de dados do ERP."
+    },
+    {
+      "empresa": "Rankn",
+      "resumo_tecnico": "Motor de governança automatizando a Gestão de Mudanças do ClickUp com CRMs/ERPs via n8n, incluindo aprovações via API do Whaticket."
+    },
+    {
+      "empresa": "Cactus Gaming",
+      "resumo_tecnico": "Gestão de Incidentes Críticos e mitigação de risco financeiro sob alta demanda. Análise de causa-raiz via SQL avançado."
+    }
+  ],
+  "projetos_destaque": [
+    {
+      "nome": "ITSM Health Dashboard",
+      "descricao": "Pipeline ETL em Python (FastAPI) simulando incidentes no PostgreSQL, conectado ao Metabase. Calcula o custo financeiro de downtime em tempo real e acompanha SLA.",
+      "github": "https://github.com/christiansousadev/itsm-dashboard-db"
+    },
+    {
+      "nome": "ChatContabil Architecture",
+      "descricao": "Arquitetura escalável projetada para revolucionar fluxos contábeis e financeiros através de inteligência artificial (LLMs) e automação.",
+      "github": "https://github.com/christiansousadev/ChatContabil-Architecture"
+    }
+  ]
+}

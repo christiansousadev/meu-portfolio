@@ -1,0 +1,98 @@
+{
+  "pt": {
+    "nav": { "skills": "Habilidades", "exp": "Experiência", "proj": "Projetos" },
+    "hero": {
+      "greeting": "Olá, eu sou o Christian",
+      "subtitle": "Software Engineer focado em Governança de TI e Automações Inteligentes. Especialista em transformar arquiteturas complexas e dados brutos em soluções escaláveis com IA.",
+      "contactBtn": "Fale Comigo",
+      "resumeBtn": "Ver Currículo"
+    },
+    "skills": {
+      "title": "O que eu faço",
+      "subtitle": "DESENVOLVEDOR HÍBRIDO COM FOCO EM GOVERNANÇA E DADOS",
+      "items": [
+        "⚡ APIs escaláveis com Python (FastAPI), Node.js e integrações seguras.",
+        "⚡ Interfaces reativas com React/Next.js focadas em UX técnica.",
+        "⚡ Orquestração de fluxos com n8n e automação de processos críticos.",
+        "⚡ Engenharia de dados, SQL avançado e dashboards em Metabase.",
+        "⚡ Implementação de RAG e integração de LLMs para eficiência operacional."
+      ],
+      "tags": ["Python", "FastAPI", "React", "PostgreSQL", "n8n", "Docker", "Metabase", "LLMs"]
+    },
+    "exp": {
+      "title": "Experiência Profissional",
+      "items": [
+        { "role": "Analista de Automação", "company": "Grupo Controller", "time": "setembro/2025 - Atual", "desc": "Arquitetura e desenvolvimento de ecossistemas de automação contábil conectando ERPs e BI, utilizando Python, Node.js e SQL avançado." },
+        { "role": "Analista de Implantação", "company": "Fusão Tecno", "time": "janeiro/2023 - Atual", "desc": "Desenvolvimento de microsserviços e automação de processos integrando ERPs e CRMs com Python, n8n e Typebot." },
+        { "role": "Analista de Automação", "company": "Rankn", "time": "junho/2024 - dezembro/2024", "desc": "Orquestração de integrações via n8n e APIs REST, implementando ITSM e Governança Ativa nos fluxos operacionais." },
+        { "role": "Analista de Riscos", "company": "Cactus Gaming", "time": "fevereiro/2024 - maio/2024", "desc": "Governança de dados e mitigação de riscos financeiros em alta escala, utilizando consultas complexas em SQL para análise de causa-raiz (RCA)." },
+        { "role": "Suporte Técnico", "company": "Setor de Suporte (Confidencial)", "time": "novembro/2023 - fevereiro/2024", "desc": "Gestão de incidentes e resolução de falhas via Jira e Zendesk, monitorando SLAs e atuando diretamente na análise de causa-raiz sistêmica." },
+        { "role": "Analista de Suporte", "company": "Konstroi", "time": "julho/2023 - novembro/2023", "desc": "Implantação de ERP especializado em engenharia, diagnóstico de falhas técnicas e integração de dados com plataformas externas." },
+        { "role": "Analista de Dados e Performance", "company": "Fortprime Imobiliaria", "time": "janeiro/2023 - junho/2023", "desc": "Automação de relatórios e estruturação de painéis analíticos em Power BI e SQL para monitoramento de ROI comercial e KPIs operacionais." },
+        { "role": "Bolsista (Desenvolvimento)", "company": "Prefeitura Municipal de Caucaia", "time": "outubro/2022 - fevereiro/2023", "desc": "Criação de scripts em Python e manipulação de bancos de dados PostgreSQL voltados para projetos práticos de automação." },
+        { "role": "Analista de Suporte", "company": "ACS Informática", "time": "julho/2022 - dezembro/2022", "desc": "Implantação de ERPs comerciais, suporte a bancos de dados Firebird e integração robusta de equipamentos fiscais." },
+        { "role": "Assistente Administrativo", "company": "Copa Energia", "time": "agosto/2015 - julho/2022", "desc": "Apoio estratégico na implantação do SAP ECC e liderança operacional na gestão de custos, controladoria logística e conformidade fiscal." },
+        { "role": "Gerente de Projetos", "company": "Complexo Pcar", "time": "janeiro/2021 - maio/2022", "desc": "Planejamento estratégico e implantação de ERPs/PDVs, gerenciamento de KPIs financeiros e estruturação completa dos fluxos de trabalho." },
+        { "role": "Sócio Proprietário", "company": "Açaí Invokado", "time": "julho/2018 - dezembro/2020", "desc": "Gestão administrativa e financeira, controle operacional de qualidade e implantação de sistemas de gestão ERP em rotinas de negócios." },
+        { "role": "Assistente / Auxiliar de Compras", "company": "Colégio 7 de Setembro", "time": "agosto/2013 - julho/2015", "desc": "Liderança técnica na parametrização e implantação dos módulos de Compras e Estoque do TOTVS ERP e reestruturação de fluxos de suprimentos." },
+        { "role": "Auxiliar Administrativo", "company": "UNI7", "time": "abril/2012 - agosto/2013", "desc": "Gestão de dados e processos acadêmicos no sistema TOTVS Educacional, assegurando a integridade e rastreabilidade institucional." },
+        { "role": "Monitor de Informática", "company": "SOS Tecnologia e Educação", "time": "janeiro/2011 - maio/2013", "desc": "Suporte técnico em hardware/redes e monitoria de aprendizagem voltada para sistemas operacionais e pacote Office." }
+      ]
+    },
+    "proj": {
+      "title": "Projetos em Destaque",
+      "items": [
+        { "name": "ITSM Health Dashboard", "desc": "Monitoramento de SLA e ROI em tempo real com ETL Python e PostgreSQL.", "link": "https://github.com/christiansousadev/itsm-dashboard-db" },
+        { "name": "ChatContabil Architecture", "desc": "Arquitetura baseada em IA para automação de fluxos financeiros complexos.", "link": "https://github.com/christiansousadev/ChatContabil-Architecture" }
+      ]
+    },
+    "chat": {
+      "title": "Assistente Virtual",
+      "placeholder": "Pergunte sobre meus projetos...",
+      "send": "Enviar",
+      "loading": "Processando dados..."
+    }
+  },
+  "en": {
+    "nav": { "skills": "Skills", "exp": "Experience", "proj": "Projects" },
+    "hero": {
+      "greeting": "Hi all, I'm Christian",
+      "subtitle": "Software Engineer focused on IT Governance and Intelligent Automation. Expert in turning complex architectures into AI-driven scalable solutions.",
+      "contactBtn": "Contact Me",
+      "resumeBtn": "See Resume"
+    },
+    "skills": {
+      "title": "What I do",
+      "subtitle": "HYBRID DEVELOPER FOCUSED ON GOVERNANCE AND DATA",
+      "items": [
+        "⚡ Scalable APIs with Python (FastAPI), Node.js and secure integrations.",
+        "⚡ Reactive interfaces with React/Next.js focused on technical UX.",
+        "⚡ Workflow orchestration with n8n and critical process automation.",
+        "⚡ Data engineering, advanced SQL and Metabase dashboards.",
+        "⚡ RAG implementation and LLM integration for operational efficiency."
+      ],
+      "tags": ["Python", "FastAPI", "React", "PostgreSQL", "n8n", "Docker", "Metabase", "LLMs"]
+    },
+    "exp": {
+      "title": "Work Experience",
+      "items": [
+        { "role": "Software Engineer & IT Governance", "company": "Grupo Controller", "desc": "Technical lead in orchestrator and accounting systems development using Python and AI." },
+        { "role": "Governance & Automation Analyst", "company": "Rankn", "desc": "Governance workflow automation and systems integration via n8n and messaging APIs." },
+        { "role": "Risk & Database Analyst", "company": "Cactus Gaming", "desc": "Root-cause analysis and financial risk mitigation through high-performance SQL queries." }
+      ]
+    },
+    "proj": {
+      "title": "Featured Projects",
+      "items": [
+        { "name": "ITSM Health Dashboard", "desc": "Real-time SLA and ROI monitoring with Python ETL and PostgreSQL.", "link": "https://github.com/christiansousadev/itsm-dashboard-db" },
+        { "name": "ChatContabil Architecture", "desc": "AI-based architecture for automating complex financial workflows.", "link": "https://github.com/christiansousadev/ChatContabil-Architecture" }
+      ]
+    },
+    "chat": {
+      "title": "AI Assistant",
+      "placeholder": "Ask about my projects...",
+      "send": "Send",
+      "loading": "Analyzing data..."
+    }
+  }
+}

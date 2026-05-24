@@ -1,0 +1,61 @@
+# ============================================================
+# Segredos e ambiente (NUNCA versionar)
+# ============================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ============================================================
+# Backend - Python
+# ============================================================
+backend/venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Estado runtime (recriado pela app)
+backend/data/runtime_state.json
+
+# ============================================================
+# Frontend - Node/Vite
+# ============================================================
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+build/
+.vite/
+
+# Lockfile do npm: manter no repositorio para reproducibilidade
+# (NAO ignorar package-lock.json em projetos com deploy)
+
+# ============================================================
+# Logs e artefatos de execucao
+# ============================================================
+*.log
+logs/
+*.pid
+
+# ============================================================
+# Editores e SO
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Docker / CI local
+# ============================================================
+*.local
+docker-compose.override.yml

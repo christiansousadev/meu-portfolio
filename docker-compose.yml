@@ -1,0 +1,82 @@
+# ============================================================
+# docker-compose.yml - Producao em VPS
+#
+# Fluxo de deploy:
+#   git pull && docker compose up -d --build
+#
+# Topologia:
+#   - backend  (FastAPI/uvicorn)  : porta interna 8000
+#   - frontend (Nginx + SPA)      : porta interna 80, exposta como 80/443 no host
+#
+# Persistencia:
+#   - portfolio_data.json (volume nomeado para sobreviver a rebuilds)
+#   - runtime_state.json  (volume nomeado, mesmo motivo)
+# ============================================================
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: portfolio-backend:latest
+    container_name: portfolio-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Override pontual (precedencia maior que o .env)
+      UVICORN_WORKERS: "2"
+    volumes:
+      # Estado mutavel da aplicacao - sobrevive a "docker compose down"
+      - portfolio-data:/app/data
+    networks:
+      - portfolio-net
+    # Sem ports: o backend so e acessivel pela rede interna (defesa em camadas)
+    # O frontend faz proxy via Nginx ou voce expoe externamente via reverse proxy do host
+    security_opt:
+      - no-new-privileges:true
+    read_only: false   # data/ precisa ser gravavel
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # URL publica da API (injetada no bundle Vite em build-time)
+        VITE_API_URL: ${VITE_API_URL:-https://api.seu-dominio.com.br}
+    image: portfolio-frontend:latest
+    container_name: portfolio-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # Habilite 443 quando integrar Traefik/Caddy com TLS
+    networks:
+      - portfolio-net
+    depends_on:
+      - backend
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=32m
+      - /var/run:size=4m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  portfolio-net:
+    driver: bridge
+
+volumes:
+  portfolio-data:
+    name: portfolio-data
