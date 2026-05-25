@@ -28,8 +28,9 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Estado runtime (recriado pela app)
+# Estado runtime e trilhas de auditoria (gerados pela app, nunca versionar)
 backend/data/runtime_state.json
+backend/data/*.jsonl
 
 # ============================================================
 # Frontend - Node/Vite

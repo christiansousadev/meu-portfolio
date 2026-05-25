@@ -15,9 +15,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# raiz dos dados: backend/data e a unica fonte de verdade,
+# montada como volume em producao para sobreviver a rebuilds
 BASE_DIR = Path(__file__).resolve().parent.parent
-PORTFOLIO_DATA_PATH = BASE_DIR / "data" / "portfolio_data.json"
-FRONTEND_DATA_DIR = BASE_DIR.parent / "frontend" / "src" / "data"
+DATA_DIR = BASE_DIR / "data"
+PORTFOLIO_DATA_PATH = DATA_DIR / "portfolio_data.json"
 
 
 # UTILITARIO INTERNO: SPLIT DE CSV ROBUSTO A ESPACOS
@@ -40,8 +42,8 @@ class Settings:
     admin_password_hash: str | None
     trusted_proxies: list[str] = field(default_factory=list)
     base_dir: Path = field(default=BASE_DIR)
+    data_dir: Path = field(default=DATA_DIR)
     portfolio_data_path: Path = field(default=PORTFOLIO_DATA_PATH)
-    frontend_data_dir: Path = field(default=FRONTEND_DATA_DIR)
 
 
 # CARREGAMENTO E VALIDACAO DAS VARIAVEIS DE AMBIENTE

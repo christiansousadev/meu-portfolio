@@ -1,10 +1,11 @@
 """
-Repositorio responsavel por leitura e escrita dos arquivos JSON de
-configuracao. Centraliza:
-
+repositorio de leitura e escrita dos arquivos json de configuracao:
   * resolucao segura de caminho (whitelist + realpath check)
   * escrita atomica (tempfile + os.replace)
   * registro de auditoria estruturado em toda mutacao
+
+todos os arquivos vivem em backend/data/ (montado via bind mount em prod),
+garantindo paridade dev/prod e sobrevivencia a rebuild de container.
 """
 
 import json
@@ -20,19 +21,14 @@ from core.logging_config import audit_file_write
 from schemas.portfolio import AllowedConfigFile
 
 
+# RESOLUCAO SEGURA DE CAMINHO
 def resolve_path(filename: AllowedConfigFile) -> Path:
-    """Resolve filename para caminho absoluto dentro das raizes permitidas."""
-    if filename == AllowedConfigFile.PORTFOLIO:
-        target = settings.frontend_data_dir / filename.value
-    else:
-        target = settings.base_dir / "data" / filename.value
-
+    """resolve filename para caminho absoluto dentro de data_dir (whitelist)."""
+    target = settings.data_dir / filename.value
     resolved = Path(os.path.realpath(target))
-    allowed_roots = [
-        Path(os.path.realpath(settings.base_dir / "data")),
-        Path(os.path.realpath(settings.frontend_data_dir)),
-    ]
-    if not any(_is_within(resolved, root) for root in allowed_roots):
+    allowed_root = Path(os.path.realpath(settings.data_dir))
+
+    if not _is_within(resolved, allowed_root):
         logging.error(
             "tentativa de acesso fora da whitelist",
             extra={"event": "path_traversal", "resolved": str(resolved)},

@@ -1,16 +1,17 @@
 # ============================================================
-# docker-compose.yml - Producao em VPS
+# docker-compose.yml - producao em vps
 #
-# Fluxo de deploy:
+# fluxo de deploy:
 #   git pull && docker compose up -d --build
 #
-# Topologia:
-#   - backend  (FastAPI/uvicorn)  : porta interna 8000
-#   - frontend (Nginx + SPA)      : porta interna 80, exposta como 80/443 no host
+# topologia:
+#   - backend  (fastapi/uvicorn) : porta interna 8000 (nao exposta ao host)
+#   - frontend (nginx + spa)     : porta interna 80, exposta como 8081 no host
 #
-# Persistencia:
-#   - portfolio_data.json (volume nomeado para sobreviver a rebuilds)
-#   - runtime_state.json  (volume nomeado, mesmo motivo)
+# persistencia:
+#   ./backend/data e bind-mountado em /app/data dentro do backend.
+#   o host e a fonte de verdade: git pull atualiza os jsons sem
+#   criar arquivos zumbis e mutacoes via admin gravam direto no repo.
 # ============================================================
 
 services:
@@ -27,8 +28,10 @@ services:
       # Override pontual (precedencia maior que o .env)
       UVICORN_WORKERS: "2"
     volumes:
-      # Estado mutavel da aplicacao - sobrevive a "docker compose down"
-      - portfolio-data:/app/data
+      # bind mount com ./backend/data: o host e a fonte de verdade.
+      # git pull no servidor espelha o estado local sem criar arquivos zumbis;
+      # mutacoes feitas pela admin gravam direto no repo (commitaveis).
+      - ./backend/data:/app/data
     networks:
       - portfolio-net
     # Sem ports: o backend so e acessivel pela rede interna (defesa em camadas)
@@ -74,7 +77,3 @@ services:
 networks:
   portfolio-net:
     driver: bridge
-
-volumes:
-  portfolio-data:
-    name: portfolio-data
