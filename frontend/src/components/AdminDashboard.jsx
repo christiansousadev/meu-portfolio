@@ -16,6 +16,29 @@ const adminFetch = (path, options = {}) =>
     }
   });
 
+// formatador local de timestamps iso vindos do backend (jsonl);
+// exibe HH:MM:SS quando o evento for de hoje, ou DD/MM HH:MM caso contrario.
+// devolve "—" para valores ausentes ou invalidos para evitar "Invalid Date"
+const FORMAT_TIMESTAMP = iso => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+
+  const today = new Date();
+  const sameDay =
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+
+  return sameDay
+    ? d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+};
+
+// chave estavel para listas vindas do jsonl: trace_id e unico por request;
+// fallback para combinacao com indice quando o backend nao incluir o campo
+const ROW_KEY = (record, idx) => record?.trace_id ?? `row-${idx}`;
+
 export default function AdminDashboard({ theme }) {
   const styles = {
     bg: "var(--bg-color)",
@@ -251,33 +274,69 @@ export default function AdminDashboard({ theme }) {
   }
 
   // CARD DE KPI
-  const KpiCard = ({ title, value, unit }) => (
-    <div
-      style={{
-        backgroundColor: styles.cardBg,
-        padding: "20px",
-        borderRadius: "10px",
-        boxShadow: styles.cardShadow,
-        flex: 1,
-        minWidth: "200px"
-      }}
-    >
-      <p
+  // tipografia executiva: titulo discreto em caps, valor em destaque com
+  // tabular-nums (alinha digitos mesmo quando zero) e unidade secundaria.
+  const KpiCard = ({ title, value, unit }) => {
+    const display = value === null || value === undefined ? 0 : value;
+    return (
+      <div
         style={{
-          color: styles.textSecondary,
-          fontSize: "0.8rem",
-          margin: "0 0 10px 0",
-          textTransform: "uppercase"
+          flex: "1 1 220px",
+          minWidth: "220px",
+          padding: "24px 28px",
+          backgroundColor: styles.cardBg,
+          borderRadius: "14px",
+          border: `1px solid ${styles.accent}22`,
+          boxShadow: styles.cardShadow,
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px"
         }}
       >
-        {title}
-      </p>
-      <h3 style={{ margin: 0, fontSize: "1.8rem", color: styles.accent }}>
-        {value}
-        <span style={{ fontSize: "0.9rem" }}>{unit}</span>
-      </h3>
-    </div>
-  );
+        <span
+          style={{
+            color: styles.textSecondary,
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase"
+          }}
+        >
+          {title}
+        </span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: "6px",
+            fontVariantNumeric: "tabular-nums"
+          }}
+        >
+          <span
+            style={{
+              fontSize: "2.1rem",
+              fontWeight: 700,
+              lineHeight: 1,
+              color: styles.accent,
+              letterSpacing: "-0.02em"
+            }}
+          >
+            {display}
+          </span>
+          <span
+            style={{
+              fontSize: "0.85rem",
+              fontWeight: 500,
+              color: styles.textSecondary,
+              letterSpacing: "0.04em"
+            }}
+          >
+            {unit?.trim()}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -396,27 +455,15 @@ export default function AdminDashboard({ theme }) {
 
             <div
               style={{
-                display: "flex",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
                 gap: "20px",
-                flexWrap: "wrap",
                 marginBottom: "40px"
               }}
             >
-              <KpiCard
-                title="Interações IA"
-                value={stats.total_chats}
-                unit=" msgs"
-              />
-              <KpiCard
-                title="Visualizações"
-                value={stats.total_views}
-                unit=" views"
-              />
-              <KpiCard
-                title="SLA de Resposta"
-                value={stats.avg_response_ms}
-                unit=" ms"
-              />
+              <KpiCard title="Interações IA" value={stats.total_chats} unit="msgs" />
+              <KpiCard title="Visualizações" value={stats.total_views} unit="views" />
+              <KpiCard title="SLA de Resposta" value={stats.avg_response_ms} unit="ms" />
             </div>
 
             <div
@@ -448,9 +495,9 @@ export default function AdminDashboard({ theme }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {logs.map(log => (
+                      {logs.map((log, idx) => (
                         <tr
-                          key={log.id}
+                          key={ROW_KEY(log, idx)}
                           style={{
                             borderBottom: `1px solid ${theme === "dark" ? "#333" : "#eee"}`
                           }}
@@ -486,9 +533,9 @@ export default function AdminDashboard({ theme }) {
                     boxShadow: styles.cardShadow
                   }}
                 >
-                  {stats.recent_events?.map(ev => (
+                  {stats.recent_events?.map((ev, idx) => (
                     <div
-                      key={ev.id}
+                      key={ROW_KEY(ev, idx)}
                       style={{
                         padding: "10px 0",
                         borderBottom: `1px solid ${theme === "dark" ? "#333" : "#eee"}`,
@@ -501,7 +548,7 @@ export default function AdminDashboard({ theme }) {
                       acessou {ev.page_path}
                       <br />
                       <small style={{ color: styles.textSecondary }}>
-                        {new Date(ev.created_at).toLocaleTimeString()}
+                        {FORMAT_TIMESTAMP(ev.timestamp)}
                       </small>
                     </div>
                   ))}
