@@ -12,6 +12,7 @@ from core.security import (
     PWD_CONTEXT,
     SESSION_COOKIE_NAME,
     create_access_token,
+    sanitize_bcrypt_hash,
     verify_token,
 )
 from schemas.portfolio import (
@@ -48,15 +49,21 @@ async def admin_login(req: LoginRequest, response: Response):
         logging.error("ADMIN_USER/ADMIN_PASSWORD_HASH ausentes no ambiente")
         raise HTTPException(status_code=500, detail="servico de autenticacao indisponivel")
 
+    # limpa eventuais aspas residuais ou $$ duplicados pelo docker-compose
+    admin_hash = sanitize_bcrypt_hash(settings.admin_password_hash)
+    if not admin_hash:
+        logging.error("ADMIN_PASSWORD_HASH invalido apos sanitizacao")
+        raise HTTPException(status_code=500, detail="servico de autenticacao indisponivel")
+
     # compara username em tempo constante para mitigar timing attack
     user_ok = hmac.compare_digest(
         req.username.encode("utf-8"), settings.admin_user.encode("utf-8")
     )
     try:
-        pass_ok = PWD_CONTEXT.verify(req.password, settings.admin_password_hash)
-    except (ValueError, TypeError):
-        # hash mal formado e configuracao errada; nao expor ao cliente
-        logging.error("ADMIN_PASSWORD_HASH com formato invalido")
+        pass_ok = PWD_CONTEXT.verify(req.password, admin_hash)
+    except (ValueError, TypeError) as exc:
+        # bcrypt nao aceita o hash mesmo apos sanitizacao; configuracao errada
+        logging.error(f"falha na verificacao de senha: {type(exc).__name__}")
         raise HTTPException(status_code=500, detail="servico de autenticacao indisponivel")
 
     if not (user_ok and pass_ok):
@@ -69,17 +76,16 @@ async def admin_login(req: LoginRequest, response: Response):
     token = create_access_token(req.username)
     ttl_seconds = settings.jwt_expiration_minutes * 60
 
-    # cookie http-only: o jwt nunca fica acessivel via javascript,
-    # mitigando o vetor de xss-aciona-take-over identificado na auditoria.
-    # secure=true somente em producao (https); em dev http o navegador
-    # rejeitaria o cookie e quebraria o fluxo local
+    # cookie httponly + secure + samesite=lax: topologia same-origin com
+    # tls terminado no nginx do host; lax e suficiente e mais ergonomico
+    # que strict (preserva o cookie em navegacoes top-level)
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
         value=token,
         max_age=ttl_seconds,
         httponly=True,
-        secure=settings.is_production,
-        samesite="strict",
+        secure=True,
+        samesite="lax",
         path=_COOKIE_PATH,
     )
 
@@ -93,16 +99,15 @@ async def admin_login(req: LoginRequest, response: Response):
 # LOGOUT ADMINISTRATIVO
 @router.post("/logout")
 async def admin_logout(response: Response):
-    """
-    remove o cookie de sessao no cliente; nao exige verify_token para
-    que sessoes ja expiradas tambem possam limpar o estado residual.
-    """
+    """remove o cookie no cliente; nao exige verify_token para limpar sessao expirada."""
+    # flags identicas ao set_cookie sao necessarias para que o browser
+    # case o cookie e aceite o delete (rfc 6265)
     response.delete_cookie(
         key=SESSION_COOKIE_NAME,
         path=_COOKIE_PATH,
         httponly=True,
-        secure=settings.is_production,
-        samesite="strict",
+        secure=True,
+        samesite="lax",
     )
     audit_logger.info("logout administrativo", extra={"event": "auth_logout"})
     return {"status": "sucesso"}

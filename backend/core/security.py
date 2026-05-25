@@ -1,6 +1,7 @@
-"""Primitivas de seguranca: emissao/verificacao de JWT via cookie HttpOnly."""
+"""primitivas de seguranca: emissao/verificacao de jwt via cookie httponly."""
 
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -14,6 +15,31 @@ from core.config import settings
 SESSION_COOKIE_NAME = "admin_session"
 
 PWD_CONTEXT = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# hash bcrypt valido: $2[aby]$<cost>$<22 chars de salt><31 chars de hash>
+_BCRYPT_RE = re.compile(r"^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$")
+
+
+# SANITIZACAO DE HASH BCRYPT
+def sanitize_bcrypt_hash(raw: str | None) -> str:
+    """
+    devolve o hash limpo, tolerando corrupcoes comuns:
+      * aspas externas (\" ou ') inseridas por shells ou wrappers .env
+      * dolar duplicado ($$) gerado por interpolacao do docker-compose
+      * espacos e quebras de linha em volta
+    string vazia indica hash ausente; formato invalido propaga vazio
+    para o chamador tratar como "servico indisponivel".
+    """
+    if not raw:
+        return ""
+    s = raw.strip()
+    # remove aspas externas pareadas (uma camada apenas)
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
+        s = s[1:-1].strip()
+    # docker-compose interpola variaveis: um '$' literal vira '$$' no arquivo
+    if "$$" in s:
+        s = s.replace("$$", "$")
+    return s if _BCRYPT_RE.match(s) else ""
 
 
 # EMISSAO DE TOKEN JWT
