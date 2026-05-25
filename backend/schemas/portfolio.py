@@ -10,7 +10,7 @@ maliciosos ou inflacao maliciosa do JSON.
 from enum import Enum
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, HttpUrl
+from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field, HttpUrl
 
 
 class AllowedConfigFile(str, Enum):
@@ -25,7 +25,13 @@ LongStr = Annotated[str, Field(min_length=1, max_length=4_000)]
 
 
 class StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    # populate_by_name permite que o input use tanto o nome canonico do campo
+    # quanto qualquer alias declarado em validation_alias
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        populate_by_name=True,
+    )
 
 
 # ----------------------------------------------------------------------
@@ -57,13 +63,36 @@ class ProjetoDestaque(StrictModel):
 
 
 class PortfolioData(StrictModel):
+    # aceita chaves em pt (canonico, gravado no disco) ou em en (formularios externos);
+    # a serializacao via model_dump sempre devolve a forma pt, garantindo um unico
+    # contrato no arquivo persistido
     instrucoes_ia: LongStr
-    dados_pessoais: DadosPessoais
-    contatos: Contatos
-    habilidades_tecnicas: list[MediumStr] = Field(min_length=1, max_length=50)
-    governanca_e_processos: list[MediumStr] = Field(min_length=1, max_length=50)
-    experiencias_profissionais: list[Experiencia] = Field(min_length=0, max_length=100)
-    projetos_destaque: list[ProjetoDestaque] = Field(min_length=0, max_length=100)
+    dados_pessoais: DadosPessoais = Field(
+        validation_alias=AliasChoices("dados_pessoais", "profile"),
+    )
+    contatos: Contatos = Field(
+        validation_alias=AliasChoices("contatos", "contacts"),
+    )
+    habilidades_tecnicas: list[MediumStr] = Field(
+        min_length=1,
+        max_length=50,
+        validation_alias=AliasChoices("habilidades_tecnicas", "skills"),
+    )
+    governanca_e_processos: list[MediumStr] = Field(
+        min_length=1,
+        max_length=50,
+        validation_alias=AliasChoices("governanca_e_processos", "education"),
+    )
+    experiencias_profissionais: list[Experiencia] = Field(
+        min_length=0,
+        max_length=100,
+        validation_alias=AliasChoices("experiencias_profissionais", "experience"),
+    )
+    projetos_destaque: list[ProjetoDestaque] = Field(
+        min_length=0,
+        max_length=100,
+        validation_alias=AliasChoices("projetos_destaque", "projects"),
+    )
 
 
 # ----------------------------------------------------------------------
