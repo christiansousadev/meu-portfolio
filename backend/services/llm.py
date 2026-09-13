@@ -158,8 +158,17 @@ def generate_llm_response(provider: str, prompt: str, system_context: str) -> st
             "contatos ou habilidades do Christian no momento."
         )
     if provider == "gemini":
-        model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=system_context)
-        return model.generate_content(prompt).text
+        if not settings.gemini_api_key:
+            logging.warning("tentativa de uso do gemini sem GEMINI_API_KEY")
+            return "O provedor Google Gemini ainda não possui uma chave GEMINI_API_KEY configurada no servidor."
+        try:
+            genai.configure(api_key=settings.gemini_api_key)
+            model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=system_context)
+            res = model.generate_content(prompt)
+            return res.text if res.text else "Não foi possível gerar uma resposta com o modelo de IA."
+        except Exception as exc:
+            logging.error(f"falha na chamada ao Gemini API: {exc}")
+            return "Desculpe, tive uma instabilidade momentânea na conexão com o modelo de IA. Por favor, tente novamente em instantes."
     if provider == "ollama":
         import requests
 
