@@ -34,7 +34,7 @@ from services.jsonl_store import (
     purge_older_than,
     read_recent,
 )
-from services.runtime_state import set_active_interpreter
+from services.runtime_state import get_active_interpreter, set_active_interpreter
 
 router = APIRouter(prefix="/api/admin")
 
@@ -218,7 +218,15 @@ async def get_dashboard_stats(admin: str = Depends(verify_token)):
         "total_views": total_views,
         "avg_response_ms": avg_time,
         "recent_events": recent_events,
+        "active_interpreter": get_active_interpreter(),
     }
+
+
+# CONSULTA DO INTERPRETER ATIVO
+@router.get("/interpreter")
+async def get_interpreter(admin: str = Depends(verify_token)):
+    """Retorna o provedor de IA atualmente ativo em runtime."""
+    return {"active": get_active_interpreter()}
 
 
 # TROCA DE INTERPRETER ATIVO

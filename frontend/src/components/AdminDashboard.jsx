@@ -250,6 +250,9 @@ export default function AdminDashboard() {
   const [isPurgeModalOpen, setIsPurgeModalOpen] = useState(false);
   const [purgeResult, setPurgeResult] = useState(null);
   const [isPurging, setIsPurging] = useState(false);
+  const [activeInterpreter, setActiveInterpreter] = useState("gemini");
+  const [interpreterStatus, setInterpreterStatus] = useState("");
+  const [isChangingInterpreter, setIsChangingInterpreter] = useState(false);
 
   const [stats, setStats] = useState({
     total_chats: 0,
@@ -320,6 +323,9 @@ export default function AdminDashboard() {
       const statsData = await statsRes.json();
       setLogs(logsData.logs || []);
       setStats(statsData);
+      if (statsData.active_interpreter) {
+        setActiveInterpreter(statsData.active_interpreter);
+      }
       setIsLogged(true);
     } catch (e) {
       if (!silent) console.error("erro ao carregar kpis:", e);
@@ -328,6 +334,8 @@ export default function AdminDashboard() {
   };
 
   const CHANGE_INTERPRETER = async (provider) => {
+    setIsChangingInterpreter(true);
+    setInterpreterStatus("Salvando alteração...");
     try {
       const res = await adminFetch("/api/admin/interpreter", {
         method: "POST",
@@ -340,9 +348,17 @@ export default function AdminDashboard() {
       }
       if (!res.ok) throw new Error("Falha ao alterar provedor.");
 
-      alert(`Provedor alterado com sucesso para: ${provider}`);
+      const data = await res.json();
+      const updated = data.active || provider;
+      setActiveInterpreter(updated);
+      setInterpreterStatus(`✓ Provedor alterado para: ${updated === "gemini" ? "Google Gemini" : updated === "json_only" ? "JSON Local" : updated}`);
+      setTimeout(() => setInterpreterStatus(""), 4000);
     } catch (e) {
       console.error("falha ao trocar interprete", e);
+      setInterpreterStatus("❌ Erro ao atualizar intérprete.");
+      setTimeout(() => setInterpreterStatus(""), 4000);
+    } finally {
+      setIsChangingInterpreter(false);
     }
   };
 
@@ -702,34 +718,102 @@ export default function AdminDashboard() {
               }}
             >
               <div>
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 4px 0" }}>
-                  Intérprete Ativo (Runtime)
-                </h3>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>
+                    Intérprete Ativo (Runtime)
+                  </h3>
+                  {activeInterpreter === "gemini" && (
+                    <span
+                      style={{
+                        background: "rgba(16, 185, 129, 0.15)",
+                        color: "#10B981",
+                        border: "1px solid rgba(16, 185, 129, 0.3)",
+                        padding: "3px 10px",
+                        borderRadius: "12px",
+                        fontSize: "0.76rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      ● Gemini 1.5 Flash (Ativo)
+                    </span>
+                  )}
+                  {activeInterpreter === "json_only" && (
+                    <span
+                      style={{
+                        background: "rgba(245, 158, 11, 0.15)",
+                        color: "#F59E0B",
+                        border: "1px solid rgba(245, 158, 11, 0.3)",
+                        padding: "3px 10px",
+                        borderRadius: "12px",
+                        fontSize: "0.76rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      ● JSON Local (Custo Zero / Sem LLM)
+                    </span>
+                  )}
+                  {activeInterpreter !== "gemini" && activeInterpreter !== "json_only" && (
+                    <span
+                      style={{
+                        background: "rgba(99, 102, 241, 0.15)",
+                        color: "#6366F1",
+                        border: "1px solid rgba(99, 102, 241, 0.3)",
+                        padding: "3px 10px",
+                        borderRadius: "12px",
+                        fontSize: "0.76rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      ● {activeInterpreter}
+                    </span>
+                  )}
+                </div>
                 <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.85rem" }}>
-                  Chaveia o provedor de IA com persistência atômica em runtime_state.json.
+                  Alterne entre o Gemini (LLM inteligente) e o modo Local (zero custo de tokens).
                 </p>
               </div>
 
-              <select
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  background: styles.bg,
-                  color: styles.text,
-                  border: "1px solid var(--card-border)",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  outline: "none",
-                  cursor: "pointer",
-                }}
-                onChange={(e) => CHANGE_INTERPRETER(e.target.value)}
-                defaultValue="gemini"
-              >
-                <option value="json_only">Apenas JSON Local (Determinístico / Custo Zero)</option>
-                <option value="gemini">Google Gemini 1.5 Flash (RAG Focado)</option>
-                <option value="openai">OpenAI GPT-4o (Precisão)</option>
-                <option value="ollama">Llama 3 Local (Privacidade Total)</option>
-              </select>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
+                <select
+                  id="interpreter-select"
+                  aria-label="Selecionar intérprete de IA"
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    background: styles.bg,
+                    color: styles.text,
+                    border: "1px solid var(--card-border)",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                    outline: "none",
+                    cursor: isChangingInterpreter ? "not-allowed" : "pointer",
+                    opacity: isChangingInterpreter ? 0.7 : 1,
+                  }}
+                  value={activeInterpreter}
+                  disabled={isChangingInterpreter}
+                  onChange={(e) => CHANGE_INTERPRETER(e.target.value)}
+                >
+                  <option value="gemini">Google Gemini 1.5 Flash (RAG Focado)</option>
+                  <option value="json_only">Apenas JSON Local (Determinístico / Custo Zero)</option>
+                  <option value="openai">OpenAI GPT-4o (Precisão)</option>
+                  <option value="ollama">Llama 3 Local (Privacidade Total)</option>
+                </select>
+                {interpreterStatus && (
+                  <span
+                    style={{
+                      fontSize: "0.8rem",
+                      fontWeight: 600,
+                      color: interpreterStatus.startsWith("✓")
+                        ? "#10B981"
+                        : interpreterStatus.startsWith("❌")
+                        ? "#EF4444"
+                        : "var(--text-secondary)",
+                    }}
+                  >
+                    {interpreterStatus}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Cards de KPIs */}
