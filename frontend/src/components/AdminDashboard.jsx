@@ -794,10 +794,8 @@ export default function AdminDashboard() {
                   disabled={isChangingInterpreter}
                   onChange={(e) => CHANGE_INTERPRETER(e.target.value)}
                 >
-                  <option value="gemini">Google Gemini 1.5 Flash (RAG Focado)</option>
-                  <option value="json_only">Apenas JSON Local (Determinístico / Custo Zero)</option>
-                  <option value="openai">OpenAI GPT-4o (Precisão)</option>
-                  <option value="ollama">Llama 3 Local (Privacidade Total)</option>
+                  <option value="gemini">Google Gemini 1.5 Flash (LLM com RAG)</option>
+                  <option value="json_only">Apenas JSON Local (Teste Local / Custo Zero)</option>
                 </select>
                 {interpreterStatus && (
                   <span
