@@ -200,6 +200,13 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
 
   return (
     <div style={{ marginBottom: "18px" }}>
+      {isInitializing && !loadError && (
+        <div style={{ textAlign: "center", marginBottom: "8px" }}>
+          <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+            Carregando desafio de segurança...
+          </span>
+        </div>
+      )}
       <div
         ref={containerRef}
         style={{
@@ -208,13 +215,7 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
           alignItems: "center",
           minHeight: "65px",
         }}
-      >
-        {isInitializing && !loadError && (
-          <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
-            Carregando desafio de segurança...
-          </span>
-        )}
-      </div>
+      />
       {loadError && (
         <p style={{ color: "#EF4444", fontSize: "0.8rem", margin: "6px 0 0 0", lineHeight: 1.4 }}>
           {loadError}
