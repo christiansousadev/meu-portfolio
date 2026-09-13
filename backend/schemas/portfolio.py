@@ -103,6 +103,7 @@ class NavSection(StrictModel):
     skills: ShortStr
     exp: ShortStr
     proj: ShortStr
+    certs: Annotated[str, Field(default="Certificações", max_length=100)] = "Certificações"
 
 
 class HeroSection(StrictModel):
@@ -135,11 +136,27 @@ class ProjItem(StrictModel):
     name: ShortStr
     desc: LongStr
     link: HttpUrl
+    category: Annotated[str, Field(default="Fullstack", max_length=100)] = "Fullstack"
+    tags: Annotated[list[ShortStr], Field(default_factory=list, max_length=30)] = []
 
 
 class ProjSection(StrictModel):
     title: ShortStr
     items: list[ProjItem] = Field(max_length=100)
+
+
+class CertItem(StrictModel):
+    name: ShortStr
+    issuer: ShortStr
+    year: Annotated[str, Field(default="", max_length=50)] = ""
+    credential_url: Annotated[str, Field(default="", max_length=500)] = ""
+    description: Annotated[str, Field(default="", max_length=1000)] = ""
+
+
+class CertSection(StrictModel):
+    title: ShortStr
+    subtitle: Annotated[str, Field(default="", max_length=500)] = ""
+    items: list[CertItem] = Field(default_factory=list, max_length=50)
 
 
 class ChatSection(StrictModel):
@@ -155,6 +172,7 @@ class LocaleContent(StrictModel):
     skills: SkillsSection
     exp: ExpSection
     proj: ProjSection
+    cert: Annotated[CertSection, Field(default_factory=lambda: CertSection(title="Certificações", items=[]))] = CertSection(title="Certificações", items=[])
     chat: ChatSection
 
 
@@ -199,6 +217,7 @@ class ConfigUpdateRequest(BaseModel):
 class LoginRequest(BaseModel):
     username: Annotated[str, Field(min_length=3, max_length=120)]
     password: Annotated[str, Field(min_length=6, max_length=128)]
+    turnstile_token: Annotated[str, Field(default="", max_length=2048)] = ""
 
 
 class ChatRequest(BaseModel):

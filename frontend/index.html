@@ -5,10 +5,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- favicon estatico servido por vite a partir de public/icon.ico -->
+    
+    <!-- Metatags Principais de SEO -->
+    <title>Christian Sousa | Software Engineer & Governança de TI</title>
+    <meta name="description" content="Portfólio profissional de Christian Sousa. Software Engineer especializado em Python, FastAPI, React, Governança de TI (ITIL/ISO 27001), arquiteturas RAG com IA e automações corporativas." />
+    <meta name="author" content="Christian Sousa" />
+    <meta name="keywords" content="Christian Sousa, Software Engineer, Python, FastAPI, React, ITIL, ISO 27001, LGPD, Docker, n8n, Governança de TI, RAG, IA" />
+    <meta name="theme-color" content="#0A0414" />
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="profile" />
+    <meta property="og:url" content="https://christiansousa.dev/" />
+    <meta property="og:title" content="Christian Sousa | Software Engineer & Governança de TI" />
+    <meta property="og:description" content="Plataforma de portfólio com RAG corporativo, governança de TI e arquitetura same-origin em Docker." />
+    <meta property="og:image" content="/images/hero_developer.png" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Christian Sousa | Software Engineer & Governança de TI" />
+    <meta name="twitter:description" content="Software Engineer focado em Governança de TI, Automações Inteligentes e Soluções com IA." />
+    <meta name="twitter:image" content="/images/hero_developer.png" />
+
+    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/icon.ico" />
     <link rel="shortcut icon" type="image/x-icon" href="/icon.ico" />
-    <title>Portfólio Christian Sousa</title>
+
+    <!-- Cloudflare Turnstile API -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
+    <!-- Dados Estruturados Schema.org (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Christian Sousa",
+        "jobTitle": "Software Engineer",
+        "description": "Software Engineer especializado em Governança de TI, Automação de Processos e Inteligência Artificial.",
+        "url": "https://christiansousa.dev/",
+        "sameAs": [
+          "https://github.com/christiansousadev",
+          "https://www.linkedin.com/in/christiansousasilva/"
+        ],
+        "knowsAbout": [
+          "Python", "FastAPI", "React", "Docker", "ITIL", "ISO 27001", "LGPD", "PostgreSQL", "RAG", "LLMs"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

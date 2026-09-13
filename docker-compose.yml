@@ -55,9 +55,9 @@ services:
     container_name: portfolio-frontend
     restart: unless-stopped
     ports:
-      # exposto na vps em 127.0.0.1:8081; o nginx do host faz proxy
-      # de https://madebychristian.fusaotecno.com -> 127.0.0.1:8081
-      - "8081:80"
+      # Porta externa no host (configuravel no .env via FRONTEND_PORT, padrao 8085 para evitar conflitos)
+      # Nota: o Cloudflare Tunnel acessa diretamente http://frontend:80 na rede interna do Docker
+      - "${FRONTEND_PORT:-8085}:80"
     networks:
       - portfolio-net
     depends_on:
@@ -68,6 +68,21 @@ services:
     tmpfs:
       - /var/cache/nginx:size=32m
       - /var/run:size=4m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: portfolio-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - portfolio-net
+    depends_on:
+      - frontend
     logging:
       driver: json-file
       options:

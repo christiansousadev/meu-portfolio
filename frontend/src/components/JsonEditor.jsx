@@ -124,7 +124,9 @@ export default function JsonEditor({ styles, onSessionLost }) {
           desc: ""
         });
       else if (section === "proj")
-        newData.pt.proj.items.unshift({ name: "", desc: "", link: "" });
+        newData.pt.proj.items.unshift({ name: "", desc: "", link: "", category: "Fullstack", tags: [] });
+      else if (section === "cert")
+        newData.pt.cert.items.unshift({ name: "", issuer: "", year: "", credential_url: "", description: "" });
       else if (section === "skills") newData.pt.skills[subArray].push("");
     } else if (activeFile === "portfolio_data.json") {
       if (!newData[section]) newData[section] = [];
@@ -158,6 +160,7 @@ export default function JsonEditor({ styles, onSessionLost }) {
 
   useEffect(() => {
     LOAD("portfolio.json");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!data)
@@ -245,6 +248,15 @@ export default function JsonEditor({ styles, onSessionLost }) {
             style={subTabStyle(activeSection === "proj", styles)}
           >
             Projetos
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeSection === "cert"}
+            onClick={() => setActiveSection("cert")}
+            style={subTabStyle(activeSection === "cert", styles)}
+          >
+            Certificações
           </button>
         </div>
       )}
@@ -504,6 +516,16 @@ export default function JsonEditor({ styles, onSessionLost }) {
                   style={{ ...inputStyle(styles), gridColumn: "1 / span 2" }}
                 />
                 <input
+                  value={item.category || ""}
+                  placeholder="Categoria (ex: Governança, IA)"
+                  onChange={e => {
+                    const d = { ...data };
+                    d.pt.proj.items[idx].category = e.target.value;
+                    setData(d);
+                  }}
+                  style={inputStyle(styles)}
+                />
+                <input
                   value={item.link || ""}
                   placeholder="Link (GitHub/Web)"
                   onChange={e => {
@@ -529,7 +551,7 @@ export default function JsonEditor({ styles, onSessionLost }) {
                   }}
                   style={{
                     ...inputStyle(styles),
-                    gridColumn: "1 / span 3",
+                    gridColumn: "1 / span 4",
                     height: "60px",
                     resize: "vertical"
                   }}
@@ -538,6 +560,96 @@ export default function JsonEditor({ styles, onSessionLost }) {
             ))}
           </>
         )}
+
+        {/* --- FRONTEND: CERTIFICAÇÕES --- */}
+        {activeFile === "portfolio.json" && activeSection === "cert" && (
+          <>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "20px"
+              }}
+            >
+              <h4>Certificações & Credenciais</h4>
+              <button
+                onClick={() => ADD_ITEM("cert")}
+                style={addBtnStyle(styles)}
+              >
+                + Nova Certificação
+              </button>
+            </div>
+            {data?.pt?.cert?.items?.map((item, idx) => (
+              <div key={idx} style={gridStyle(styles)}>
+                <input
+                  value={item.name || ""}
+                  placeholder="Nome da Certificação"
+                  onChange={e => {
+                    const d = { ...data };
+                    d.pt.cert.items[idx].name = e.target.value;
+                    setData(d);
+                  }}
+                  style={{ ...inputStyle(styles), gridColumn: "1 / span 2" }}
+                />
+                <input
+                  value={item.issuer || ""}
+                  placeholder="Emissor (ex: Axelos, ISO)"
+                  onChange={e => {
+                    const d = { ...data };
+                    d.pt.cert.items[idx].issuer = e.target.value;
+                    setData(d);
+                  }}
+                  style={inputStyle(styles)}
+                />
+                <input
+                  value={item.year || ""}
+                  placeholder="Ano"
+                  onChange={e => {
+                    const d = { ...data };
+                    d.pt.cert.items[idx].year = e.target.value;
+                    setData(d);
+                  }}
+                  style={inputStyle(styles)}
+                />
+                <button
+                  onClick={() => REMOVE_ITEM("cert", idx)}
+                  style={delBtnStyle()}
+                >
+                  Excluir
+                </button>
+                <input
+                  value={item.credential_url || ""}
+                  placeholder="URL da Credencial"
+                  onChange={e => {
+                    const d = { ...data };
+                    d.pt.cert.items[idx].credential_url = e.target.value;
+                    setData(d);
+                  }}
+                  style={{
+                    ...inputStyle(styles),
+                    gridColumn: "1 / span 4"
+                  }}
+                />
+                <textarea
+                  value={item.description || ""}
+                  placeholder="Descrição da competência"
+                  onChange={e => {
+                    const d = { ...data };
+                    d.pt.cert.items[idx].description = e.target.value;
+                    setData(d);
+                  }}
+                  style={{
+                    ...inputStyle(styles),
+                    gridColumn: "1 / span 4",
+                    height: "60px",
+                    resize: "vertical"
+                  }}
+                />
+              </div>
+            ))}
+          </>
+        )}
+
 
         {/* --- RAG: CONTEXTO DA IA --- */}
         {activeFile === "portfolio_data.json" && (

@@ -76,6 +76,12 @@ def get_client_ip(request: Request) -> str:
     if not _ip_in_trusted(immediate):
         return immediate
 
+    # Se estiver sob Cloudflare (Tunnel ou proxy reverso confiavel),
+    # o cabecalho CF-Connecting-IP contem o IP publico real do visitante
+    cf_connecting_ip = request.headers.get("cf-connecting-ip")
+    if cf_connecting_ip and _is_valid_ip(cf_connecting_ip.strip()):
+        return cf_connecting_ip.strip()
+
     forwarded = request.headers.get("x-forwarded-for")
     if not forwarded:
         return immediate

@@ -57,9 +57,16 @@ def search_json_answers(query: str, context: dict) -> str | None:
     if any(e in q for e in ["experiência", "trabalhou", "empresa", "carreira", "vaga"]):
         exp = "\n- ".join(f"**{e['empresa']}**: {e['resumo_tecnico']}" for e in context["experiencias_profissionais"])
         return f"O Christian possui uma trajetória sólida em empresas como:\n{exp}"
-    if "governança" in q or "processo" in q or "itil" in q:
+    if any(cert in q for cert in ["certifica", "certificação", "certificações", "credencial", "itil", "iso"]):
         gov = "\n- ".join(context["governanca_e_processos"])
-        return f"Na área de Governança, o Christian foca em:\n{gov}"
+        return (
+            f"O Christian possui sólida formação e credenciais com foco em Governança de TI e Arquitetura:\n- {gov}\n\n"
+            "Ele é certificado em **ITIL® 4 Foundation in IT Service Management**, especialista em conformidade **ISO/IEC 27001 & LGPD**, "
+            "além de arquitetura de microsserviços com **Python, FastAPI e Docker**."
+        )
+    if "governança" in q or "processo" in q:
+        gov = "\n- ".join(context["governanca_e_processos"])
+        return f"Na área de Governança e Processos, o Christian foca em:\n- {gov}"
 
     return None
 
@@ -81,7 +88,10 @@ _INTENT_KEYWORDS: tuple[tuple[tuple[str, ...], str], ...] = (
         ("projeto", "portfólio", "portfolio", "feito", "trabalhos"),
         "projetos_destaque",
     ),
-    (("governança", "governanca", "processo", "itil", "iso", "cobit"), "governanca_e_processos"),
+    (
+        ("governança", "governanca", "processo", "itil", "iso", "cobit", "certifica", "certificacao", "certificação", "credencial"),
+        "governanca_e_processos",
+    ),
 )
 
 

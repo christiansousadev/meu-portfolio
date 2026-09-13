@@ -40,6 +40,8 @@ class Settings:
     active_interpreter_default: str
     admin_user: str | None
     admin_password_hash: str | None
+    turnstile_secret_key: str | None = None
+    turnstile_site_key: str | None = None
     trusted_proxies: list[str] = field(default_factory=list)
     base_dir: Path = field(default=BASE_DIR)
     data_dir: Path = field(default=DATA_DIR)
@@ -66,6 +68,15 @@ def _load_settings() -> Settings:
         allowed_origins = ["http://localhost:5173"]
         logging.warning("ALLOWED_ORIGINS nao definida; usando fallback de desenvolvimento")
 
+    admin_password_hash = os.getenv("ADMIN_PASSWORD_HASH") or None
+    raw_admin_password = os.getenv("ADMIN_PASSWORD")
+    if not admin_password_hash and raw_admin_password:
+        try:
+            from passlib.context import CryptContext
+            admin_password_hash = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(raw_admin_password)
+        except Exception as exc:
+            logging.warning(f"Nao foi possivel converter ADMIN_PASSWORD em hash: {exc}")
+
     return Settings(
         env=env,
         is_production=is_production,
@@ -77,7 +88,9 @@ def _load_settings() -> Settings:
         ollama_url=os.getenv("OLLAMA_URL") or None,
         active_interpreter_default=os.getenv("ACTIVE_INTERPRETER", "json_only"),
         admin_user=os.getenv("ADMIN_USER") or None,
-        admin_password_hash=os.getenv("ADMIN_PASSWORD_HASH") or None,
+        admin_password_hash=admin_password_hash,
+        turnstile_secret_key=os.getenv("TURNSTILE_SECRET_KEY") or None,
+        turnstile_site_key=os.getenv("TURNSTILE_SITE_KEY") or None,
         # lista de cidr/ips dos proxies reversos confiaveis;
         # vazio em dev = nao confia em x-forwarded-for e usa o peer direto
         trusted_proxies=_split_csv(os.getenv("TRUSTED_PROXIES", "")),

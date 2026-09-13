@@ -1,351 +1,414 @@
-# Portfólio Christian Sousa
+# Christian Sousa | Software Engineer & Governança de TI
 
-**Plataforma híbrida React + FastAPI com RAG corporativo, governança de TI e deploy automatizado via Docker.**
+Plataforma fullstack de alta performance e segurança corporativa desenvolvida com **React 18 + Vite** e **Python 3.12 + FastAPI**, orquestrada em **Docker Compose**, integrada a **Cloudflare Tunnel (Zero Trust)** e protegida por **Cloudflare Turnstile**.
 
-> [!NOTE]
-> Este projeto serve como vitrine técnica e ao mesmo tempo como referência prática de arquitetura **same-origin**, persistência **JSON-only**, auditoria estruturada (LGPD / ISO 27001 A.12.4) e CI/CD via `git pull` na VPS.
+🌐 **Ambiente de Produção:** [https://christiansousa.dev](https://christiansousa.dev)
 
 ---
 
-## 1. Visão Geral do Sistema
+## 1. Visão Geral e Pilares do Projeto
 
-Sistema composto por dois serviços containerizados, orquestrados via Docker Compose, expostos sob um único domínio através de proxy reverso.
+O sistema opera como portfólio profissional e vitrine técnica de engenharia de software e governança de TI. A solução combina uma interface executiva pública de alto padrão estético (*Glassmorphism 2.0* com iluminação ambiente *aurora glow*) com um assistente conversacional corporativo (**RAG com IA**) e um ambiente administrativo restrito de governança (`/admin`) para gestão de configurações e telemetria em tempo real.
 
-| Camada | Tecnologia | Função |
+```
++-----------------------------------------------------------------------------------------+
+|                                    PILAREs ARQUITETURAIS                                |
++-----------------------------+-----------------------------+-----------------------------+
+|    SAME-ORIGIN DOCKER       |     ZERO TRUST TUNNEL       |   GOVERNANÇA & LGPD NATIVA  |
+| Sem CORS · Sem subdomínios  | Sem portas abertas no host  | Redação de PII · 90d Purge  |
+| Nginx roteia / e /api/      | Borda Cloudflare + Turnstile| Trilha CIM · Fsync atômico  |
++-----------------------------+-----------------------------+-----------------------------+
+```
+
+### Tecnologias Centrais
+
+| Camada | Tecnologia | Função no Sistema |
 |---|---|---|
-| **Frontend** | React 18 + Vite 5 (bundle estático servido por Nginx Alpine) | Renderiza o portfólio público, o widget de chat e o Dashboard de Governança (`/admin`) |
-| **Backend** | Python 3.12 + FastAPI + Uvicorn | API REST, autenticação JWT em cookie HttpOnly, integração com LLMs e auditoria estruturada |
-| **Persistência** | Arquivos JSON / JSONL em `backend/data/` (bind mount) | Dados de portfólio, contexto RAG e trilhas append-only de chat/telemetria |
-| **IA** | Google Gemini / OpenAI / Ollama / DeepSeek (intercambiáveis em runtime) | Assistente conversacional com **RAG corporativo**: recorta o contexto JSON antes de chamar o LLM, reduzindo tokens e impedindo vazamento de dados acessórios |
-
-O intérprete ativo é trocável em runtime via painel administrativo (`POST /api/admin/interpreter`) e persistido em `runtime_state.json` com escrita atômica — sem mutação de `os.environ`, sem race condition em deploys multi-réplica.
-
----
-
-## 2. Arquitetura e Fluxo de Rede (Same-Origin)
-
-### Topologia
-
-```
-        ┌──────────────────────────┐
-        │       Navegador          │
-        │  madebychristian.fusao   │
-        └────────────┬─────────────┘
-                     │  HTTPS (TLS 1.3)
-                     ▼
-        ┌──────────────────────────┐
-        │   Nginx do HOST (VPS)    │   ← TLS termina aqui (Let's Encrypt)
-        │   :443 ─▶ 127.0.0.1:8081 │
-        └────────────┬─────────────┘
-                     │  HTTP local (loopback)
-                     ▼
-   ┌─────────────────────────────────────┐
-   │  portfolio-frontend (Nginx Alpine)  │
-   │  :80 dentro do container            │
-   │  ├─ /          → SPA estática       │
-   │  └─ /api/      → proxy_pass         │
-   └────────────────┬────────────────────┘
-                    │  Rede Docker interna (portfolio-net)
-                    ▼
-   ┌─────────────────────────────────────┐
-   │  portfolio-backend (FastAPI)        │
-   │  :8000 — NÃO exposto ao host        │
-   │  Lê e grava em /app/data ──┐        │
-   └────────────────────────────┼────────┘
-                                │  Bind mount
-                                ▼
-                       ./backend/data
-                       (host = fonte de verdade)
-```
-
-### Princípios aplicados
-
-| Princípio | Implementação |
-|---|---|
-| **Same-Origin** | Bundle React faz `fetch("/api/...")` (path relativo). Nenhuma URL absoluta no JS — não há CORS, não há subdomínio `api.*`, não há `ERR_NAME_NOT_RESOLVED`. |
-| **Defesa em camadas** | Backend não expõe porta ao host. A única forma de chegar até ele é pelo proxy interno do Nginx do container frontend, que está dentro da rede Docker. |
-| **Headers de segurança** | CSP `default-src 'none'`, X-Frame-Options DENY, HSTS em produção, Permissions-Policy restritiva (aplicados via `SecurityHeadersMiddleware`). |
-| **Trace ID por requisição** | `TraceIdMiddleware` injeta UUID em `contextvar`, propagado para logs JSON e ecoado no header `X-Trace-ID` para correlação cliente/servidor. |
-| **Rate limit por IP real** | `RateLimitMiddleware` resolve o IP via `X-Forwarded-For` somente quando o peer pertence a `TRUSTED_PROXIES`, evitando spoofing. |
-
-### Persistência unificada via Bind Mount
-
-```yaml
-backend:
-  volumes:
-    - ./backend/data:/app/data
-```
-
-| Vantagem | Por quê importa |
-|---|---|
-| `git pull` na VPS atualiza JSONs e o container vê imediatamente | Zero rebuild para mudar dados |
-| Mutações via `/admin` gravam direto em `./backend/data/` no host | Você pode `git commit` o resultado e sincronizar dev ↔ prod |
-| Sem "arquivos zumbis" do `copy-on-create` de volumes nomeados | Estado nunca diverge entre o repo e o container |
-
-> [!IMPORTANT]
-> Arquivos como `runtime_state.json`, `analytics.jsonl` e `chat_logs.jsonl` são gerados em runtime e **estão no `.gitignore`** — nunca commitados. Apenas `portfolio.json` e `portfolio_data.json` são versionados.
+| **Frontend** | React 18, Vite 5, Framer Motion, Lucide Icons | SPA com design system corporativo, timeline vertical, modal de arquitetura e dashboard de auditoria |
+| **Borda / Edge** | Cloudflare Tunnel (`cloudflared`) & Cloudflare Turnstile | Tunelamento criptografado outbound, terminação TLS 1.3, mitigação DDoS e proteção antibot |
+| **Proxy / Servidor Web**| Nginx 1.27 Alpine | Proxy reverso interno `/api/`, compressão Gzip, cache de assets estáticos e SPA fallback |
+| **Backend API** | Python 3.12, FastAPI, Uvicorn | API REST assíncrona, autenticação por cookie HttpOnly, rate limiting e middlewares defensivos |
+| **IA & RAG Corporativo**| Gemini 1.5 Flash, Ollama, OpenAI, DeepSeek | Assistente conversacional com recorte focado de contexto (RAG local econômico em tokens) |
+| **Persistência de Dados**| JSON & JSONL em bind mount (`backend/data`) | Armazenamento leve e atômico sem dependência de banco de dados relacional pesado |
 
 ---
 
-## 3. Comandos de Desenvolvimento Local
+## 2. Topologia de Rede e Fluxo Operacional
 
-### 3.1 Subir os serviços
+A infraestrutura foi desenhada sob o paradigma **Zero Port Exposure**: o servidor não precisa ter portas `80` ou `443` abertas no roteador ou firewall. Toda a comunicação externa trafega de dentro para fora através do Cloudflare Tunnel.
 
-```bash
-# backend
-cd backend
-source venv/Scripts/activate          # Linux/Mac: source venv/bin/activate
-uvicorn main:app --reload
-
-# frontend (em outro terminal)
-cd frontend
-npm install
-npm run dev
+```
+                              [ CLIENTE / NAVEGADOR ]
+                                         │
+                                         │ HTTPS :443 (TLS 1.3 / Borda Cloudflare)
+                                         ▼
+                          [ REDE DE BORDA CLOUDFLARE ]
+                    (WAF · Proteção DDoS · Desafio Turnstile)
+                                         │
+                                         │ Túnel Criptografado Outbound
+                                         ▼
+             ┌────────────────────────────────────────────────────────┐
+             │              DOCKER NETWORK: portfolio-net             │
+             │                                                        │
+             │  ┌───────────────────────────────┐                     │
+             │  │ Container: cloudflared        │                     │
+             │  │ (cloudflare/cloudflared)      │                     │
+             │  └───────────────┬───────────────┘                     │
+             │                  │ HTTP interno: frontend:80           │
+             │                  ▼                                     │
+             │  ┌───────────────────────────────┐                     │
+             │  │ Container: portfolio-frontend │ ◄── [Opcional LAN]  │
+             │  │ (Nginx 1.27 Alpine)           │     Host: :8085     │
+             │  │ ├─ /          → SPA Estática  │                     │
+             │  │ └─ /api/      → Proxy Pass ─┐ │                     │
+             │  └─────────────────────────────┼─┘                     │
+             │                                │                       │
+             │                                ▼                       │
+             │  ┌───────────────────────────────┐                     │
+             │  │ Container: portfolio-backend  │                     │
+             │  │ (FastAPI / Uvicorn)           │                     │
+             │  │ Porta interna: 8000 (Sem bind)│                     │
+             │  └───────────────┬───────────────┘                     │
+             └──────────────────┼─────────────────────────────────────┘
+                                │
+                                ▼ [ Bind Mount ]
+                       ./backend/data (Host)
 ```
 
-Acesso local: `http://localhost:5173` (frontend) — a SPA chama `/api/...` em mesma origem, então o Vite dev server faz proxy para `localhost:8000` automaticamente.
+### Princípios Técnicos Aplicados
 
-### 3.2 Sincronização e versionamento (Git)
-
-```bash
-cd /app/meu-portfolio
-
-git add .
-git commit -m "feat: sua mensagem descritiva aqui"
-git push origin main
-```
-
-> [!TIP]
-> Use prefixos **Conventional Commits** para manter histórico legível:  
-> `feat:` (nova feature) · `fix:` (correção) · `chore:` (manutenção) · `refactor:` (reestruturação) · `docs:` (documentação)
-
-### 3.3 Geração de hash bcrypt para admin
-
-```bash
-python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('SUA_SENHA_FORTE'))"
-```
-
-Cole o resultado em `ADMIN_PASSWORD_HASH` do `.env` — **sem aspas, sem duplicar `$`**.
-
-### 3.4 Geração de JWT_SECRET
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(64))"
-```
+- **Arquitetura Same-Origin:** O frontend consome rotas relativas (`/api/...`). Não há chamadas a origens externas pelo navegador, eliminando problemas de CORS e complexidade de certificados em subdomínios.
+- **Isolamento de Contêineres:** O container do backend não publica portas no host da máquina (`8000/tcp` opera restrita à rede `portfolio-net`).
+- **Resolução de IP Real com Cloudflare:** O backend mapeia o cabeçalho `CF-Connecting-IP` validando se a requisição originou-se de um proxy confiável (`TRUSTED_PROXIES`), permitindo rate limiting preciso e logs de auditoria fidedignos.
+- **Persistência Bind-Mount:** O diretório `./backend/data` é montado em `/app/data`. Alterações salvas no painel administrativo gravam diretamente nos arquivos físicos do servidor, facilitando backups e versionamento no Git.
 
 ---
 
-## 4. Esteira de Deploy na VPS
+## 3. Módulos e Recursos do Sistema
 
-Após o `git push`, conecte na VPS via SSH e execute em sequência:
+### 3.1 Interface do Usuário (Frontend)
+- **Design System Glassmorphism 2.0:** Tipografia moderna (**Plus Jakarta Sans** e **JetBrains Mono**), iluminação ambiente *aurora glow*, barra de leitura no topo (`scroll-progress-bar`) e botão retrátil de retorno ao topo.
+- **Navbar Responsiva:** Menu *drawer* móvel, seletor de internacionalização (PT/EN), chaveador de tema claro/escuro e indicador de seção ativa (*scroll spy*) animado com Framer Motion.
+- **Hero & Disponibilidade:** Badge pulsante de disponibilidade profissional, ticker dinâmico de especialidades e cards com métricas de impacto corporativo.
+- **Skills Categorizadas:** Filtros interativos (*Fullstack & APIs*, *Dados & IA*, *Governança & Cloud*) com badges dinâmicas.
+- **Timeline de Experiências:** Linha do tempo executiva vertical com marcadores luminosos e botão expansível para visualização da trajetória completa.
+- **Projetos com Modal de Arquitetura:** Cards filtráveis com links diretos de repositório e modal embutido detalhando arquitetura técnica, desafios e resultados.
+- **Vitrine de Certificações Oficiais:** Destaque para **ITIL® 4 Foundation in IT Service Management (Axelos)**, **ISO/IEC 27001 & LGPD**, **Arquitetura Python & Microsserviços** e **Metodologias Ágeis**.
+- **Assistente IA (ChatWidget):** Chatbot flutuante com chips de perguntas rápidas (*Quick Chips*), renderização completa de Markdown (negrito, listas) e blocos de código com botão de cópia com 1 clique.
+- **Dashboard de Governança 2.0 (`/admin`):**
+  - Desafio antibot via **Cloudflare Turnstile** no formulário de login.
+  - Cartões de KPIs com gráficos **Sparklines em SVG puro**.
+  - Histórico de diálogos com busca em tempo real e filtro de estouro de SLA (> 2000ms).
+  - Botão de **Exportar Relatório de Auditoria em JSON** para conformidade e ingestão SIEM.
+  - Modal defensivo para expurgo de dados de retenção LGPD (90 dias).
+- **Editor Semântico JSON (`JsonEditor`):** Formulário interativo para editar em tempo real o portfólio e a base factual de conhecimento do RAG sem precisar editar código.
 
-```bash
-cd /app/meu-portfolio
-git pull origin main
-chmod -R 777 backend/data
-docker compose up -d --build --force-recreate
-```
-
-### O que cada passo faz
-
-| Comando | Função |
-|---|---|
-| `git pull origin main` | Sincroniza o código e os JSONs versionados |
-| `chmod -R 777 backend/data` | Garante que o usuário não-root `app` do container consiga escrever no bind mount |
-| `docker compose up -d --build --force-recreate` | Rebuilda imagens com cache invalidado e recria containers com a nova configuração |
-
-### Validação pós-deploy
-
-```bash
-# 1. ambos containers em estado healthy
-docker compose ps
-
-# 2. backend responde dentro da rede docker
-docker exec portfolio-frontend wget -qO- http://backend:8000/api/portfolio | head -c 200
-
-# 3. proxy do nginx interno funciona
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8081/api/portfolio
-# esperado: 200
-
-# 4. dominio publico responde via nginx do host
-curl -sI https://madebychristian.fusaotecno.com/api/portfolio | head -1
-# esperado: HTTP/2 200
-```
-
-> [!WARNING]
-> O `chmod 777` é deliberadamente permissivo para evitar bloqueio do bind mount em UIDs divergentes (container `app` vs. usuário do host). Em ambientes com requisitos de hardening estritos, substitua por `chown -R 1000:1000 backend/data` mapeando o UID exato.
-
-### Pipeline conceitual
-
-```
-git push (workstation)
-     │
-     ▼
-[ GitHub ]
-     │
-     ▼   ssh + manual
-[ VPS ] ──▶ git pull ──▶ chmod ──▶ docker compose up --build
-                                        │
-                                        ▼
-                              Nginx host recarregado
-                              automaticamente (reload via cron / systemd)
-```
+### 3.2 Segurança, Backend e RAG
+- **RAG Corporativo Multi-Provider:** Casamento determinístico por palavras-chave (custo zero e resposta imediata) com transição suave para Gemini 1.5 Flash, Ollama, OpenAI ou DeepSeek. O recorte semântico anexa ao prompt apenas as seções do JSON necessárias para responder à dúvida.
+- **Autenticação Segura:** Cookie de sessão `admin_session` HttpOnly, Secure e SameSite=Lax restrito a `/api/admin`, mitigando vulnerabilidades de XSS e vazamento de tokens em `localStorage`.
+- **Validação de Senha em Tempo Constante:** Prevenção contra *timing attacks* via `hmac.compare_digest` e validação com bcrypt sanitizado contra interpolações de `$$`.
+- **Mascaramento Automático de PII:** Serialização de logs em formato JSON Lines com redação recursiva de CPFs, e-mails, tokens Bearer, senhas e chaves JWT (LGPD Art. 6º, III).
+- **Trilha de Auditoria CIM:** Gravação padronizada de eventos de mutação de arquivo para conformidade com a norma ISO 27001 A.12.4 e ITIL Change Management.
+- **Rastreabilidade Ponta a Ponta:** Injeção de `X-Trace-ID` (UUID4) em todas as requisições e respostas, propagado de forma assíncrona via `contextvars`.
 
 ---
 
-## 5. Governança e Auditoria
-
-A camada de observabilidade foi desenhada para atender requisitos **ITIL Change Management**, **ISO 27001 A.12.4** e **LGPD Art. 6 III** (princípio da minimização).
-
-### Logs estruturados em JSON
-
-Todos os eventos saem por `stdout` em formato JSON Lines, com **PII automaticamente mascarada** pelo `JsonFormatter`:
-
-```json
-{
-  "timestamp": "2026-05-24T23:39:55.692354+00:00",
-  "level": "INFO",
-  "logger": "audit",
-  "trace_id": "a8b35c6d-b762-46a3-bfd0-8ca202aac1a8",
-  "event": "auth_success",
-  "actor": "[REDACTED]",
-  "message": "login bem sucedido"
-}
-```
-
-**Padrões mascarados automaticamente:** JWT, hash bcrypt, CPF (com/sem máscara), e-mail (RFC 5322), Bearer tokens.
-
-### Trilhas append-only
-
-| Arquivo | Conteúdo | Retenção padrão |
-|---|---|---|
-| `backend/data/chat_logs.jsonl` | Interações com o assistente: pergunta, resposta, latência, fonte (`local_json` ou `ai_<provider>`) | 90 dias |
-| `backend/data/analytics.jsonl` | Telemetria: `page_view`, path, browser, IP real, trace_id | 90 dias |
-| `runtime_state.json` | Estado mutável (intérprete LLM ativo) — escrita atômica + thread-safe | Permanente |
-
-A purga é idempotente e pode ser disparada por:
-- `POST /api/admin/retention/purge` (manual, autenticado)
-- Cron / systemd timer (automatizado)
-
-### KPIs e SLAs no Dashboard
-
-O painel `/admin` consolida em tempo real a partir dos JSONLs:
-
-| KPI | Cálculo | Fonte |
-|---|---|---|
-| **Interações IA** | `count_records(chat_logs.jsonl)` | Append-only |
-| **Visualizações** | `count_where(analytics, event_type="page_view")` | Append-only |
-| **SLA de Resposta** | Média de `response_time_ms` em ms | Append-only |
-
-### Autenticação segura
-
-| Mecanismo | Configuração |
-|---|---|
-| **Cookie de sessão** | `admin_session` — `HttpOnly` (XSS-proof) + `Secure` (HTTPS-only) + `SameSite=Lax` (compatível com navegação top-level same-origin) + `path=/api/admin` (escopo restrito) |
-| **JWT** | HS256, expiração 60 min (configurável via `JWT_EXPIRATION_MINUTES`) |
-| **Login** | Comparação de username em tempo constante (`hmac.compare_digest`) + `bcrypt.verify` com sanitização defensiva contra `$$` do docker-compose e aspas residuais |
-| **Logout** | `delete_cookie` com flags idênticas (RFC 6265) |
-
-### Validação estrita de payload
-
-Schemas Pydantic com `extra="forbid"` rejeitam qualquer campo desconhecido. O modelo `PortfolioData` aceita chaves PT (canônicas) e EN (compatibilidade) via `AliasChoices`, mas serializa sempre em PT — garantindo **um único contrato no arquivo persistido**.
-
----
-
-## Estrutura de Pastas
+## 4. Estrutura de Diretórios
 
 ```
 meu-portfolio/
 ├── backend/
 │   ├── core/
-│   │   ├── config.py              # carrega .env e expõe Settings (frozen dataclass)
-│   │   ├── security.py            # JWT, bcrypt, sanitize_bcrypt_hash
-│   │   ├── logging_config.py      # JsonFormatter + PII redaction + audit_file_write
-│   │   ├── trace_middleware.py    # X-Trace-ID por requisição
-│   │   ├── security_headers.py    # CSP, HSTS, X-Frame-Options...
-│   │   ├── rate_limit.py          # sliding window por (path, ip)
-│   │   └── proxy.py               # resolução defensiva de X-Forwarded-For
+│   │   ├── config.py              # Carrega .env e expõe Settings (dataclass imutável)
+│   │   ├── security.py            # JWT, sanitização de bcrypt e validação de cookie
+│   │   ├── logging_config.py      # Formatação JSON, redação de PII e log de auditoria CIM
+│   │   ├── proxy.py               # Resolução defensiva de IP real (CF-Connecting-IP)
+│   │   ├── rate_limit.py          # Limitação de taxa em memória por janela deslizante
+│   │   ├── security_headers.py    # Injeção de CSP estrita, HSTS, X-Frame-Options
+│   │   ├── trace_context.py       # ContextVar para propagação assíncrona do Trace ID
+│   │   └── trace_middleware.py    # Middleware injetor de X-Trace-ID
 │   ├── routers/
-│   │   ├── chat.py                # /api/portfolio, /api/chat, /api/analytics/track
-│   │   └── admin.py               # /api/admin/* (login, logs, stats, config, purge)
+│   │   ├── chat.py                # Endpoints públicos (/portfolio, /chat, /analytics/track)
+│   │   └── admin.py               # Endpoints protegidos (/admin/*: login com Turnstile, KPIs, configs, purge)
 │   ├── services/
-│   │   ├── config_repo.py         # leitura/escrita atômica dos JSONs
-│   │   ├── jsonl_store.py         # append-only, fsync, purga por retenção
-│   │   ├── llm.py                 # roteamento de provedores e RAG focado
-│   │   └── runtime_state.py       # estado mutável (intérprete ativo)
+│   │   ├── config_repo.py         # Leitura/escrita atômica em disco com checagem de Path Traversal
+│   │   ├── jsonl_store.py         # Append-only com fsync, agregações e purga de 90 dias
+│   │   ├── llm.py                 # Orquestração do RAG focado e provedores de IA
+│   │   └── runtime_state.py       # Gerenciamento de estado em runtime (intérprete ativo)
 │   ├── schemas/
-│   │   └── portfolio.py           # Pydantic strict com AliasChoices PT/EN
-│   ├── data/                      # bind mount: portfolio.json, portfolio_data.json
-│   ├── Dockerfile                 # multi-stage, usuário não-root, healthcheck
-│   └── requirements.txt
+│   │   └── portfolio.py           # Modelos Pydantic V2 estritos (extra='forbid', validações de tamanho)
+│   ├── data/                      # Diretório compartilhado (bind mount persistente)
+│   │   ├── portfolio.json         # Conteúdo público bilíngue do portfólio
+│   │   └── portfolio_data.json    # Base factual estruturada consumida pelo RAG
+│   ├── Dockerfile                 # Multi-stage build com usuário não-root e healthcheck
+│   └── requirements.txt           # Dependências Python travadas
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── AdminDashboard.jsx # painel /admin com KPIs e telemetria
-│   │   │   ├── ChatWidget.jsx     # widget flutuante
-│   │   │   └── JsonEditor.jsx     # editor visual dos JSONs de config
-│   │   ├── App.jsx
-│   │   └── main.jsx
+│   │   │   ├── Navbar.jsx         # Menu com drawer móvel, i18n, tema e scroll spy
+│   │   │   ├── Hero.jsx           # Apresentação, ticker de papéis e métricas
+│   │   │   ├── Skills.jsx         # Competências categorizadas com badges animadas
+│   │   │   ├── Experience.jsx     # Timeline executiva vertical com expansão
+│   │   │   ├── Projects.jsx       # Vitrine de projetos com filtros e modal arquitetural
+│   │   │   ├── Certifications.jsx # Credenciais corporativas (ITIL 4, ISO 27001, etc.)
+│   │   │   ├── ChatWidget.jsx     # Chat flutuante com Markdown, Quick Chips e cópia
+│   │   │   ├── AdminDashboard.jsx # Painel de governança com Turnstile, KPIs e export JSON
+│   │   │   └── JsonEditor.jsx     # Editor visual dos arquivos JSON
+│   │   ├── App.jsx                # Layout mestre, scroll progress bar e footer
+│   │   ├── index.css              # Glassmorphism 2.0, variáveis e utilitários
+│   │   └── main.jsx               # Ponto de entrada React
 │   ├── public/
-│   │   ├── icon.ico               # favicon
-│   │   └── images/
-│   ├── nginx.conf                 # proxy /api/ -> backend:8000 + SPA fallback
-│   ├── Dockerfile                 # multi-stage Node 20 -> Nginx 1.27 Alpine
+│   │   └── icon.ico               # Favicon
+│   ├── nginx.conf                 # Configuração de proxy reverso /api/ e compressão Gzip
+│   ├── Dockerfile                 # Multi-stage Node 20 -> Nginx 1.27 Alpine (~25MB)
 │   └── package.json
-├── docker-compose.yml             # backend + frontend + rede portfolio-net
-├── .env.example                   # template de variáveis (preencher .env)
+├── auditorias/
+│   └── analise_detalhada_modulos.md # Laudo técnico de auditoria e arquitetura detalhada
+├── docker-compose.yml             # Orquestração: backend + frontend + cloudflared
+├── .env.example                   # Modelo documentado de variáveis de ambiente
 ├── .gitignore
 └── README.md
 ```
 
 ---
 
-## Variáveis de Ambiente (`.env`)
+## 5. Guia de Deploy em Produção (Servidor Ubuntu)
 
-Copie `.env.example` para `.env` e preencha. As variáveis críticas:
+Abaixo estão os passos completos para configurar e rodar o projeto em um servidor Ubuntu (ex.: `christiansousadev@christianserver:~$`).
 
-| Variável | Obrigatória em prod | Função |
-|---|---|---|
-| `ENV` | sim | `production` ou `development` |
-| `JWT_SECRET` | sim | Segredo de assinatura JWT (≥ 64 chars aleatórios) |
-| `ALLOWED_ORIGINS` | sim | Lista CSV de origens — sem wildcard |
-| `TRUSTED_PROXIES` | sim | CIDR/IPs dos proxies confiáveis (Nginx host + rede Docker) |
-| `ADMIN_USER` | sim | Username do painel |
-| `ADMIN_PASSWORD_HASH` | sim | Hash bcrypt da senha (60 chars começando com `$2b$12$`) |
-| `ACTIVE_INTERPRETER` | não | Padrão inicial: `json_only`, `gemini`, `openai`, `ollama` ou `deepseek` |
-| `GEMINI_API_KEY` | condicional | Necessária se `ACTIVE_INTERPRETER=gemini` |
+### Passo 5.1: Conectar ao Servidor e Clonar o Repositório
+```bash
+ssh christiansousadev@christianserver
+cd ~
+git clone https://github.com/christiansousadev/meu-portfolio.git
+cd meu-portfolio
+```
+
+### Passo 5.2: Criar o Arquivo de Variáveis de Ambiente (`.env`)
+```bash
+nano .env
+```
+Preencha com suas configurações de produção:
+
+```env
+# Ambiente
+ENV=production
+
+# JWT de Sessao (gere uma chave aleatoria se desejar: openssl rand -hex 32)
+JWT_SECRET=sua_chave_jwt_secreta_aqui
+JWT_EXPIRATION_MINUTES=60
+
+# Porta do frontend no host (caso a 8081 ja esteja ocupada por outro container)
+FRONTEND_PORT=8085
+
+# Origens autorizadas para CORS
+ALLOWED_ORIGINS=https://christiansousa.dev,http://localhost:8085,http://localhost:8081
+
+# Proxies confiaveis (Docker + Loopback)
+TRUSTED_PROXIES=127.0.0.1/32,172.16.0.0/12,10.0.0.0/8,192.168.0.0/16
+
+# Token do Cloudflare Tunnel (obtenha no Cloudflare Zero Trust)
+CLOUDFLARE_TUNNEL_TOKEN=seu_token_do_cloudflare_tunnel_aqui
+
+# Credenciais do Cloudflare Turnstile (obtenha no Cloudflare Turnstile)
+TURNSTILE_SITE_KEY=sua_turnstile_site_key_aqui
+TURNSTILE_SECRET_KEY=sua_turnstile_secret_key_aqui
+
+# Interprete padrao de IA (json_only ou gemini)
+ACTIVE_INTERPRETER=json_only
+GEMINI_API_KEY=
+
+# Credenciais Administrativas
+ADMIN_USER=admin@seudominio.com
+ADMIN_PASSWORD=sua_senha_segura_aqui
+```
+*(Salve com `Ctrl + O`, `Enter` e saia com `Ctrl + X`)*.
+
+### Passo 5.3: Ajustar Permissões de Dados
+Para permitir que o container backend consiga salvar telemetria e arquivos de configuração:
+```bash
+chmod -R 775 backend/data
+```
+
+### Passo 5.4: Subir a Stack Completa
+```bash
+docker compose up -d --build
+```
+
+### Passo 5.5: Verificar Status dos Containers
+```bash
+docker compose ps
+```
+Você verá os 3 containers com status `Up (healthy)`:
+- `portfolio-backend`
+- `portfolio-frontend`
+- `portfolio-cloudflared`
 
 ---
 
-## Tabela de Endpoints
+## 6. Configuração no Painel Cloudflare (Zero Trust)
 
-### Públicos
-
-| Método | Rota | Função |
-|---|---|---|
-| `GET` | `/api/portfolio` | Retorna o `portfolio.json` para o frontend hidratar a UI |
-| `POST` | `/api/chat` | Interage com o assistente (RAG local ou LLM) |
-| `POST` | `/api/analytics/track` | Registra `page_view` em `analytics.jsonl` |
-
-### Administrativos (cookie `admin_session` obrigatório)
-
-| Método | Rota | Função |
-|---|---|---|
-| `POST` | `/api/admin/login` | Autenticação por credencial → grava cookie HttpOnly |
-| `POST` | `/api/admin/logout` | Remove o cookie de sessão |
-| `GET` | `/api/admin/stats` | Agregado de KPIs lendo os JSONLs |
-| `GET` | `/api/admin/logs` | Últimos 100 registros de chat |
-| `GET` | `/api/admin/config?filename=...` | Lê `portfolio.json` ou `portfolio_data.json` |
-| `POST` | `/api/admin/config` | Persiste JSON validado (Pydantic strict) atomicamente |
-| `POST` | `/api/admin/interpreter` | Troca o provedor LLM ativo em runtime |
-| `POST` | `/api/admin/retention/purge` | Purga registros JSONL além de 90 dias |
+1. Acesse o painel da Cloudflare: **Zero Trust** → **Networks** → **Tunnels**.
+2. Selecione o túnel associado ao seu token.
+3. Na aba **Public Hostnames**, adicione ou edite o domínio:
+   - **Public Hostname:** `christiansousa.dev`
+   - **Service Type:** `HTTP`
+   - **URL:** `frontend:80`
+   *(Como o container `cloudflared` está na mesma rede Docker `portfolio-net`, ele acessa o container `frontend` na porta 80 internamente)*.
 
 ---
 
-## Licença e Contato
+## 7. Fluxo de Atualização no Servidor Linux (Após cada `git push`)
 
-Projeto pessoal de **Christian Sousa**. Para questões técnicas ou propostas de colaboração:
+Sempre que você fizer alterações no código no seu computador local e enviar para o GitHub (`git push`), siga as instruções abaixo para atualizar a aplicação no seu servidor Ubuntu (`christianserver`).
 
-- **LinkedIn**: [christiansousasilva](https://www.linkedin.com/in/christiansousasilva/)
-- **GitHub**: [christiansousadev](https://github.com/christiansousadev)
-- **Portfólio**: [madebychristian.fusaotecno.com](https://madebychristian.fusaotecno.com/)
+### 7.1 Comando Rápido de Linha Única (Recomendado)
+
+Acesse o terminal do servidor Linux e cole este comando:
+
+```bash
+cd ~/meu-portfolio && git pull origin main && docker compose up -d --build
+```
+
+> [!TIP]
+> O Docker utiliza compilação em camadas (*build cache*). Isso significa que apenas os arquivos alterados serão recompilados (ex.: bundle Vite do frontend em ~3 segundos), recarregando os containers sem derrubar o ambiente.
+
+---
+
+### 7.2 Passo a Passo Manual Detalhado
+
+Se preferir executar etapa por etapa:
+
+```bash
+# 1. Navegar até a pasta do projeto
+cd ~/meu-portfolio
+
+# 2. Puxar os commits recentes do GitHub
+git pull origin main
+
+# 3. Reconstruir e recarregar os containers atualizados
+docker compose up -d --build
+
+# 4. Confirmar que todos os containers continuam saudáveis (Up)
+docker compose ps
+```
+
+---
+
+### 7.3 Comandos Úteis de Diagnóstico e Monitoramento
+
+Caso queira acompanhar o comportamento do sistema após uma atualização:
+
+```bash
+# Acompanhar logs em tempo real de toda a stack
+docker compose logs -f --tail=50
+
+# Acompanhar logs específicos de um container
+docker compose logs -f frontend
+docker compose logs -f backend
+docker compose logs -f cloudflared
+
+# Reiniciar um serviço individualmente sem rebuild
+docker compose restart frontend
+
+# Limpar imagens antigas de compilações anteriores para liberar espaço em disco
+docker image prune -f
+```
+
+---
+
+### 💡 Dica de Produtividade: Criando um Atalho (Alias) no Linux
+
+Para atualizar seu portfólio digitando apenas uma única palavra no terminal:
+
+1. Abra o arquivo de aliases do seu usuário:
+   ```bash
+   echo "alias atualizar-portfolio='cd ~/meu-portfolio && git pull origin main && docker compose up -d --build'" >> ~/.bashrc
+   ```
+2. Recarregue as configurações do shell:
+   ```bash
+   source ~/.bashrc
+   ```
+3. Pronto! Nas próximas vezes, basta entrar no servidor e digitar:
+   ```bash
+   atualizar-portfolio
+   ```
+
+---
+
+## 8. Execução em Desenvolvimento Local
+
+Caso deseje rodar a aplicação localmente sem Docker:
+
+### Backend
+```bash
+cd backend
+python -m venv venv
+.\venv\Scripts\activate          # Linux/Mac: source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Acesse `http://localhost:5173`. O Vite possui proxy reverso configurado em `vite.config.js` repassando `/api/` para `http://localhost:8000`.
+
+---
+
+## 9. Tabela de Endpoints da API
+
+### Rotas Públicas
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/portfolio` | Retorna os dados completos do portfólio para hidratação da UI |
+| `POST` | `/api/chat` | Processa mensagem do visitante via RAG corporativo / LLM |
+| `POST` | `/api/analytics/track` | Registra evento de visualização de página (`page_view`) |
+
+### Rotas Administrativas (Protegidas por Cookie `admin_session`)
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/api/admin/login` | Valida credencial + **Cloudflare Turnstile** e emite cookie HttpOnly |
+| `POST` | `/api/admin/logout` | Invalida a sessão e remove o cookie do navegador |
+| `GET` | `/api/admin/stats` | Retorna agregação de KPIs e telemetria lendo os arquivos JSONL |
+| `GET` | `/api/admin/logs` | Retorna os últimos 100 registros de diálogos do assistente |
+| `POST` | `/api/admin/interpreter` | Altera dinamicamente o provedor de IA ativo (`gemini`, `ollama`, etc.) |
+| `GET` | `/api/admin/config?filename=...` | Lê o arquivo de configuração cru (`portfolio.json` ou `portfolio_data.json`) |
+| `POST` | `/api/admin/config` | Grava arquivo com validação estrita Pydantic e escrita atômica |
+| `POST` | `/api/admin/retention/purge` | Dispara expurgo seguro de registros anteriores a 90 dias (LGPD) |
+
+---
+
+## 10. Matriz de Segurança e Conformidade
+
+| Domínio | Mecanismo Implementado | Referência / Norma |
+|---|---|---|
+| **Borda e Anti-DDoS** | Cloudflare Tunnel com zero portas de entrada expostas no firewall | Cloudflare Zero Trust |
+| **Proteção Anti-Bot** | Cloudflare Turnstile obrigatório no login administrativo | OWASP Automated Threats (OAT-009) |
+| **Sessão Administrativa**| Cookie HttpOnly + Secure + SameSite=Lax restrito a `/api/admin` | OWASP Session Management |
+| **Mitigação de Timing** | Validação de credenciais via `hmac.compare_digest` e bcrypt | OWASP Timing Attacks |
+| **Proteção de Origem** | Mapeamento de `CF-Connecting-IP` e restrição estrita de `TRUSTED_PROXIES` | Anti-IP Spoofing |
+| **Controle de Abuso** | Rate Limiting em memória por Sliding Window (5 req/min no login) | OWASP Anti-Brute Force |
+| **Headers HTTP** | CSP estrita (`default-src 'none'`), HSTS, X-Frame-Options DENY | OWASP Secure Headers |
+| **Privacidade de Dados**| Mascaramento recursivo de PII (CPF, e-mails, tokens, hashes) em logs | LGPD Art. 6º, III (Minimização) |
+| **Rastreabilidade** | Injeção de `X-Trace-ID` (UUID4) propagado em logs e headers | ISO 27001 A.12.4 |
+| **Auditoria de Mudança**| Registro estruturado de escrita em arquivo no padrão CIM | ITIL Change Management |
+| **Ciclo de Vida de Dados**| Expurgos periódicos de logs acima da janela de 90 dias | LGPD Descarte Seguro |
+| **Integridade de Disco**| Escrita atômica em dois passos (`tempfile` + `fsync` + `replace`) | Proteção contra corrupção |
+| **Isolamento de SO** | Contêiner executando como usuário `app` (não-root) e Nginx `read_only` | CIS Docker Benchmark |
+
+---
+
+## 11. Contato e Links Oficiais
+
+- **Portfólio Oficial:** [https://christiansousa.dev](https://christiansousa.dev)
+- **LinkedIn:** [linkedin.com/in/christiansousasilva](https://www.linkedin.com/in/christiansousasilva/)
+- **GitHub:** [github.com/christiansousadev](https://github.com/christiansousadev)
+- **E-mail:** [christiansousadev@gmail.com](mailto:christiansousadev@gmail.com)
+
+---
+
+Desenvolvido com foco em **Alta Resiliência**, **Governança de TI** e **Excelência Arquitetural**.

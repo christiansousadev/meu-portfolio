@@ -3,11 +3,12 @@
 import hmac
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import ValidationError
 
 from core.config import settings
 from core.logging_config import audit_logger
+from core.proxy import get_client_ip
 from core.security import (
     PWD_CONTEXT,
     SESSION_COOKIE_NAME,
@@ -42,9 +43,83 @@ router = APIRouter(prefix="/api/admin")
 _COOKIE_PATH = "/api/admin"
 
 
+@router.get("/turnstile-key")
+async def get_turnstile_site_key():
+    """Retorna a chave publica (site_key) do Turnstile configurada no .env para uso pelo frontend."""
+    return {"site_key": settings.turnstile_site_key or ""}
+
+
+def verify_turnstile_token(token: str, remote_ip: str | None = None) -> bool:
+    """
+    Valida o token do Cloudflare Turnstile junto ao endpoint oficial da Cloudflare.
+    Se TURNSTILE_SECRET_KEY nao estiver configurada no ambiente (.env),
+    considera modo de desenvolvimento sem captcha e permite prosseguir.
+    """
+    if not settings.turnstile_secret_key:
+        return True
+
+    if not token or not token.strip():
+        return False
+
+    try:
+        import requests
+
+        payload = {
+            "secret": settings.turnstile_secret_key,
+            "response": token.strip(),
+        }
+        if remote_ip and remote_ip != "unknown":
+            payload["remoteip"] = remote_ip
+
+        res = requests.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data=payload,
+            timeout=8,
+        )
+        if not res.ok:
+            logging.error(f"Turnstile siteverify retornou HTTP {res.status_code}")
+            return False
+
+        data = res.json()
+        success = bool(data.get("success", False))
+        if not success:
+            logging.warning(
+                "Turnstile siteverify rejeitado pela Cloudflare",
+                extra={"event": "turnstile_siteverify_rejected", "error_codes": data.get("error-codes")},
+            )
+        return success
+    except Exception as exc:
+        logging.error(f"Falha na comunicacao com Cloudflare Turnstile: {exc}")
+        return False
+
+
 # LOGIN ADMINISTRATIVO
 @router.post("/login")
-async def admin_login(req: LoginRequest, response: Response):
+async def admin_login(req: LoginRequest, request: Request, response: Response):
+    client_ip = get_client_ip(request)
+
+    # Validacao de seguranca via Cloudflare Turnstile
+    if settings.turnstile_secret_key:
+        if not req.turnstile_token:
+            audit_logger.warning(
+                "tentativa de login rejeitada por falta de turnstile",
+                extra={"event": "turnstile_missing", "client_ip": client_ip, "username": req.username},
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="Desafio de segurança obrigatório. Conclua o Cloudflare Turnstile.",
+            )
+
+        if not verify_turnstile_token(req.turnstile_token, remote_ip=client_ip):
+            audit_logger.warning(
+                "tentativa de login com turnstile invalido ou expirado",
+                extra={"event": "turnstile_invalid", "client_ip": client_ip, "username": req.username},
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="Validação do Cloudflare Turnstile falhou ou expirou. Tente novamente.",
+            )
+
     if not settings.admin_user or not settings.admin_password_hash:
         logging.error("ADMIN_USER/ADMIN_PASSWORD_HASH ausentes no ambiente")
         raise HTTPException(status_code=500, detail="servico de autenticacao indisponivel")
@@ -69,7 +144,7 @@ async def admin_login(req: LoginRequest, response: Response):
     if not (user_ok and pass_ok):
         logging.warning(
             "tentativa de login negada",
-            extra={"event": "auth_failed", "username": req.username},
+            extra={"event": "auth_failed", "username": req.username, "client_ip": client_ip},
         )
         raise HTTPException(status_code=401, detail="credenciais invalidas")
 
@@ -91,7 +166,7 @@ async def admin_login(req: LoginRequest, response: Response):
 
     audit_logger.info(
         "login bem sucedido",
-        extra={"event": "auth_success", "actor": req.username},
+        extra={"event": "auth_success", "actor": req.username, "client_ip": client_ip},
     )
     return {"status": "sucesso"}
 
