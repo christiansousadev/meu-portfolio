@@ -224,18 +224,39 @@ ADMIN_PASSWORD=sua_senha_segura_aqui
 ```
 *(Salve com `Ctrl + O`, `Enter` e saia com `Ctrl + X`)*.
 
-### Passo 5.3: Ajustar Permissões de Dados
+### Passo 5.3: Obter e Configurar a Chave da IA Google Gemini (Gratuito)
+
+O sistema suporta tanto o modo **JSON Local (custo zero)** quanto o **Google Gemini 1.5 Flash (RAG focado)**. Para ativar o Gemini:
+
+1. Acesse o [Google AI Studio](https://aistudio.google.com/app/apikey) com sua conta Google.
+2. Clique no botão azul **"Create API key"** (ou "Get API key").
+3. Copie a chave gerada (inicia com `AIzaSy...`).
+4. No servidor, edite o `.env`:
+   ```bash
+   nano ~/meu-portfolio/.env
+   ```
+5. Preencha o campo:
+   ```env
+   GEMINI_API_KEY=AIzaSySuaChaveAqui
+   ```
+6. Salve (`Ctrl + O`, `Enter`, `Ctrl + X`) e recarregue o backend:
+   ```bash
+   docker compose restart backend
+   ```
+*(Você pode ligar ou desligar o Gemini com 1 clique a qualquer momento no Painel Admin em `/admin`)*.
+
+### Passo 5.4: Ajustar Permissões de Dados
 Para permitir que o container backend consiga salvar telemetria e arquivos de configuração:
 ```bash
 chmod -R 775 backend/data
 ```
 
-### Passo 5.4: Subir a Stack Completa
+### Passo 5.5: Subir a Stack Completa
 ```bash
 docker compose up -d --build
 ```
 
-### Passo 5.5: Verificar Status dos Containers
+### Passo 5.6: Verificar Status dos Containers
 ```bash
 docker compose ps
 ```
@@ -262,56 +283,72 @@ Você verá os 3 containers com status `Up (healthy)`:
 
 Sempre que você fizer alterações no código no seu computador local e enviar para o GitHub (`git push`), siga as instruções abaixo para atualizar a aplicação no seu servidor Ubuntu (`christianserver`).
 
-### 7.1 Comando Rápido de Linha Única (Recomendado)
+### 7.1 Comando Rápido Padrão (Após qualquer `git push`)
 
-Acesse o terminal do servidor Linux e cole este comando:
+Acesse o terminal do servidor Linux e execute:
 
 ```bash
 cd ~/meu-portfolio && git pull origin main && docker compose up -d --build
 ```
 
 > [!TIP]
-> O Docker utiliza compilação em camadas (*build cache*). Isso significa que apenas os arquivos alterados serão recompilados (ex.: bundle Vite do frontend em ~3 segundos), recarregando os containers sem derrubar o ambiente.
+> O Docker utiliza compilação em camadas (*build cache*). Apenas os arquivos modificados serão recompilados (ex.: bundle Vite do frontend em ~3 segundos), recarregando os containers sem derrubar o ambiente.
 
 ---
 
-### 7.2 Passo a Passo Manual Detalhado
+### 7.2 O que fazer se o `git pull` der erro de divergência (`divergent branches`)
 
-Se preferir executar etapa por etapa:
+Se o histórico remoto no GitHub tiver sido sincronizado ou reescrito e o `git pull` falhar com:
+`fatal: Need to specify how to reconcile divergent branches.`
+
+Execute este comando seguro que alinha os arquivos com o GitHub **sem apagar seu `.env`** (pois o `.env` é protegido pelo `.gitignore`):
 
 ```bash
-# 1. Navegar até a pasta do projeto
-cd ~/meu-portfolio
-
-# 2. Puxar os commits recentes do GitHub
-git pull origin main
-
-# 3. Reconstruir e recarregar os containers atualizados
-docker compose up -d --build
-
-# 4. Confirmar que todos os containers continuam saudáveis (Up)
-docker compose ps
+cd ~/meu-portfolio && git fetch origin main && git reset --hard origin/main && docker compose up -d --build
 ```
 
 ---
 
-### 7.3 Comandos Úteis de Diagnóstico e Monitoramento
+### 7.3 Como Forçar Reconstrução Limpa Sem Cache (Quando a UI não atualizar)
 
-Caso queira acompanhar o comportamento do sistema após uma atualização:
+Caso você tenha feito alterações no frontend ou backend e queira garantir que o Docker não use camadas antigas de cache:
 
 ```bash
+cd ~/meu-portfolio && docker compose build --no-cache frontend backend && docker compose up -d
+```
+
+---
+
+### 7.4 Como Atualizar Apenas Variáveis de Ambiente (`.env`)
+
+Sempre que você alterar tokens, chaves da Gemini ou credenciais no `.env`, **não é necessário recompilar**:
+
+```bash
+# 1. Edite o arquivo
+nano ~/meu-portfolio/.env
+
+# 2. Reinicie apenas os serviços afetados
+docker compose restart backend   # se alterou GEMINI_API_KEY, ADMIN_USER, etc.
+docker compose restart cloudflared # se alterou CLOUDFLARE_TUNNEL_TOKEN
+```
+
+---
+
+### 7.5 Diagnóstico e Monitoramento de Containers
+
+```bash
+# Verificar se todos os 3 containers estão saudáveis (Up)
+docker compose ps
+
 # Acompanhar logs em tempo real de toda a stack
 docker compose logs -f --tail=50
 
-# Acompanhar logs específicos de um container
+# Acompanhar logs de um container específico
 docker compose logs -f frontend
 docker compose logs -f backend
 docker compose logs -f cloudflared
 
-# Reiniciar um serviço individualmente sem rebuild
-docker compose restart frontend
-
-# Limpar imagens antigas de compilações anteriores para liberar espaço em disco
+# Limpar imagens órfãs de builds antigos para liberar espaço em disco
 docker image prune -f
 ```
 
@@ -371,11 +408,13 @@ Acesse `http://localhost:5173`. O Vite possui proxy reverso configurado em `vite
 ### Rotas Administrativas (Protegidas por Cookie `admin_session`)
 | Método | Rota | Descrição |
 |---|---|---|
+| `GET` | `/api/admin/turnstile-key` | Retorna dinamicamente a Site Key pública do Cloudflare Turnstile |
 | `POST` | `/api/admin/login` | Valida credencial + **Cloudflare Turnstile** e emite cookie HttpOnly |
 | `POST` | `/api/admin/logout` | Invalida a sessão e remove o cookie do navegador |
-| `GET` | `/api/admin/stats` | Retorna agregação de KPIs e telemetria lendo os arquivos JSONL |
+| `GET` | `/api/admin/stats` | Retorna agregação de KPIs, telemetria e status do intérprete ativo |
 | `GET` | `/api/admin/logs` | Retorna os últimos 100 registros de diálogos do assistente |
-| `POST` | `/api/admin/interpreter` | Altera dinamicamente o provedor de IA ativo (`gemini`, `ollama`, etc.) |
+| `GET` | `/api/admin/interpreter` | Retorna o provedor de IA atualmente ativo em runtime |
+| `POST` | `/api/admin/interpreter` | Altera em runtime o provedor ativo (`gemini` ou `json_only`) |
 | `GET` | `/api/admin/config?filename=...` | Lê o arquivo de configuração cru (`portfolio.json` ou `portfolio_data.json`) |
 | `POST` | `/api/admin/config` | Grava arquivo com validação estrita Pydantic e escrita atômica |
 | `POST` | `/api/admin/retention/purge` | Dispara expurgo seguro de registros anteriores a 90 dias (LGPD) |
