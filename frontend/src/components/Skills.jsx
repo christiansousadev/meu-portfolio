@@ -1,13 +1,13 @@
 // frontend/src/components/Skills.jsx
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Database, Shield, Terminal } from "lucide-react";
+import { CheckCircle2, Database, Shield, Terminal, Layers } from "lucide-react";
 
 export default function Skills({ data }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const categories = [
-    { id: "all", label: "Todas as Stacks" },
+    { id: "all", label: "Todas as Stacks", icon: Layers },
     { id: "fullstack", label: "Fullstack & APIs", icon: Terminal },
     { id: "data_ai", label: "Dados & IA", icon: Database },
     { id: "governance", label: "Governança & Cloud", icon: Shield },
@@ -52,55 +52,30 @@ export default function Skills({ data }) {
       </div>
 
       <div className="section-text">
-        <h2
-          style={{
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            fontWeight: 800,
-            marginBottom: "8px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {data.title}
-        </h2>
-        <p
-          style={{
-            color: "var(--accent-color)",
-            fontSize: "0.85rem",
-            letterSpacing: "2px",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            marginBottom: "25px",
-          }}
-        >
-          {data.subtitle}
-        </p>
+        <span className="eyebrow">{data.subtitle}</span>
+        <h2 className="section-title">{data.title}</h2>
 
         {/* Abas de Filtros de Categoria */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "24px" }}>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              className={`category-pill ${selectedCategory === cat.id ? "active" : ""}`}
-              onClick={() => setSelectedCategory(cat.id)}
-              aria-pressed={selectedCategory === cat.id}
-            >
-              {cat.label}
-            </button>
-          ))}
+        <div className="filter-container filter-container--start">
+          {categories.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                className={`category-pill ${selectedCategory === cat.id ? "active" : ""}`}
+                onClick={() => setSelectedCategory(cat.id)}
+                aria-pressed={selectedCategory === cat.id}
+              >
+                <Icon size={14} style={{ marginRight: 6 }} />
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Tags de Tecnologias Animadas */}
-        <motion.div
-          layout
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "9px",
-            marginBottom: "32px",
-            minHeight: "80px",
-          }}
-        >
+        <motion.div layout className="tag-list tag-list--skills">
           <AnimatePresence>
             {filteredBadges.map((badge) => (
               <motion.span
@@ -112,12 +87,6 @@ export default function Skills({ data }) {
                 transition={{ duration: 0.2 }}
                 whileHover={{ scale: 1.05, y: -2 }}
                 className="tech-tag"
-                style={{
-                  fontSize: "0.86rem",
-                  padding: "7px 14px",
-                  borderRadius: "20px",
-                  cursor: "default",
-                }}
               >
                 {badge.name}
               </motion.span>
@@ -126,34 +95,11 @@ export default function Skills({ data }) {
         </motion.div>
 
         {/* Itens de Entrega de Valor */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div className="value-list">
           {data.items.map((item, i) => (
-            <div
-              key={i}
-              className="glass-card"
-              style={{
-                padding: "16px 20px",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "12px",
-                borderRadius: "12px",
-              }}
-            >
-              <CheckCircle2
-                size={20}
-                style={{ color: "var(--accent-color)", marginTop: "2px", flexShrink: 0 }}
-              />
-              <p
-                style={{
-                  fontSize: "1rem",
-                  lineHeight: 1.5,
-                  color: "var(--text-color)",
-                  margin: 0,
-                  fontWeight: 500,
-                }}
-              >
-                {item.replace(/^⚡\s*/, "")}
-              </p>
+            <div key={i} className="glass-card value-item">
+              <CheckCircle2 size={20} className="value-icon" />
+              <p className="value-text">{item.replace(/^⚡\s*/, "")}</p>
             </div>
           ))}
         </div>

@@ -1,11 +1,21 @@
 // frontend/src/components/Projects.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, FolderGit2, Info, X, CheckCircle } from "lucide-react";
 
 export default function Projects({ data }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [activeModalProject, setActiveModalProject] = useState(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && activeModalProject) {
+        setActiveModalProject(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeModalProject]);
 
   if (!data || !data.items) {
     return null;
@@ -31,24 +41,16 @@ export default function Projects({ data }) {
   return (
     <motion.section
       id="projects"
-      style={{ padding: "80px 0" }}
+      className="section-block"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true, margin: "-80px" }}
     >
-      <div style={{ textAlign: "center", marginBottom: "40px" }}>
-        <h2
-          style={{
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            fontWeight: 800,
-            marginBottom: "10px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {data.title}
-        </h2>
-        <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", maxWidth: "600px", margin: "0 auto" }}>
+      <div className="section-header">
+        <span className="eyebrow">PORTFÓLIO & ARQUITETURA</span>
+        <h2 className="section-title">{data.title}</h2>
+        <p className="section-subtitle">
           Aplicações corporativas e microsserviços desenhados com foco em resiliência, escalabilidade e governança.
         </p>
       </div>
@@ -68,194 +70,91 @@ export default function Projects({ data }) {
         ))}
       </div>
 
-      {/* Grid de Cards de Projetos */}
-      <motion.div
-        layout
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "28px",
-        }}
-      >
+      {/* Grid de Cards de Projetos (Bento) */}
+      <motion.div layout className="projects-grid">
         <AnimatePresence>
-          {filteredItems.map((project) => (
-            <motion.div
-              layout
-              key={project.name}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              className="glass-card"
-              style={{
-                padding: "32px",
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-              }}
-            >
-              {/* Badge de Categoria */}
-              {project.category && (
-                <span
-                  style={{
-                    alignSelf: "flex-start",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    color: "var(--accent-color)",
-                    background: "var(--accent-light)",
-                    padding: "4px 10px",
-                    borderRadius: "20px",
-                    marginBottom: "14px",
-                    border: "1px solid var(--card-border)",
-                  }}
-                >
-                  {project.category}
-                </span>
-              )}
-
-              <div style={{ flexGrow: 1 }}>
-                <h3
-                  style={{
-                    fontSize: "1.35rem",
-                    fontWeight: 700,
-                    marginBottom: "12px",
-                    color: "var(--text-color)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <FolderGit2 size={20} style={{ color: "var(--accent-color)" }} />
-                  {project.name}
-                </h3>
-
-                <p
-                  style={{
-                    color: "var(--text-secondary)",
-                    lineHeight: "1.6",
-                    marginBottom: "20px",
-                    fontSize: "0.98rem",
-                  }}
-                >
-                  {project.desc}
-                </p>
-
-                {/* Tags de Tecnologias */}
-                {project.tags && project.tags.length > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "6px",
-                      marginBottom: "25px",
-                    }}
-                  >
-                    {project.tags.map((tag, tIdx) => (
-                      <span key={tIdx} className="tech-tag">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Ações: Repositório e Detalhes */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "10px",
-                  marginTop: "auto",
-                  paddingTop: "16px",
-                  borderTop: "1px solid var(--card-border)",
-                }}
+          {filteredItems.map((project, idx) => {
+            const isFeatured = selectedCategory === "all" && idx === 0;
+            return (
+              <motion.div
+                layout
+                key={project.name}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+                className={`glass-card project-card ${isFeatured ? "is-featured" : ""}`}
               >
-                {project.link && (
-                  <a
-                    href={project.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-secondary"
-                    style={{
-                      padding: "8px 16px",
-                      fontSize: "0.85rem",
-                      textDecoration: "none",
-                    }}
-                  >
-                    Repositório <ExternalLink size={14} />
-                  </a>
-                )}
+                {/* Topo do Card: Categoria & Badge Featured */}
+                <div className="project-top-row">
+                  {project.category && (
+                    <span className="project-category">{project.category}</span>
+                  )}
+                  {isFeatured && (
+                    <span className="project-featured-badge">★ Destaque de Arquitetura</span>
+                  )}
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveModalProject(project)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "var(--accent-color)",
-                    fontWeight: 600,
-                    fontSize: "0.85rem",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    cursor: "pointer",
-                    padding: "8px",
-                  }}
-                >
-                  <Info size={16} /> Arquitetura
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                <div className="project-body">
+                  <h3 className="project-title">
+                    <FolderGit2 size={20} className="icon-accent" />
+                    {project.name}
+                  </h3>
+
+                  <p className="project-desc">{project.desc}</p>
+
+                  {/* Tags de Tecnologias */}
+                  {project.tags && project.tags.length > 0 && (
+                    <div className="tag-list project-tags">
+                      {project.tags.map((tag, tIdx) => (
+                        <span key={tIdx} className="tech-tag">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Ações: Repositório e Detalhes */}
+                <div className="project-footer">
+                  {project.link && (
+                    <a
+                      href={project.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary btn-sm"
+                    >
+                      Repositório <ExternalLink size={14} />
+                    </a>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveModalProject(project)}
+                    className="project-detail-btn"
+                  >
+                    <Info size={16} /> Arquitetura
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </motion.div>
 
       {/* Modal de Arquitetura & Detalhes Técnicos */}
       <AnimatePresence>
         {activeModalProject && (
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.7)",
-              backdropFilter: "blur(6px)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 2000,
-              padding: "20px",
-            }}
-            onClick={() => setActiveModalProject(null)}
-          >
+          <div className="modal-overlay" onClick={() => setActiveModalProject(null)}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card"
-              style={{
-                width: "100%",
-                maxWidth: "520px",
-                padding: "32px",
-                backgroundColor: "var(--card-bg)",
-                maxHeight: "85vh",
-                overflowY: "auto",
-              }}
+              className="glass-card modal-card"
               onClick={(e) => e.stopPropagation()}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                }}
-              >
-                <h3 style={{ fontSize: "1.4rem", margin: 0, fontWeight: 700 }}>
-                  {activeModalProject.name}
-                </h3>
+              <div className="modal-head">
+                <h3 className="modal-title">{activeModalProject.name}</h3>
                 <button
                   type="button"
                   className="btn-icon"
@@ -266,20 +165,16 @@ export default function Projects({ data }) {
                 </button>
               </div>
 
-              <div style={{ marginBottom: "20px" }}>
-                <span className="status-badge" style={{ marginBottom: "12px" }}>
+              <div className="modal-section">
+                <span className="status-badge">
                   <CheckCircle size={14} /> Produção & Código Auditado
                 </span>
-                <p style={{ color: "var(--text-secondary)", lineHeight: 1.6, fontSize: "0.95rem" }}>
-                  {activeModalProject.desc}
-                </p>
+                <p className="modal-text">{activeModalProject.desc}</p>
               </div>
 
-              <div style={{ marginBottom: "24px" }}>
-                <h4 style={{ fontSize: "0.9rem", textTransform: "uppercase", color: "var(--accent-color)", marginBottom: "10px" }}>
-                  Tecnologias Envolvidas
-                </h4>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              <div className="modal-section">
+                <h4 className="modal-section-label">Tecnologias Envolvidas</h4>
+                <div className="tag-list">
                   {activeModalProject.tags?.map((t, idx) => (
                     <span key={idx} className="tech-tag">
                       {t}
@@ -288,7 +183,7 @@ export default function Projects({ data }) {
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <div className="modal-actions">
                 <button
                   type="button"
                   className="btn-secondary"
@@ -302,7 +197,6 @@ export default function Projects({ data }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-primary"
-                    style={{ textDecoration: "none" }}
                   >
                     Ver no GitHub <ExternalLink size={16} />
                   </a>

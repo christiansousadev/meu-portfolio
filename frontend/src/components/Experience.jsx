@@ -13,24 +13,16 @@ export default function Experience({ data }) {
   return (
     <motion.section
       id="experience"
-      style={{ padding: "80px 0" }}
+      className="section-block"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true, margin: "-80px" }}
     >
-      <div style={{ textAlign: "center", marginBottom: "50px" }}>
-        <h2
-          style={{
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            fontWeight: 800,
-            marginBottom: "10px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {data.title}
-        </h2>
-        <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", maxWidth: "600px", margin: "0 auto" }}>
+      <div className="section-header">
+        <span className="eyebrow">CARREIRA & LIDERANÇA TÉCNICA</span>
+        <h2 className="section-title">{data.title}</h2>
+        <p className="section-subtitle">
           Trajetória consolidada em Engenharia de Software, Governança de TI e Automação de Processos Críticos.
         </p>
       </div>
@@ -47,95 +39,36 @@ export default function Experience({ data }) {
           >
             <div className="timeline-node" />
 
-            <div
-              className="glass-card"
-              style={{
-                padding: "24px 28px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  flexWrap: "wrap",
-                  gap: "10px",
-                  marginBottom: "12px",
-                }}
-              >
+            <div className="glass-card timeline-card">
+              <div className="timeline-card-head">
                 <div>
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: 700,
-                      margin: 0,
-                      color: "var(--text-color)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <Building2 size={20} style={{ color: "var(--accent-color)" }} />
+                  <h3 className="timeline-company">
+                    <Building2 size={20} className="icon-accent" />
                     {exp.company}
                   </h3>
-                  <h4
-                    style={{
-                      fontSize: "1.05rem",
-                      fontWeight: 600,
-                      color: "var(--accent-color)",
-                      margin: "4px 0 0 0",
-                    }}
-                  >
-                    {exp.role}
-                  </h4>
+                  <h4 className="timeline-role">{exp.role}</h4>
                 </div>
 
                 {exp.time && (
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      fontSize: "0.82rem",
-                      fontWeight: 600,
-                      background: "var(--accent-light)",
-                      color: "var(--accent-color)",
-                      padding: "5px 12px",
-                      borderRadius: "20px",
-                      border: "1px solid var(--card-border)",
-                    }}
-                  >
+                  <span className="timeline-date">
                     <Calendar size={14} />
                     {exp.time}
                   </span>
                 )}
               </div>
 
-              <p
-                style={{
-                  color: "var(--text-secondary)",
-                  lineHeight: 1.6,
-                  fontSize: "0.98rem",
-                  margin: 0,
-                }}
-              >
-                {exp.desc}
-              </p>
+              <p className="timeline-desc">{exp.desc}</p>
             </div>
           </motion.div>
         ))}
       </div>
 
       {hasMore && (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <div className="timeline-toggle-wrap">
           <button
             type="button"
             className="btn-secondary"
             onClick={() => setShowAll(!showAll)}
-            style={{
-              padding: "12px 28px",
-              fontSize: "0.95rem",
-            }}
           >
             {showAll ? (
               <>

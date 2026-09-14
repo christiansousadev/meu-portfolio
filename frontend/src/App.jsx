@@ -93,37 +93,17 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          backgroundColor: "var(--bg-color)",
-        }}
-      >
-        <div className="skeleton" style={{ width: "220px", height: "16px" }}></div>
-        <div className="skeleton" style={{ width: "160px", height: "12px" }}></div>
+      <div className="full-screen-center">
+        <div className="skeleton" style={{ width: "220px", height: "16px" }} />
+        <div className="skeleton" style={{ width: "160px", height: "12px" }} />
       </div>
     );
   }
 
   if (!portfolioData || !portfolioData[lang]) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          backgroundColor: "var(--bg-color)",
-          color: "var(--text-color)",
-          fontSize: "1.1rem",
-        }}
-      >
-        Falha ao carregar dados do portfólio. Verifique a API.
+      <div className="full-screen-center">
+        <p className="error-text">Falha ao carregar dados do portfólio. Verifique a API.</p>
       </div>
     );
   }
@@ -131,7 +111,7 @@ export default function App() {
   const t = portfolioData[lang];
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative" }}>
+    <div className="app-shell">
       {/* Barra de Progresso de Leitura */}
       <div className="scroll-progress-bar" style={{ width: scrollProgress }} />
 
@@ -145,7 +125,7 @@ export default function App() {
       />
 
       {/* Conteúdo Principal */}
-      <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 5%" }}>
+      <main className="container">
         <Hero data={t.hero} />
         <Skills data={t.skills} />
         <Experience data={t.exp} />
@@ -154,49 +134,21 @@ export default function App() {
       </main>
 
       {/* Rodapé Executivo */}
-      <footer
-        style={{
-          padding: "50px 5% 40px",
-          marginTop: "80px",
-          borderTop: "1px solid var(--card-border)",
-          backgroundColor: "var(--card-bg)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "20px",
-          }}
-        >
+      <footer className="site-footer">
+        <div className="footer-inner">
           <div>
-            <h3 className="text-gradient" style={{ margin: "0 0 6px 0", fontSize: "1.2rem" }}>
-              Christian Sousa
-            </h3>
-            <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.85rem" }}>
+            <h3 className="text-gradient footer-brand-name">Christian Sousa</h3>
+            <p className="footer-brand-role">
               Software Engineer & Governança de TI · Fortaleza, CE
             </p>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              color: "var(--text-secondary)",
-              fontSize: "0.85rem",
-            }}
-          >
-            <Shield size={16} style={{ color: "var(--accent-color)" }} />
+          <div className="footer-note">
+            <Shield size={16} className="icon-accent" />
             <span>Arquitetura Same-Origin · Docker · LGPD & ISO 27001</span>
           </div>
 
-          <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>
+          <div className="footer-copy">
             © {new Date().getFullYear()} Christian Sousa. Todos os direitos reservados.
           </div>
         </div>

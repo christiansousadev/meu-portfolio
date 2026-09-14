@@ -40,261 +40,156 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
   ];
 
   return (
-    <>
-      <motion.nav
-        className="glass-nav"
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1000,
-          padding: "16px 5%",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            maxWidth: "1200px",
-            margin: "0 auto",
-          }}
-        >
-          {/* Logo */}
-          <a
-            href="#"
-            style={{ textDecoration: "none" }}
-            aria-label="Ir para o topo"
-          >
-            <h2
-              className="text-gradient"
-              style={{
-                fontSize: "1.75rem",
-                margin: 0,
-                fontWeight: "900",
-                letterSpacing: "-0.5px",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px"
-              }}
-            >
-              <span>&lt;Christian</span>
-              <span style={{ color: "var(--accent-color)" }}>/&gt;</span>
-            </h2>
-          </a>
+    <motion.nav
+      className="glass-nav navbar"
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <div className="navbar-inner">
+        {/* Logo */}
+        <a href="#" className="navbar-logo" aria-label="Ir para o topo">
+          <h2 className="text-gradient navbar-logo-title">
+            <span>&lt;Christian</span>
+            <span className="navbar-logo-bracket">/&gt;</span>
+          </h2>
+        </a>
 
-          {/* Links Desktop */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "24px",
-            }}
-            className="navbar-desktop"
+        {/* Links Desktop */}
+        <div className="navbar-desktop">
+          <div className="navbar-links">
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  className={`navbar-link ${isActive ? "is-active" : ""}`}
+                >
+                  {link.label}
+                  {isActive && (
+                    <motion.div layoutId="navIndicator" className="navbar-link-indicator" />
+                  )}
+                </a>
+              );
+            })}
+          </div>
+
+          {/* Controles: Idioma, Tema, Admin */}
+          <div className="navbar-controls">
+            <button
+              type="button"
+              className="btn-icon btn-icon--labeled"
+              onClick={() => setLang(nextLang)}
+              title={`Mudar para ${nextLang.toUpperCase()}`}
+              aria-label={`Trocar idioma para ${nextLang.toUpperCase()}`}
+            >
+              <Globe size={18} aria-hidden="true" />
+              <span className="navbar-lang-code">{nextLang.toUpperCase()}</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn-icon"
+              onClick={() => setTheme(nextTheme)}
+              title="Alternar Tema"
+              aria-label={`Alternar para tema ${nextTheme}`}
+              aria-pressed={theme === "dark"}
+            >
+              {theme === "dark" ? (
+                <Sun size={18} aria-hidden="true" />
+              ) : (
+                <Moon size={18} aria-hidden="true" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="btn-icon"
+              onClick={() => (window.location.href = "/admin")}
+              title="Painel de Governança / Admin"
+              aria-label="Acessar painel de governança de TI"
+            >
+              <LogIn size={18} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        {/* Botão Hambúrguer Mobile */}
+        <div className="mobile-toggle">
+          <button
+            type="button"
+            className="btn-icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={mobileMenuOpen}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Drawer Mobile */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mobile-drawer"
+          >
+            <div className="mobile-drawer-links">
               {navLinks.map((link) => {
+                const Icon = link.icon;
                 const isActive = activeSection === link.id;
                 return (
                   <a
                     key={link.id}
                     href={link.href}
-                    style={{
-                      color: isActive ? "var(--accent-color)" : "var(--text-color)",
-                      textDecoration: "none",
-                      fontWeight: isActive ? "700" : "500",
-                      fontSize: "0.95rem",
-                      transition: "all 0.2s ease",
-                      position: "relative",
-                      padding: "4px 0",
-                    }}
-                    onMouseEnter={(e) => (e.target.style.color = "var(--accent-color)")}
-                    onMouseLeave={(e) => (e.target.style.color = isActive ? "var(--accent-color)" : "var(--text-color)")}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`mobile-drawer-link ${isActive ? "is-active" : ""}`}
                   >
+                    <Icon size={18} />
                     {link.label}
-                    {isActive && (
-                      <motion.div
-                        layoutId="navIndicator"
-                        style={{
-                          position: "absolute",
-                          bottom: "-2px",
-                          left: 0,
-                          right: 0,
-                          height: "2px",
-                          background: "var(--accent-color)",
-                          borderRadius: "2px",
-                        }}
-                      />
-                    )}
                   </a>
                 );
               })}
-            </div>
 
-            {/* Controles: Idioma, Tema, Admin */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                paddingLeft: "16px",
-                borderLeft: "1px solid var(--card-border)",
-              }}
-            >
-              <button
-                type="button"
-                className="btn-icon"
-                onClick={() => setLang(nextLang)}
-                title={`Mudar para ${nextLang.toUpperCase()}`}
-                aria-label={`Trocar idioma para ${nextLang.toUpperCase()}`}
-              >
-                <Globe size={18} aria-hidden="true" />
-                <span
-                  style={{
-                    fontSize: "0.78rem",
-                    marginLeft: "4px",
-                    fontWeight: "700",
+              <div className="mobile-drawer-controls">
+                <button
+                  type="button"
+                  className="btn-icon"
+                  onClick={() => {
+                    setLang(nextLang);
+                    setMobileMenuOpen(false);
                   }}
                 >
-                  {nextLang.toUpperCase()}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className="btn-icon"
-                onClick={() => setTheme(nextTheme)}
-                title="Alternar Tema"
-                aria-label={`Alternar para tema ${nextTheme}`}
-                aria-pressed={theme === "dark"}
-              >
-                {theme === "dark" ? (
-                  <Sun size={18} aria-hidden="true" />
-                ) : (
-                  <Moon size={18} aria-hidden="true" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                className="btn-icon"
-                onClick={() => (window.location.href = "/admin")}
-                title="Painel de Governança / Admin"
-                aria-label="Acessar painel de governança de TI"
-              >
-                <LogIn size={18} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-
-          {/* Botão Hambúrguer Mobile */}
-          <div className="navbar-mobile-toggle" style={{ display: "none" }}>
-            <button
-              type="button"
-              className="btn-icon"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-              aria-expanded={mobileMenuOpen}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Drawer Mobile */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                overflow: "hidden",
-                marginTop: "15px",
-                paddingTop: "15px",
-                borderTop: "1px solid var(--card-border)",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {navLinks.map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <a
-                      key={link.id}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      style={{
-                        color: activeSection === link.id ? "var(--accent-color)" : "var(--text-color)",
-                        textDecoration: "none",
-                        fontWeight: "600",
-                        padding: "10px",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        background: activeSection === link.id ? "var(--accent-light)" : "transparent",
-                      }}
-                    >
-                      <Icon size={18} />
-                      {link.label}
-                    </a>
-                  );
-                })}
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-around",
-                    paddingTop: "10px",
-                    borderTop: "1px solid var(--card-border)",
+                  <Globe size={18} />
+                  <span className="navbar-lang-code">{nextLang.toUpperCase()}</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-icon"
+                  onClick={() => {
+                    setTheme(nextTheme);
+                    setMobileMenuOpen(false);
                   }}
                 >
-                  <button
-                    type="button"
-                    className="btn-icon"
-                    onClick={() => {
-                      setLang(nextLang);
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    <Globe size={18} />
-                    <span style={{ marginLeft: "6px", fontWeight: "700" }}>
-                      {nextLang.toUpperCase()}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-icon"
-                    onClick={() => {
-                      setTheme(nextTheme);
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-icon"
-                    onClick={() => (window.location.href = "/admin")}
-                  >
-                    <LogIn size={18} />
-                  </button>
-                </div>
+                  {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                </button>
+                <button
+                  type="button"
+                  className="btn-icon"
+                  onClick={() => (window.location.href = "/admin")}
+                >
+                  <LogIn size={18} />
+                </button>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <style>{`
-          @media (max-width: 768px) {
-            .navbar-desktop { display: none !important; }
-            .navbar-mobile-toggle { display: block !important; }
-          }
-        `}</style>
-      </motion.nav>
-    </>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 }

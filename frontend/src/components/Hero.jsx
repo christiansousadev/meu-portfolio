@@ -1,7 +1,7 @@
 // frontend/src/components/Hero.jsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, FileText, ArrowRight, Sparkles } from "lucide-react";
+import { Mail, FileText, ArrowRight } from "lucide-react";
 
 const CONTACT_EMAIL = "christiansousadev@gmail.com";
 const RESUME_URL = "/cv.pdf";
@@ -24,7 +24,7 @@ export default function Hero({ data }) {
   }, []);
 
   return (
-    <section className="section-container" style={{ minHeight: "88vh", paddingTop: "40px" }}>
+    <section className="section-container hero-section">
       <motion.div
         className="section-text"
         initial={{ opacity: 0, x: -40 }}
@@ -37,73 +37,44 @@ export default function Hero({ data }) {
           <span>Disponível para novos projetos & liderança técnica</span>
         </div>
 
+        {/* Eyebrow de Especialidade */}
+        <span className="eyebrow" style={{ display: "block", marginBottom: "8px" }}>
+          Engenharia de Software · Governança · Cloud
+        </span>
+
         {/* Título Principal */}
-        <h1
-          style={{
-            fontSize: "clamp(2.5rem, 5vw, 4rem)",
-            fontWeight: 800,
-            lineHeight: 1.1,
-            marginBottom: "16px",
-            letterSpacing: "-0.03em",
-          }}
-        >
+        <h1 className="hero-title">
           {data.greeting}{" "}
           <span className="wave" role="img" aria-label="acenando">
             👋
           </span>
         </h1>
 
-        {/* Ticker Rotativo de Especialidades */}
-        <div
-          style={{
-            height: "42px",
-            marginBottom: "20px",
-            display: "flex",
-            alignItems: "center",
-            overflow: "hidden",
-          }}
-        >
+        {/* Ticker de Especialidades */}
+        <div className="hero-ticker">
+          <span className="hero-ticker-prefix">Foco de Atuação:</span>
           <AnimatePresence mode="wait">
             <motion.div
               key={roleIndex}
-              initial={{ y: 24, opacity: 0 }}
+              initial={{ y: 16, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -24, opacity: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              style={{
-                fontSize: "clamp(1.1rem, 2.5vw, 1.45rem)",
-                fontWeight: 700,
-                color: "var(--accent-color)",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
+              exit={{ y: -16, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="hero-ticker-role"
             >
-              <Sparkles size={20} />
               <span>{ROLES[roleIndex]}</span>
             </motion.div>
           </AnimatePresence>
         </div>
 
         {/* Subtítulo Descritivo */}
-        <p
-          style={{
-            fontSize: "1.12rem",
-            color: "var(--text-secondary)",
-            lineHeight: 1.65,
-            marginBottom: "32px",
-            maxWidth: "580px",
-          }}
-        >
-          {data.subtitle}
-        </p>
+        <p className="hero-subtitle">{data.subtitle}</p>
 
         {/* Botões de Chamada para Ação (CTAs) */}
-        <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", alignItems: "center" }}>
+        <div className="hero-actions">
           <a
             href={`mailto:${CONTACT_EMAIL}`}
             className="btn-primary"
-            style={{ textDecoration: "none" }}
             aria-label={`Enviar email para ${CONTACT_EMAIL}`}
           >
             <Mail size={18} aria-hidden="true" /> {data.contactBtn}
@@ -115,41 +86,25 @@ export default function Hero({ data }) {
             target="_blank"
             rel="noopener noreferrer"
             className="btn-secondary"
-            style={{ textDecoration: "none" }}
             aria-label="Baixar curriculo em pdf"
           >
             <FileText size={18} aria-hidden="true" /> {data.resumeBtn}
           </a>
 
-          <a
-            href="#projects"
-            style={{
-              color: "var(--text-secondary)",
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: "0.95rem",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              marginLeft: "6px",
-              transition: "color 0.2s ease",
-            }}
-            onMouseEnter={(e) => (e.target.style.color = "var(--accent-color)")}
-            onMouseLeave={(e) => (e.target.style.color = "var(--text-secondary)")}
-          >
+          <a href="#projects" className="hero-link-more">
             Ver Portfólio <ArrowRight size={16} />
           </a>
         </div>
 
-        {/* Grid de Métricas Rápidas */}
+        {/* Grid de Métricas Rápidas (Bento) */}
         <div className="metrics-grid">
           <div className="metric-pill">
             <span className="metric-value">+6 Anos</span>
             <span className="metric-label">Trajetória em TI</span>
           </div>
           <div className="metric-pill">
-            <span className="metric-value">ITIL / ISO</span>
-            <span className="metric-label">Governança & SLA</span>
+            <span className="metric-value">ITIL® 4</span>
+            <span className="metric-label">Governança & ISO</span>
           </div>
           <div className="metric-pill">
             <span className="metric-value">+20 Soluções</span>

@@ -1,8 +1,8 @@
 // frontend/src/components/AdminDashboard.jsx
 
 import { useState, useEffect, useRef } from "react";
-import { 
-  Download, Search, AlertTriangle, ShieldCheck, Trash2, 
+import {
+  Download, Search, AlertTriangle, ShieldCheck, Trash2,
   BarChart3, Clock, MessageSquare, Eye, LogOut
 } from "lucide-react";
 import JsonEditor from "./JsonEditor";
@@ -199,44 +199,25 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
   }, [resetSignal]);
 
   return (
-    <div style={{ marginBottom: "18px" }}>
+    <div className="turnstile-wrap">
       {isInitializing && !loadError && (
-        <div style={{ textAlign: "center", marginBottom: "8px" }}>
-          <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
-            Carregando desafio de segurança...
-          </span>
+        <div className="turnstile-loading">
+          <span>Carregando desafio de segurança...</span>
         </div>
       )}
-      <div
-        ref={containerRef}
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "65px",
-        }}
-      />
-      {loadError && (
-        <p style={{ color: "#EF4444", fontSize: "0.8rem", margin: "6px 0 0 0", lineHeight: 1.4 }}>
-          {loadError}
-        </p>
-      )}
+      {/*
+        IMPORTANTE: este container é gerenciado exclusivamente pelo script do
+        Cloudflare Turnstile (innerHTML/render acima). Não adicionar nós
+        filhos via React aqui — isso quebra o unmount do widget e causa o
+        erro "Failed to execute 'removeChild' on 'Node'".
+      */}
+      <div ref={containerRef} className="turnstile-slot" />
+      {loadError && <p className="turnstile-error">{loadError}</p>}
     </div>
   );
 };
 
 export default function AdminDashboard() {
-
-  const styles = {
-    bg: "var(--bg-color)",
-    text: "var(--text-color)",
-    textSecondary: "var(--text-secondary)",
-    accent: "var(--accent-color)",
-    cardBg: "var(--card-bg)",
-    cardShadow: "0 8px 32px var(--shadow-color)",
-    navBg: "var(--nav-bg)",
-  };
-
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -278,8 +259,8 @@ export default function AdminDashboard() {
     try {
       const res = await adminFetch("/api/admin/login", {
         method: "POST",
-        body: JSON.stringify({ 
-          username, 
+        body: JSON.stringify({
+          username,
           password,
           turnstile_token: turnstileToken,
         }),
@@ -421,63 +402,22 @@ export default function AdminDashboard() {
 
   if (!bootChecked) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-          backgroundColor: styles.bg,
-          color: styles.text,
-        }}
-      >
-        <div className="skeleton" style={{ width: "200px" }}></div>
+      <div className="full-screen-center">
+        <div className="skeleton" style={{ width: "200px", height: "16px" }} />
       </div>
     );
   }
 
   if (!isLogged) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-          backgroundColor: styles.bg,
-          color: styles.text,
-          padding: "20px",
-        }}
-      >
-        <div
-          className="glass-card"
-          style={{
-            padding: "45px 35px",
-            textAlign: "center",
-            width: "100%",
-            maxWidth: "400px",
-          }}
-        >
-          <div
-            style={{
-              width: "50px",
-              height: "50px",
-              borderRadius: "12px",
-              background: "var(--accent-light)",
-              color: "var(--accent-color)",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "16px",
-            }}
-          >
+      <div className="login-wrap">
+        <div className="glass-card login-card">
+          <div className="login-icon">
             <ShieldCheck size={28} />
           </div>
 
-          <h2 style={{ fontSize: "1.6rem", fontWeight: 800, marginBottom: "8px" }}>
-            Governança de TI
-          </h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "25px" }}>
+          <h2 className="login-title">Governança de TI</h2>
+          <p className="login-desc">
             Acesso administrativo restrito com autenticação por cookie seguro.
           </p>
 
@@ -489,17 +429,7 @@ export default function AdminDashboard() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Usuário"
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              marginBottom: "14px",
-              borderRadius: "8px",
-              border: `1px solid var(--card-border)`,
-              background: styles.bg,
-              color: styles.text,
-              fontSize: "0.95rem",
-              outline: "none",
-            }}
+            className="form-input"
           />
 
           <input
@@ -511,17 +441,7 @@ export default function AdminDashboard() {
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && HANDLE_LOGIN()}
             placeholder="Senha"
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              marginBottom: "16px",
-              borderRadius: "8px",
-              border: `1px solid var(--card-border)`,
-              background: styles.bg,
-              color: styles.text,
-              fontSize: "0.95rem",
-              outline: "none",
-            }}
+            className="form-input"
           />
 
           {/* Cloudflare Turnstile Anti-bot */}
@@ -536,38 +456,17 @@ export default function AdminDashboard() {
 
           <button
             type="button"
-            className="btn-primary"
+            className="btn-primary btn-primary--full"
             onClick={HANDLE_LOGIN}
             disabled={!turnstileToken}
-            style={{ 
-              width: "100%", 
-              justifyContent: "center", 
-              padding: "12px",
-              opacity: turnstileToken ? 1 : 0.65,
-              cursor: turnstileToken ? "pointer" : "not-allowed",
-              transition: "all 0.2s ease",
-            }}
           >
             Acessar Painel Executivo
           </button>
 
-          {error && (
-            <p style={{ color: "#EF4444", marginTop: "14px", fontSize: "0.88rem", fontWeight: 600 }}>
-              {error}
-            </p>
-          )}
+          {error && <p className="login-error">{error}</p>}
 
-          <div style={{ marginTop: "24px" }}>
-            <a
-              href="/"
-              style={{
-                color: "var(--text-secondary)",
-                fontSize: "0.85rem",
-                textDecoration: "none",
-              }}
-            >
-              ← Voltar ao Portfólio
-            </a>
+          <div className="login-footer-link">
+            <a href="/">← Voltar ao Portfólio</a>
           </div>
         </div>
       </div>
@@ -577,121 +476,82 @@ export default function AdminDashboard() {
   const KpiCard = ({ title, value, unit, sparkPoints, icon: Icon }) => {
     const display = value === null || value === undefined ? 0 : value;
     return (
-      <div
-        className="glass-card"
-        style={{
-          flex: "1 1 220px",
-          minWidth: "220px",
-          padding: "24px 28px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span
-            style={{
-              color: styles.textSecondary,
-              fontSize: "0.74rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
-            {title}
-          </span>
-          {Icon && <Icon size={18} style={{ color: styles.accent }} />}
+      <div className="glass-card kpi-card">
+        <div className="kpi-card-head">
+          <span className="kpi-title">{title}</span>
+          {Icon && <Icon size={18} className="kpi-icon" />}
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
-            <span
-              style={{
-                fontSize: "2.2rem",
-                fontWeight: 800,
-                lineHeight: 1,
-                color: styles.accent,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {display}
-            </span>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: styles.textSecondary }}>
-              {unit}
-            </span>
+        <div className="kpi-value-row">
+          <div className="kpi-value-group">
+            <span className="kpi-value">{display}</span>
+            <span className="kpi-unit">{unit}</span>
           </div>
 
-          {sparkPoints && <Sparkline points={sparkPoints} color={styles.accent} />}
+          {sparkPoints && <Sparkline points={sparkPoints} color="var(--accent-color)" />}
         </div>
       </div>
     );
   };
 
+  const providerBadgeClass =
+    activeInterpreter === "gemini"
+      ? "provider-badge--gemini"
+      : activeInterpreter === "json_only"
+      ? "provider-badge--json"
+      : "provider-badge--other";
+
+  const providerStatusClass = interpreterStatus.startsWith("✓")
+    ? "provider-status--ok"
+    : interpreterStatus.startsWith("❌")
+    ? "provider-status--err"
+    : "";
+
   return (
-    <div style={{ padding: "40px 5%", minHeight: "100vh", backgroundColor: styles.bg, color: styles.text }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+    <div className="admin-page">
+      <div className="admin-container">
         {/* Header do Painel */}
-        <header
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "15px",
-            marginBottom: "35px",
-            paddingBottom: "20px",
-            borderBottom: "1px solid var(--card-border)",
-          }}
-        >
+        <header className="admin-header">
           <div>
-            <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0 }}>
-              Dashboard de Governança
-            </h1>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", margin: "4px 0 0 0" }}>
+            <h1 className="admin-header-title">Dashboard de Governança</h1>
+            <p className="admin-header-desc">
               Monitoramento de telemetria, integridade de RAG e gestão em tempo real.
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <div className="admin-header-actions">
             <button
               type="button"
-              className="btn-secondary"
+              className="btn-secondary btn-sm"
               onClick={exportAuditReport}
               title="Exportar Relatório de Auditoria em JSON"
-              style={{ padding: "9px 16px", fontSize: "0.85rem" }}
             >
               <Download size={16} /> Exportar JSON
             </button>
 
             <button
               type="button"
-              className="btn-secondary"
+              className="btn-secondary btn-sm btn-secondary--danger"
               onClick={() => setIsPurgeModalOpen(true)}
               title="Executar Purga de Retenção (LGPD 90 dias)"
-              style={{ padding: "9px 16px", fontSize: "0.85rem", color: "#EF4444" }}
             >
               <Trash2 size={16} /> Purga LGPD
             </button>
 
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={HANDLE_LOGOUT}
-              style={{ padding: "9px 18px", fontSize: "0.85rem" }}
-            >
+            <button type="button" className="btn-primary btn-sm" onClick={HANDLE_LOGOUT}>
               <LogOut size={16} /> Sair
             </button>
           </div>
         </header>
 
         {/* Abas */}
-        <div style={{ display: "flex", gap: "12px", marginBottom: "30px" }}>
+        <div className="admin-tabs">
           <button
             type="button"
             className={`category-pill ${activeTab === "stats" ? "active" : ""}`}
             onClick={() => setActiveTab("stats")}
           >
-            <BarChart3 size={16} style={{ verticalAlign: "middle", marginRight: "6px" }} />
+            <BarChart3 size={16} className="admin-tab-icon" />
             KPIs, Logs & Telemetria
           </button>
           <button
@@ -706,90 +566,26 @@ export default function AdminDashboard() {
         {activeTab === "stats" ? (
           <>
             {/* Seletor do Provedor de IA */}
-            <div
-              className="glass-card"
-              style={{
-                padding: "20px 24px",
-                marginBottom: "30px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: "15px",
-              }}
-            >
+            <div className="glass-card provider-card">
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>
-                    Intérprete Ativo (Runtime)
-                  </h3>
-                  {activeInterpreter === "gemini" && (
-                    <span
-                      style={{
-                        background: "rgba(16, 185, 129, 0.15)",
-                        color: "#10B981",
-                        border: "1px solid rgba(16, 185, 129, 0.3)",
-                        padding: "3px 10px",
-                        borderRadius: "12px",
-                        fontSize: "0.76rem",
-                        fontWeight: 700,
-                      }}
-                    >
-                      ● Gemini 1.5 Flash (Ativo)
-                    </span>
-                  )}
-                  {activeInterpreter === "json_only" && (
-                    <span
-                      style={{
-                        background: "rgba(245, 158, 11, 0.15)",
-                        color: "#F59E0B",
-                        border: "1px solid rgba(245, 158, 11, 0.3)",
-                        padding: "3px 10px",
-                        borderRadius: "12px",
-                        fontSize: "0.76rem",
-                        fontWeight: 700,
-                      }}
-                    >
-                      ● JSON Local (Custo Zero / Sem LLM)
-                    </span>
-                  )}
-                  {activeInterpreter !== "gemini" && activeInterpreter !== "json_only" && (
-                    <span
-                      style={{
-                        background: "rgba(99, 102, 241, 0.15)",
-                        color: "#6366F1",
-                        border: "1px solid rgba(99, 102, 241, 0.3)",
-                        padding: "3px 10px",
-                        borderRadius: "12px",
-                        fontSize: "0.76rem",
-                        fontWeight: 700,
-                      }}
-                    >
-                      ● {activeInterpreter}
-                    </span>
-                  )}
+                <div className="provider-heading">
+                  <h3 className="provider-title">Intérprete Ativo (Runtime)</h3>
+                  <span className={`provider-badge ${providerBadgeClass}`}>
+                    {activeInterpreter === "gemini" && "● Gemini 1.5 Flash (Ativo)"}
+                    {activeInterpreter === "json_only" && "● JSON Local (Custo Zero / Sem LLM)"}
+                    {activeInterpreter !== "gemini" && activeInterpreter !== "json_only" && `● ${activeInterpreter}`}
+                  </span>
                 </div>
-                <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.85rem" }}>
+                <p className="provider-desc">
                   Alterne entre o Gemini (LLM inteligente) e o modo Local (zero custo de tokens).
                 </p>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
+              <div className="provider-controls">
                 <select
                   id="interpreter-select"
                   aria-label="Selecionar intérprete de IA"
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: "8px",
-                    background: styles.bg,
-                    color: styles.text,
-                    border: "1px solid var(--card-border)",
-                    fontSize: "0.9rem",
-                    fontWeight: 600,
-                    outline: "none",
-                    cursor: isChangingInterpreter ? "not-allowed" : "pointer",
-                    opacity: isChangingInterpreter ? 0.7 : 1,
-                  }}
+                  className="provider-select"
                   value={activeInterpreter}
                   disabled={isChangingInterpreter}
                   onChange={(e) => CHANGE_INTERPRETER(e.target.value)}
@@ -798,32 +594,13 @@ export default function AdminDashboard() {
                   <option value="json_only">Apenas JSON Local (Teste Local / Custo Zero)</option>
                 </select>
                 {interpreterStatus && (
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: 600,
-                      color: interpreterStatus.startsWith("✓")
-                        ? "#10B981"
-                        : interpreterStatus.startsWith("❌")
-                        ? "#EF4444"
-                        : "var(--text-secondary)",
-                    }}
-                  >
-                    {interpreterStatus}
-                  </span>
+                  <span className={`provider-status ${providerStatusClass}`}>{interpreterStatus}</span>
                 )}
               </div>
             </div>
 
             {/* Cards de KPIs */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-                gap: "20px",
-                marginBottom: "35px",
-              }}
-            >
+            <div className="kpi-grid">
               <KpiCard
                 title="Interações IA"
                 value={stats.total_chats}
@@ -848,68 +625,25 @@ export default function AdminDashboard() {
             </div>
 
             {/* Seções de Histórico e Telemetria */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "2fr 1fr",
-                gap: "25px",
-              }}
-            >
+            <div className="dashboard-columns">
               {/* Histórico com Busca e Filtro SLA */}
               <section>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: "10px",
-                    marginBottom: "14px",
-                  }}
-                >
-                  <h3 style={{ fontSize: "1.2rem", fontWeight: 700, margin: 0 }}>
-                    Histórico de Diálogos ({filteredLogs.length})
-                  </h3>
+                <div className="panel-head">
+                  <h3 className="panel-title">Histórico de Diálogos ({filteredLogs.length})</h3>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ position: "relative" }}>
-                      <Search
-                        size={14}
-                        style={{
-                          position: "absolute",
-                          left: "10px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "var(--text-secondary)",
-                        }}
-                      />
+                  <div className="panel-controls">
+                    <div className="search-field">
+                      <Search size={14} className="search-field-icon" />
                       <input
                         type="text"
                         placeholder="Buscar pergunta ou trace..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{
-                          padding: "6px 10px 6px 30px",
-                          borderRadius: "8px",
-                          fontSize: "0.82rem",
-                          border: "1px solid var(--card-border)",
-                          background: styles.bg,
-                          color: styles.text,
-                          outline: "none",
-                        }}
+                        className="search-input"
                       />
                     </div>
 
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        fontSize: "0.8rem",
-                        color: styles.textSecondary,
-                        cursor: "pointer",
-                      }}
-                    >
+                    <label className="sla-toggle">
                       <input
                         type="checkbox"
                         checked={onlySlaBreaches}
@@ -920,57 +654,32 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div
-                  className="glass-card"
-                  style={{
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    maxHeight: "440px",
-                    overflowY: "auto",
-                  }}
-                >
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead style={{ background: "var(--accent-gradient)", color: "#fff" }}>
+                <div className="glass-card glass-card--static data-panel">
+                  <table className="logs-table">
+                    <thead>
                       <tr>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "0.85rem" }}>
-                          Pergunta / Prompt
-                        </th>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "0.85rem", width: "110px" }}>
-                          SLA
-                        </th>
+                        <th>Pergunta / Prompt</th>
+                        <th className="logs-table-col-sla">SLA</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredLogs.length === 0 ? (
                         <tr>
-                          <td colSpan={2} style={{ padding: "20px", textAlign: "center", color: styles.textSecondary }}>
+                          <td colSpan={2} className="logs-empty-cell">
                             Nenhum registro encontrado para este filtro.
                           </td>
                         </tr>
                       ) : (
                         filteredLogs.map((log, idx) => (
-                          <tr
-                            key={ROW_KEY(log, idx)}
-                            style={{
-                              borderBottom: `1px solid var(--card-border)`,
-                            }}
-                          >
-                            <td style={{ padding: "12px 16px", fontSize: "0.88rem" }}>
-                              <div style={{ fontWeight: 600, color: styles.text, marginBottom: "2px" }}>
-                                {log.user_prompt}
-                              </div>
-                              <small style={{ color: styles.textSecondary, fontSize: "0.75rem" }}>
+                          <tr key={ROW_KEY(log, idx)}>
+                            <td>
+                              <div className="log-question">{log.user_prompt}</div>
+                              <small className="log-meta">
                                 Fonte: {log.source} · Trace: {log.trace_id?.slice(0, 8)}...
                               </small>
                             </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <span
-                                style={{
-                                  color: log.response_time_ms > 2000 ? "#EF4444" : "#22C55E",
-                                  fontWeight: "bold",
-                                  fontSize: "0.85rem",
-                                }}
-                              >
+                            <td>
+                              <span className={`log-sla ${log.response_time_ms > 2000 ? "log-sla--bad" : "log-sla--good"}`}>
                                 {log.response_time_ms}ms
                               </span>
                             </td>
@@ -984,35 +693,16 @@ export default function AdminDashboard() {
 
               {/* Telemetria Ao Vivo */}
               <section>
-                <h3 style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: "14px" }}>
+                <h3 className="panel-title panel-title--spaced">
                   Telemetria Ao Vivo
                 </h3>
-                <div
-                  className="glass-card"
-                  style={{
-                    padding: "16px 20px",
-                    borderRadius: "12px",
-                    maxHeight: "440px",
-                    overflowY: "auto",
-                  }}
-                >
+                <div className="glass-card glass-card--static data-panel telemetry-panel">
                   {stats.recent_events?.map((ev, idx) => (
-                    <div
-                      key={ROW_KEY(ev, idx)}
-                      style={{
-                        padding: "10px 0",
-                        borderBottom: `1px solid var(--card-border)`,
-                        fontSize: "0.84rem",
-                      }}
-                    >
-                      <span style={{ color: styles.accent, fontWeight: 700 }}>
-                        [{ev.event_type}]
-                      </span>{" "}
-                      acessou {ev.page_path}
-                      <br />
-                      <small style={{ color: styles.textSecondary, fontSize: "0.75rem" }}>
+                    <div key={ROW_KEY(ev, idx)} className="telemetry-item">
+                      <span className="telemetry-event">[{ev.event_type}]</span> acessou {ev.page_path}
+                      <span className="telemetry-meta">
                         {FORMAT_TIMESTAMP(ev.timestamp)} · IP: {ev.client_ip || "Proxy"}
-                      </small>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -1020,62 +710,41 @@ export default function AdminDashboard() {
             </div>
           </>
         ) : (
-          <JsonEditor styles={styles} onSessionLost={() => setIsLogged(false)} />
+          <JsonEditor
+            styles={{
+              bg: "var(--bg-color)",
+              text: "var(--text-color)",
+              textSecondary: "var(--text-secondary)",
+              accent: "var(--accent-color)",
+              cardBg: "var(--card-bg)",
+              cardShadow: "0 8px 32px var(--shadow-color)",
+              navBg: "var(--nav-bg)",
+            }}
+            onSessionLost={() => setIsLogged(false)}
+          />
         )}
       </div>
 
       {/* Modal de Confirmação de Purga */}
       {isPurgeModalOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.75)",
-            backdropFilter: "blur(6px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 3000,
-            padding: "20px",
-          }}
-        >
-          <div
-            className="glass-card"
-            style={{
-              maxWidth: "460px",
-              width: "100%",
-              padding: "30px",
-              backgroundColor: "var(--card-bg)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#EF4444", marginBottom: "15px" }}>
+        <div className="purge-modal-overlay">
+          <div className="glass-card purge-modal">
+            <div className="purge-modal-head">
               <AlertTriangle size={26} />
-              <h3 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 700 }}>
-                Confirmar Purga LGPD
-              </h3>
+              <h3>Confirmar Purga LGPD</h3>
             </div>
 
-            <p style={{ color: styles.textSecondary, fontSize: "0.95rem", lineHeight: 1.5, marginBottom: "20px" }}>
+            <p className="purge-modal-text">
               Esta operação expurga permanentemente de forma atômica todos os registros de <code>chat_logs.jsonl</code> e <code>analytics.jsonl</code> anteriores à janela de <strong>90 dias</strong> (Art. 6º LGPD).
             </p>
 
             {purgeResult && (
-              <div
-                style={{
-                  padding: "12px",
-                  borderRadius: "8px",
-                  background: "rgba(34, 197, 94, 0.12)",
-                  border: "1px solid rgba(34, 197, 94, 0.3)",
-                  color: "#22C55E",
-                  fontSize: "0.85rem",
-                  marginBottom: "15px",
-                }}
-              >
+              <div className="purge-result">
                 Purga concluída! Logs removidos: {purgeResult.chat_logs_deleted} chats, {purgeResult.analytics_deleted} telemetrias.
               </div>
             )}
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+            <div className="purge-actions">
               <button
                 type="button"
                 className="btn-secondary"
@@ -1088,10 +757,9 @@ export default function AdminDashboard() {
               </button>
               <button
                 type="button"
-                className="btn-primary"
+                className="btn-primary btn-primary--danger"
                 onClick={executePurge}
                 disabled={isPurging}
-                style={{ background: "#EF4444" }}
               >
                 {isPurging ? "Expurgando..." : "Confirmar Purga"}
               </button>

@@ -109,44 +109,19 @@ export default function ChatWidget({ data }) {
 
     return parts.map((part, pIdx) => {
       if (part.type === "code") {
+        const copyKey = `${msgIdx}-${pIdx}`;
         return (
-          <div
-            key={pIdx}
-            style={{
-              position: "relative",
-              margin: "10px 0",
-              borderRadius: "8px",
-              overflow: "hidden",
-              backgroundColor: "var(--code-bg)",
-              border: "1px solid var(--card-border)",
-            }}
-          >
+          <div key={pIdx} className="chat-code-block">
             <button
               type="button"
-              onClick={() => copyToClipboard(part.content, `${msgIdx}-${pIdx}`)}
-              style={{
-                position: "absolute",
-                top: "6px",
-                right: "6px",
-                background: "rgba(0,0,0,0.3)",
-                border: "none",
-                borderRadius: "4px",
-                color: "var(--text-secondary)",
-                padding: "3px 6px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                fontSize: "0.75rem",
-              }}
+              onClick={() => copyToClipboard(part.content, copyKey)}
+              className="chat-code-copy"
             >
-              {copiedIndex === `${msgIdx}-${pIdx}` ? <Check size={12} /> : <Copy size={12} />}
-              {copiedIndex === `${msgIdx}-${pIdx}` ? "Copiado" : "Copiar"}
+              {copiedIndex === copyKey ? <Check size={12} /> : <Copy size={12} />}
+              {copiedIndex === copyKey ? "Copiado" : "Copiar"}
             </button>
-            <pre style={{ margin: 0, padding: "12px", overflowX: "auto" }}>
-              <code style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "0.85rem" }}>
-                {part.content}
-              </code>
+            <pre className="chat-code-pre">
+              <code>{part.content}</code>
             </pre>
           </div>
         );
@@ -158,16 +133,12 @@ export default function ChatWidget({ data }) {
         <div key={pIdx} className="chat-markdown">
           {lines.map((line, lIdx) => {
             const trimmed = line.trim();
-            if (!trimmed) return <div key={lIdx} style={{ height: "6px" }} />;
+            if (!trimmed) return <div key={lIdx} className="chat-line-break" />;
 
             // Linha com lista (- ou *)
             if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
               const itemContent = trimmed.substring(2);
-              return (
-                <li key={lIdx} style={{ marginLeft: "14px", marginBottom: "4px" }}>
-                  {formatInline(itemContent)}
-                </li>
-              );
+              return <li key={lIdx}>{formatInline(itemContent)}</li>;
             }
 
             return <p key={lIdx}>{formatInline(trimmed)}</p>;
@@ -185,17 +156,7 @@ export default function ChatWidget({ data }) {
     return segments.map((seg, sIdx) => {
       if (seg.match(urlRegex)) {
         return (
-          <a
-            key={sIdx}
-            href={seg}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "var(--accent-color)",
-              textDecoration: "underline",
-              fontWeight: "600",
-            }}
-          >
+          <a key={sIdx} href={seg} target="_blank" rel="noopener noreferrer">
             {seg}
           </a>
         );
@@ -222,23 +183,7 @@ export default function ChatWidget({ data }) {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => setIsChatOpen(!isChatOpen)}
-        style={{
-          position: "fixed",
-          bottom: "30px",
-          right: "30px",
-          width: "60px",
-          height: "60px",
-          borderRadius: "50%",
-          background: "var(--accent-gradient)",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 8px 30px var(--shadow-hover)",
-          zIndex: 1000,
-        }}
+        className="chat-fab"
       >
         {isChatOpen ? <X size={26} /> : <MessageSquare size={26} />}
       </motion.button>
@@ -251,55 +196,25 @@ export default function ChatWidget({ data }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25 }}
-            className="glass-card"
+            className="glass-card chat-panel"
             role="dialog"
             aria-label={data.title}
-            style={{
-              position: "fixed",
-              width: "calc(100% - 36px)",
-              maxWidth: "400px",
-              height: "72vh",
-              maxHeight: "560px",
-              right: "20px",
-              bottom: "100px",
-              display: "flex",
-              flexDirection: "column",
-              zIndex: 1000,
-              overflow: "hidden",
-              boxShadow: "0 20px 60px var(--shadow-color)",
-            }}
           >
             {/* Cabeçalho */}
-            <div
-              style={{
-                padding: "16px 20px",
-                background: "var(--accent-gradient)",
-                color: "#fff",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div className="chat-panel-header">
+              <div className="chat-panel-title">
                 <Sparkles size={18} />
-                <span style={{ fontSize: "1.05rem", fontWeight: 700 }}>{data.title}</span>
+                <span>{data.title}</span>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div className="chat-panel-actions">
                 {messages.length > 0 && (
                   <button
                     type="button"
                     title="Limpar histórico"
                     aria-label="Limpar histórico"
                     onClick={() => setMessages([])}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "rgba(255,255,255,0.8)",
-                      cursor: "pointer",
-                      padding: "4px",
-                      display: "flex",
-                    }}
+                    className="btn-icon btn-icon--on-accent"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -308,14 +223,7 @@ export default function ChatWidget({ data }) {
                   type="button"
                   aria-label="Fechar chat"
                   onClick={() => setIsChatOpen(false)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#fff",
-                    cursor: "pointer",
-                    padding: "4px",
-                    display: "flex",
-                  }}
+                  className="btn-icon btn-icon--on-accent"
                 >
                   <X size={20} />
                 </button>
@@ -323,24 +231,13 @@ export default function ChatWidget({ data }) {
             </div>
 
             {/* Mensagens & Conteúdo */}
-            <div
-              aria-live="polite"
-              aria-busy={loading}
-              style={{
-                flex: 1,
-                padding: "18px",
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: "14px",
-              }}
-            >
+            <div className="chat-body" aria-live="polite" aria-busy={loading}>
               {messages.length === 0 && (
-                <div style={{ textAlign: "center", marginTop: "15px" }}>
-                  <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", marginBottom: "16px" }}>
+                <div className="chat-empty">
+                  <p className="chat-empty-text">
                     Olá! Sou o assistente com RAG corporativo do Christian. Sobre o que gostaria de saber?
                   </p>
-                  <div className="chat-chips-container" style={{ padding: 0 }}>
+                  <div className="chat-chips-container">
                     {SUGGESTIONS.map((s, idx) => (
                       <button
                         key={idx}
@@ -356,41 +253,17 @@ export default function ChatWidget({ data }) {
               )}
 
               {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-                  }}
-                >
-                  <div
-                    style={{
-                      background:
-                        msg.role === "user"
-                          ? "var(--accent-gradient)"
-                          : "var(--card-bg)",
-                      color: msg.role === "user" ? "#fff" : "var(--text-color)",
-                      padding: "12px 16px",
-                      borderRadius:
-                        msg.role === "user"
-                          ? "16px 16px 2px 16px"
-                          : "16px 16px 16px 2px",
-                      maxWidth: "88%",
-                      fontSize: "0.92rem",
-                      lineHeight: "1.45",
-                      border: msg.role === "ai" ? "1px solid var(--card-border)" : "none",
-                      boxShadow: "0 2px 8px var(--shadow-color)",
-                    }}
-                  >
+                <div key={idx} className={`chat-row ${msg.role === "user" ? "is-user" : ""}`}>
+                  <div className={`chat-bubble ${msg.role === "user" ? "is-user" : ""}`}>
                     {renderMarkdown(msg.content, idx)}
                   </div>
                 </div>
               ))}
 
               {loading && (
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px" }}>
-                  <span className="status-dot" style={{ width: "6px", height: "6px" }} />
-                  <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontStyle: "italic" }}>
+                <div className="chat-typing">
+                  <span className="status-dot" />
+                  <span className="chat-typing-text">
                     {data.loading || "Consultando dados corporativos..."}
                   </span>
                 </div>
@@ -400,16 +273,7 @@ export default function ChatWidget({ data }) {
             </div>
 
             {/* Input e Envio */}
-            <div
-              style={{
-                padding: "12px 16px",
-                borderTop: "1px solid var(--card-border)",
-                display: "flex",
-                gap: "8px",
-                alignItems: "center",
-                backgroundColor: "var(--card-bg)",
-              }}
-            >
+            <div className="chat-footer">
               <textarea
                 id="chat-input"
                 rows={1}
@@ -417,34 +281,14 @@ export default function ChatWidget({ data }) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={HANDLE_KEYDOWN}
                 placeholder={data.placeholder}
-                style={{
-                  flex: 1,
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--card-border)",
-                  background: "var(--bg-color)",
-                  color: "var(--text-color)",
-                  outline: "none",
-                  resize: "none",
-                  minHeight: "40px",
-                  maxHeight: "80px",
-                  fontFamily: "inherit",
-                  fontSize: "0.9rem",
-                  lineHeight: 1.4,
-                }}
+                className="chat-textarea"
               />
               <button
                 type="button"
                 aria-label={data.send || "Enviar mensagem"}
                 onClick={() => HANDLE_SEND()}
                 disabled={loading || !input.trim()}
-                className="btn-primary"
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  opacity: loading || !input.trim() ? 0.5 : 1,
-                  cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-                }}
+                className="btn-primary chat-send-btn"
               >
                 <Send size={16} />
               </button>
