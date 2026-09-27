@@ -33,6 +33,10 @@
   --radius-md: 16px;
   --radius-lg: 22px;
   --container-max: 1200px;
+
+  /* Superfícies interativas do editor (hover / estado expandido) */
+  --surface-hover: rgba(15, 23, 42, 0.035);
+  --surface-expanded: rgba(37, 99, 235, 0.06);
 }
 
 [data-theme='dark'] {
@@ -61,6 +65,10 @@
   --danger-color: #F87171;
   --success-color: #34D399;
   --warning-color: #FBBF24;
+
+  /* Superfícies interativas do editor (hover / estado expandido) */
+  --surface-hover: rgba(255, 255, 255, 0.03);
+  --surface-expanded: rgba(59, 130, 246, 0.08);
 }
 
 * {
@@ -2161,67 +2169,141 @@ body::after {
   gap: 22px;
 }
 
-.editor-file-tabs {
+/* Barra de controle superior: seletor de arquivo, abas de seção,
+   status de sincronização e ação de salvar — tudo destacado num só bloco */
+.editor-toolbar-bar {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--card-border);
 }
 
-.editor-file-tab {
-  padding: 9px 16px;
-  border-radius: 9px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s var(--ease-premium);
-}
-
-.editor-file-tab:hover {
-  border-color: var(--accent-color);
-  color: var(--text-color);
-}
-
-.editor-file-tab.is-active {
-  background: var(--accent-color);
-  border-color: transparent;
-  color: #fff;
-}
-
-.editor-toolbar {
+.editor-toolbar-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--card-border);
 }
 
-.editor-toolbar-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* Segmented control — seletor de arquivo (Portfólio vs. Contexto IA) */
+.segmented-control {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-color);
+  border: 1px solid var(--card-border);
+  border-radius: 11px;
 }
 
-.editor-toolbar-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.editor-toolbar-file {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
+.segmented-option {
+  position: relative;
+  flex: 1;
+  padding: 9px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.segmented-option.is-active {
+  color: #fff;
+}
+
+.segmented-pill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent-color);
+  border-radius: 8px;
+  z-index: 0;
+}
+
+.segmented-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Indicador de sincronização */
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sync-badge--synced {
+  color: var(--success-color);
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.22);
+}
+
+.sync-badge--synced .sync-dot {
+  background: var(--success-color);
+}
+
+.sync-badge--pending {
+  color: var(--warning-color);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.24);
+}
+
+.sync-badge--pending .sync-dot {
+  background: var(--warning-color);
+}
+
+/* Abas de seção com contador — estende .category-pill */
+.editor-tab {
+  gap: 6px;
+}
+
+.editor-tab-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  padding: 1px 7px;
+  border-radius: 999px;
+  line-height: 1.5;
+}
+
+.category-pill.active .editor-tab-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
 }
 
 .editor-tabs {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.editor-toolbar-file {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .editor-panel {
@@ -2251,41 +2333,160 @@ body::after {
   margin: 0;
 }
 
-.editor-item-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.editor-item-card {
-  position: relative;
+/* Card estático (sempre aberto) — usado para Dados Pessoais / Contatos,
+   que não fazem parte de uma lista repetível e não precisam de accordion */
+.editor-static-card {
   padding: 20px 22px;
   border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
   background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: border-color 0.2s ease;
-}
-
-.editor-item-card:hover {
-  border-color: var(--card-border-hover);
-}
-
-.editor-item-card--stack {
-  gap: 12px;
+  gap: 14px;
 }
 
 .editor-item-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-  padding-right: 40px;
 }
 
 .editor-item-grid--2 {
   grid-template-columns: repeat(2, 1fr);
+}
+
+/* ---- Accordion / Master-Detail para listas repetíveis ---- */
+
+.accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.accordion-item {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.accordion-item:hover {
+  border-color: var(--card-border-hover);
+  background: var(--surface-hover);
+}
+
+.accordion-item.is-open {
+  border-color: var(--card-border-hover);
+  background: var(--surface-expanded);
+}
+
+.accordion-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.accordion-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 4px;
+  color: inherit;
+  font: inherit;
+}
+
+.accordion-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.accordion-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.accordion-title {
+  font-weight: 600;
+  font-size: 0.94rem;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accordion-title--placeholder {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-style: italic;
+}
+
+.accordion-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-neutral {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-color);
+  border: 1px solid var(--card-border);
+  padding: 4px 10px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+
+.accordion-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.accordion-chevron {
+  color: var(--text-secondary);
+  transition: transform 0.25s var(--ease-premium), color 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.accordion-item.is-open .accordion-chevron {
+  transform: rotate(180deg);
+  color: var(--accent-color);
+}
+
+.accordion-body-wrap {
+  overflow: hidden;
+}
+
+.accordion-body {
+  padding: 4px 16px 20px;
+  border-top: 1px solid var(--card-border);
+  margin: 0 14px;
+  padding-top: 16px;
 }
 
 .field-group {
@@ -2316,10 +2517,8 @@ body::after {
   line-height: 1.55;
 }
 
-.editor-item-actions {
-  position: absolute;
-  top: 14px;
-  right: 14px;
+.field-textarea--tall {
+  min-height: 220px;
 }
 
 .btn-icon--danger-hover:hover {
@@ -2377,10 +2576,78 @@ body::after {
   min-width: 32px;
 }
 
+.editor-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.editor-chip-remove:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger-color);
+}
+
+.editor-chip-add-input {
+  background: transparent;
+  border: 1px dashed var(--card-border);
+  border-radius: 9999px;
+  padding: 6px 16px;
+  font-size: 0.86rem;
+  color: var(--text-color);
+  outline: none;
+  min-width: 150px;
+  transition: border-color 0.2s ease, border-style 0.2s ease;
+}
+
+.editor-chip-add-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.editor-chip-add-input:focus {
+  border-color: var(--accent-color);
+  border-style: solid;
+}
+
 .editor-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+/* Contexto de IA: coluna de identidade (dados+contatos) vs. prompt de sistema */
+.editor-rag-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.editor-rag-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.prompt-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.prompt-meta-count {
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
 }
 
 .editor-empty-hint {
@@ -2432,20 +2699,38 @@ body::after {
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .editor-item-grid,
   .editor-item-grid--2,
-  .editor-grid-2 {
+  .editor-grid-2,
+  .editor-rag-columns {
     grid-template-columns: 1fr;
   }
 
-  .editor-item-grid {
-    padding-right: 0;
+  .segmented-control {
+    width: 100%;
   }
 
-  .editor-item-actions {
-    position: static;
-    align-self: flex-end;
+  .editor-toolbar-row {
+    justify-content: flex-start;
+  }
+
+  .editor-toolbar-row > .btn-primary {
+    width: 100%;
+  }
+
+  .accordion-subtitle {
+    display: none;
+  }
+
+  .badge-neutral {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .accordion-icon {
+    display: none;
   }
 }
 

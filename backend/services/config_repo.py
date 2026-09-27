@@ -66,12 +66,17 @@ def write_config(filename: AllowedConfigFile, payload: dict, actor: str) -> int:
     Persiste payload validado em disco de forma atomica.
 
     Retorna o numero de bytes gravados. Em qualquer cenario emite registro
-    de auditoria via audit_file_write para rastreabilidade.
+    de auditoria via audit_file_write para rastreabilidade. Erros de
+    permissao de arquivo sao convertidos em HTTPException com mensagem
+    acionavel; qualquer outra falha e relancada como esta apos o registro.
     """
     path = resolve_path(filename)
     action = "update" if path.exists() else "create"
     encoded = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8")
 
+    # tmp_path so e preenchido apos a criacao bem-sucedida do temp file;
+    # o finally usa isso para limpar orfaos caso o os.replace falhe no meio
+    tmp_path = None
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -87,7 +92,30 @@ def write_config(filename: AllowedConfigFile, payload: dict, actor: str) -> int:
             tmp_path = tmp.name
 
         os.replace(tmp_path, path)
+        tmp_path = None  # renomeado com sucesso; nao ha mais nada a limpar
+    except PermissionError as exc:
+        logging.error(
+            f"permissao negada ao gravar {filename.value}: {type(exc).__name__}: {exc}",
+            extra={"event": "config_write_permission_denied", "file_name": filename.value, "path": str(path)},
+        )
+        audit_file_write(
+            filename=filename.value,
+            resource_path=str(path),
+            actor=actor,
+            bytes_written=0,
+            action=action,
+            status="failure",
+            error=f"{type(exc).__name__}: {exc}",
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Erro de permissão ao gravar em backend/data. Execute chmod 777 na pasta data.",
+        ) from exc
     except Exception as exc:
+        logging.error(
+            f"falha ao gravar {filename.value}: {type(exc).__name__}: {exc}",
+            extra={"event": "config_write_failed", "file_name": filename.value, "path": str(path)},
+        )
         audit_file_write(
             filename=filename.value,
             resource_path=str(path),
@@ -98,6 +126,17 @@ def write_config(filename: AllowedConfigFile, payload: dict, actor: str) -> int:
             error=f"{type(exc).__name__}: {exc}",
         )
         raise
+    finally:
+        # limpa arquivo temporario orfao (tmp criado mas nunca renomeado
+        # com sucesso), evitando acumulo de .tmp em backend/data
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError as cleanup_exc:
+                logging.warning(
+                    f"falha ao limpar temporario orfao {tmp_path}: {cleanup_exc}",
+                    extra={"event": "config_tmp_cleanup_failed", "file_name": filename.value},
+                )
 
     audit_file_write(
         filename=filename.value,
