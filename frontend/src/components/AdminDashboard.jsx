@@ -419,7 +419,7 @@ export default function AdminDashboard() {
 
   if (!isLogged) {
     return (
-      <div className="login-wrap">
+      <div className="login-wrap notranslate" translate="no">
         <div className="glass-card login-card">
           <div className="login-icon">
             <ShieldCheck size={28} />
@@ -517,7 +517,7 @@ export default function AdminDashboard() {
     : "";
 
   return (
-    <div className="admin-page">
+    <div className="admin-page notranslate" translate="no">
       <div className="admin-container">
         {/* Header do Painel */}
         <header className="admin-header">

@@ -16,6 +16,7 @@ let scriptInjected = false;
 // a segunda chamada é ignorada.
 export function initGoogleTranslate() {
   if (scriptInjected || typeof window === "undefined") return;
+  if (window.location.pathname.startsWith("/admin")) return;
   scriptInjected = true;
 
   window.googleTranslateElementInit = () => {
