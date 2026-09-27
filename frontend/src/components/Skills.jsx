@@ -52,7 +52,7 @@ export default function Skills({ data }) {
       </div>
 
       <div className="section-text">
-        <span className="eyebrow">{data.subtitle}</span>
+        <span className="section-kicker">{data.subtitle}</span>
         <h2 className="section-title">{data.title}</h2>
 
         {/* Abas de Filtros de Categoria */}

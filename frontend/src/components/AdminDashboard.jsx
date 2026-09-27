@@ -37,29 +37,38 @@ const FORMAT_TIMESTAMP = (iso) => {
 
 const ROW_KEY = (record, idx) => record?.trace_id ?? `row-${idx}`;
 
-// Mini Sparkline SVG puro
+// Mini Sparkline SVG puro — linha + área de suporte discreta (identidade
+// de dashboard executivo, sem parecer um gráfico desenhado à mão)
 const Sparkline = ({ points = [8, 14, 12, 19, 16, 24, 21], color = "var(--accent-color)", width = 110, height = 28 }) => {
   if (!points || points.length < 2) return null;
   const max = Math.max(...points, 1);
   const min = Math.min(...points, 0);
   const range = max - min || 1;
-  const coordinates = points
-    .map((val, i) => {
-      const x = (i / (points.length - 1)) * width;
-      const y = height - ((val - min) / range) * (height - 6) - 3;
-      return `${x},${y}`;
-    })
-    .join(" ");
+  const coords = points.map((val, i) => {
+    const x = (i / (points.length - 1)) * width;
+    const y = height - ((val - min) / range) * (height - 6) - 3;
+    return [x, y];
+  });
+  const linePoints = coords.map(([x, y]) => `${x},${y}`).join(" ");
+  const areaPoints = `0,${height} ${linePoints} ${width},${height}`;
+  const gradientId = `spark-fill-${color.replace(/[^a-zA-Z0-9]/g, "")}`;
 
   return (
     <svg width={width} height={height} style={{ overflow: "visible" }}>
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={areaPoints} fill={`url(#${gradientId})`} stroke="none" />
       <polyline
         fill="none"
         stroke={color}
-        strokeWidth="2.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        points={coordinates}
+        points={linePoints}
       />
     </svg>
   );
@@ -654,7 +663,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="glass-card glass-card--static data-panel">
+                <div className="glass-card glass-card--static data-panel table-scroll">
                   <table className="logs-table">
                     <thead>
                       <tr>
@@ -679,7 +688,7 @@ export default function AdminDashboard() {
                               </small>
                             </td>
                             <td>
-                              <span className={`log-sla ${log.response_time_ms > 2000 ? "log-sla--bad" : "log-sla--good"}`}>
+                              <span className={`sla-badge ${log.response_time_ms > 2000 ? "sla-badge--bad" : "sla-badge--good"}`}>
                                 {log.response_time_ms}ms
                               </span>
                             </td>
@@ -697,31 +706,24 @@ export default function AdminDashboard() {
                   Telemetria Ao Vivo
                 </h3>
                 <div className="glass-card glass-card--static data-panel telemetry-panel">
-                  {stats.recent_events?.map((ev, idx) => (
-                    <div key={ROW_KEY(ev, idx)} className="telemetry-item">
-                      <span className="telemetry-event">[{ev.event_type}]</span> acessou {ev.page_path}
-                      <span className="telemetry-meta">
-                        {FORMAT_TIMESTAMP(ev.timestamp)} · IP: {ev.client_ip || "Proxy"}
-                      </span>
-                    </div>
-                  ))}
+                  {stats.recent_events?.length ? (
+                    stats.recent_events.map((ev, idx) => (
+                      <div key={ROW_KEY(ev, idx)} className="telemetry-item">
+                        <span className="telemetry-event">[{ev.event_type}]</span> acessou {ev.page_path}
+                        <span className="telemetry-meta">
+                          {FORMAT_TIMESTAMP(ev.timestamp)} · IP: {ev.client_ip || "Proxy"}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="telemetry-empty">Nenhum evento registrado ainda.</p>
+                  )}
                 </div>
               </section>
             </div>
           </>
         ) : (
-          <JsonEditor
-            styles={{
-              bg: "var(--bg-color)",
-              text: "var(--text-color)",
-              textSecondary: "var(--text-secondary)",
-              accent: "var(--accent-color)",
-              cardBg: "var(--card-bg)",
-              cardShadow: "0 8px 32px var(--shadow-color)",
-              navBg: "var(--nav-bg)",
-            }}
-            onSessionLost={() => setIsLogged(false)}
-          />
+          <JsonEditor onSessionLost={() => setIsLogged(false)} />
         )}
       </div>
 

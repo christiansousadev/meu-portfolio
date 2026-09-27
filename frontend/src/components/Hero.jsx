@@ -37,22 +37,12 @@ export default function Hero({ data }) {
           <span>Disponível para novos projetos & liderança técnica</span>
         </div>
 
-        {/* Eyebrow de Especialidade */}
-        <span className="eyebrow" style={{ display: "block", marginBottom: "8px" }}>
-          Engenharia de Software · Governança · Cloud
-        </span>
-
         {/* Título Principal */}
-        <h1 className="hero-title">
-          {data.greeting}{" "}
-          <span className="wave" role="img" aria-label="acenando">
-            👋
-          </span>
-        </h1>
+        <h1 className="hero-title">{data.greeting}</h1>
 
         {/* Ticker de Especialidades */}
         <div className="hero-ticker">
-          <span className="hero-ticker-prefix">Foco de Atuação:</span>
+          <span className="hero-ticker-prefix">Foco atual —</span>
           <AnimatePresence mode="wait">
             <motion.div
               key={roleIndex}

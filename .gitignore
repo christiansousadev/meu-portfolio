@@ -8,12 +8,14 @@
 *.key
 
 # ============================================================
-# Governanca do ambiente de desenvolvimento (Claude Code)
-# Nao expor ao publico: contem diretrizes internas e ignore-rules
+# Governanca do ambiente de desenvolvimento (Claude Code & AI Agents)
+# Nao expor ao publico: contem diretrizes internas, skills e ignore-rules
 # ============================================================
 CLAUDE.md
 .claudeignore
 .claude/
+.agents/
+skills-lock.json
 
 # ============================================================
 # Backend - Python

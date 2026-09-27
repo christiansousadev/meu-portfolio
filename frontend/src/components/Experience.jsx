@@ -20,7 +20,6 @@ export default function Experience({ data }) {
       viewport={{ once: true, margin: "-80px" }}
     >
       <div className="section-header">
-        <span className="eyebrow">CARREIRA & LIDERANÇA TÉCNICA</span>
         <h2 className="section-title">{data.title}</h2>
         <p className="section-subtitle">
           Trajetória consolidada em Engenharia de Software, Governança de TI e Automação de Processos Críticos.

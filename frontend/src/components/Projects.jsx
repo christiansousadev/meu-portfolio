@@ -48,7 +48,6 @@ export default function Projects({ data }) {
       viewport={{ once: true, margin: "-80px" }}
     >
       <div className="section-header">
-        <span className="eyebrow">PORTFÓLIO & ARQUITETURA</span>
         <h2 className="section-title">{data.title}</h2>
         <p className="section-subtitle">
           Aplicações corporativas e microsserviços desenhados com foco em resiliência, escalabilidade e governança.

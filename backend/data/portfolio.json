@@ -9,7 +9,7 @@
     },
     "skills": {
       "title": "O que eu faço",
-      "subtitle": "DESENVOLVEDOR HÍBRIDO COM FOCO EM GOVERNANÇA E DADOS",
+      "subtitle": "Desenvolvedor híbrido com foco em governança e dados",
       "items": [
         "⚡ APIs escaláveis com Python (FastAPI), Node.js e integrações seguras.",
         "⚡ Interfaces reativas com React/Next.js focadas em UX técnica.",
@@ -67,7 +67,7 @@
     },
     "cert": {
       "title": "Certificações & Credenciais",
-      "subtitle": "GOVERNANÇA DE TI, SEGURANÇA E ENGENHARIA DE SOFTWARE",
+      "subtitle": "Governança de TI, segurança e engenharia de software",
       "items": [
         {
           "name": "ITIL® 4 Foundation in IT Service Management",
@@ -116,7 +116,7 @@
     },
     "skills": {
       "title": "What I do",
-      "subtitle": "HYBRID DEVELOPER FOCUSED ON GOVERNANCE AND DATA",
+      "subtitle": "Hybrid developer focused on governance and data",
       "items": [
         "⚡ Scalable APIs with Python (FastAPI), Node.js and secure integrations.",
         "⚡ Reactive interfaces with React/Next.js focused on technical UX.",
@@ -162,7 +162,7 @@
     },
     "cert": {
       "title": "Certifications & Credentials",
-      "subtitle": "IT GOVERNANCE, SECURITY & SOFTWARE ENGINEERING",
+      "subtitle": "IT governance, security & software engineering",
       "items": [
         {
           "name": "ITIL® 4 Foundation in IT Service Management",

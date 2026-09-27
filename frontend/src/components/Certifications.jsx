@@ -17,7 +17,7 @@ export default function Certifications({ data }) {
       viewport={{ once: true, margin: "-80px" }}
     >
       <div className="section-header">
-        <span className="eyebrow">{data.subtitle}</span>
+        <span className="section-kicker">{data.subtitle}</span>
         <h2 className="section-title">{data.title}</h2>
         <p className="section-subtitle">
           Credenciais reconhecidas em gestão de serviços de TI, padrões internacionais de segurança e arquitetura de software.

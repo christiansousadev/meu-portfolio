@@ -49,7 +49,7 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
       <div className="navbar-inner">
         {/* Logo */}
         <a href="#" className="navbar-logo" aria-label="Ir para o topo">
-          <h2 className="text-gradient navbar-logo-title">
+          <h2 className="navbar-logo-title">
             <span>&lt;Christian</span>
             <span className="navbar-logo-bracket">/&gt;</span>
           </h2>

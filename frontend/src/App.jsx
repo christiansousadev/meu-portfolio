@@ -137,7 +137,7 @@ export default function App() {
       <footer className="site-footer">
         <div className="footer-inner">
           <div>
-            <h3 className="text-gradient footer-brand-name">Christian Sousa</h3>
+            <h3 className="footer-brand-name">Christian Sousa</h3>
             <p className="footer-brand-role">
               Software Engineer & Governança de TI · Fortaleza, CE
             </p>
