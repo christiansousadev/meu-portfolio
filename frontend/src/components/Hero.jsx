@@ -117,6 +117,7 @@ export default function Hero({ data }) {
         <img
           src="/images/hero_developer.png"
           alt="Christian Sousa - Workspace de Desenvolvimento e Governança"
+          className="hero-avatar"
         />
       </motion.div>
     </section>

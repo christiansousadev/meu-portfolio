@@ -148,6 +148,39 @@ body::after {
   pointer-events: none;
 }
 
+/* ==========================================================================
+   Google Website Translator — widget escondido, sem chrome visível
+   ========================================================================== */
+
+/* âncora onde o Google injeta seu <select> interno; nunca aparece na tela */
+.google-translate-anchor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* neutraliza o deslocamento que o google aplica ao <body> ao exibir sua
+   propria barra superior (mesmo escondida, ela reserva espaço via inline style) */
+body {
+  top: 0px !important;
+}
+
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-text-highlight {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.skiptranslate {
+  display: none !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 9px;
@@ -327,6 +360,7 @@ body::after {
   background-color: var(--success-color);
   position: relative;
   flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .status-dot::after {
@@ -384,6 +418,17 @@ body::after {
   transform: scale(1.02);
 }
 
+/* Avatar do Hero: proporção contida e retrato, não domina a viewport */
+.section-image img.hero-avatar {
+  max-width: 420px;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 45px var(--shadow-color);
+}
+
 /* ==========================================================================
    Hero
    ========================================================================== */
@@ -402,19 +447,18 @@ body::after {
 }
 
 .hero-ticker {
-  height: 42px;
+  min-height: 48px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  overflow: hidden;
+  flex-wrap: wrap;
+  gap: 6px 10px;
 }
 
 .hero-ticker-prefix {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -437,9 +481,14 @@ body::after {
 
 .hero-actions {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+a.btn-primary,
+a.btn-secondary {
+  text-decoration: none;
 }
 
 .hero-link-more {
@@ -980,6 +1029,7 @@ body::after {
   line-height: 1.6;
   font-size: 0.96rem;
   margin: 0;
+  white-space: pre-line;
 }
 
 .timeline-toggle-wrap {
@@ -1017,6 +1067,7 @@ body::after {
   color: var(--text-color);
   margin: 0;
   font-weight: 500;
+  white-space: pre-line;
 }
 
 /* ==========================================================================
@@ -1091,6 +1142,7 @@ body::after {
   line-height: 1.6;
   margin-bottom: 20px;
   font-size: 0.96rem;
+  white-space: pre-line;
 }
 
 .project-tags {
@@ -1177,6 +1229,7 @@ body::after {
   color: var(--text-secondary);
   line-height: 1.6;
   font-size: 0.94rem;
+  white-space: pre-line;
 }
 
 .modal-actions {
@@ -1255,6 +1308,7 @@ body::after {
   font-size: 0.9rem;
   line-height: 1.55;
   margin: 0;
+  white-space: pre-line;
 }
 
 .cert-link-row {

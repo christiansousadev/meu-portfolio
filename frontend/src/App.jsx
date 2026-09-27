@@ -12,10 +12,19 @@ import Projects from "./components/Projects";
 import Certifications from "./components/Certifications";
 import ChatWidget from "./components/ChatWidget";
 import AdminDashboard from "./components/AdminDashboard";
+import {
+  initGoogleTranslate,
+  readGoogleTranslateLanguage,
+  setGoogleTranslateLanguage,
+} from "./utils/googleTranslate";
 
 export default function App() {
   const [theme, setTheme] = useState("dark");
-  const [lang, setLang] = useState("pt");
+  // "pt" é a fonte de verdade única do conteúdo (ver comentário abaixo, junto
+  // ao cálculo de `t`); este estado reflete apenas o idioma exibido pelo
+  // Google Website Translator, inicializado a partir do cookie existente
+  // para manter a preferência do visitante entre visitas.
+  const [lang, setLang] = useState(() => readGoogleTranslateLanguage());
   const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [portfolioData, setPortfolioData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +34,19 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  // injeta o widget do Google Translate uma única vez; a troca de idioma em
+  // si é disparada explicitamente pelo clique no botão PT/EN da navbar
+  useEffect(() => {
+    initGoogleTranslate();
+  }, []);
+
+  // troca o idioma exibido: atualiza o rótulo PT/EN da navbar e aciona a
+  // tradução (ou restauração) via Google Website Translator
+  const handleLangChange = nextLang => {
+    setLang(nextLang);
+    setGoogleTranslateLanguage(nextLang);
+  };
 
   // Barra de progresso de rolagem e botão voltar ao topo
   useEffect(() => {
@@ -100,7 +122,7 @@ export default function App() {
     );
   }
 
-  if (!portfolioData || !portfolioData[lang]) {
+  if (!portfolioData || !portfolioData.pt) {
     return (
       <div className="full-screen-center">
         <p className="error-text">Falha ao carregar dados do portfólio. Verifique a API.</p>
@@ -108,10 +130,18 @@ export default function App() {
     );
   }
 
-  const t = portfolioData[lang];
+  // `pt` é a fonte de verdade única do conteúdo — a versão em inglês nunca é
+  // lida de `portfolioData.en` (isso eliminaria a necessidade de duplicar
+  // cada experiência/projeto em dois idiomas); em vez disso o Google Website
+  // Translator traduz o DOM já renderizado quando o visitante escolhe "EN".
+  const t = portfolioData.pt;
 
   return (
     <div className="app-shell">
+      {/* Ancora do widget do Google Translate — nunca exibida diretamente;
+          o próprio Google injeta seu combo de idioma escondido aqui dentro */}
+      <div id="google_translate_element" className="google-translate-anchor" aria-hidden="true" />
+
       {/* Barra de Progresso de Leitura */}
       <div className="scroll-progress-bar" style={{ width: scrollProgress }} />
 
@@ -121,7 +151,7 @@ export default function App() {
         theme={theme}
         setTheme={setTheme}
         lang={lang}
-        setLang={setLang}
+        setLang={handleLangChange}
       />
 
       {/* Conteúdo Principal */}
