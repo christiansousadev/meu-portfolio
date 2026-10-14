@@ -13,8 +13,16 @@ export default function Projects({ data }) {
         setActiveModalProject(null);
       }
     };
+    if (activeModalProject) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [activeModalProject]);
 
   if (!data || !data.items) {

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Database, Shield, Terminal, Layers } from "lucide-react";
+import SkillsVectorDiagram from "./SkillsVectorDiagram";
 
 export default function Skills({ data }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -16,18 +17,24 @@ export default function Skills({ data }) {
   const skillBadges = [
     { name: "Python", category: "fullstack" },
     { name: "FastAPI", category: "fullstack" },
-    { name: "React", category: "fullstack" },
     { name: "Node.js", category: "fullstack" },
+    { name: "React", category: "fullstack" },
+    { name: "Next.js", category: "fullstack" },
+    { name: "JavaScript", category: "fullstack" },
+    { name: "PHP", category: "fullstack" },
     { name: "PostgreSQL", category: "data_ai" },
     { name: "SQL Avançado & CTEs", category: "data_ai" },
+    { name: "MySQL", category: "data_ai" },
     { name: "Metabase BI", category: "data_ai" },
-    { name: "RAG & LLMs", category: "data_ai" },
-    { name: "Docker", category: "governance" },
-    { name: "Nginx", category: "governance" },
+    { name: "RAG & LLMs (GPT/Gemini)", category: "data_ai" },
+    { name: "Firebase", category: "data_ai" },
     { name: "n8n Automation", category: "governance" },
+    { name: "Docker", category: "governance" },
+    { name: "Git", category: "governance" },
+    { name: "Linux", category: "governance" },
+    { name: "Nginx", category: "governance" },
     { name: "ITIL® 4", category: "governance" },
     { name: "ISO 27001 / LGPD", category: "governance" },
-    { name: "Linux", category: "governance" },
   ];
 
   const filteredBadges =
@@ -44,11 +51,8 @@ export default function Skills({ data }) {
       transition={{ duration: 0.6 }}
       viewport={{ once: true, margin: "-80px" }}
     >
-      <div className="section-image">
-        <img
-          src="/images/skills_tech.png"
-          alt="Stack Tecnológica e Arquitetura - Christian Sousa"
-        />
+      <div className="section-image section-image--arch">
+        <SkillsVectorDiagram />
       </div>
 
       <div className="section-text">

@@ -25,12 +25,16 @@
       "tags": [
         "Python",
         "FastAPI",
+        "Node.js",
         "React",
+        "Next.js",
         "PostgreSQL",
         "n8n",
         "Docker",
         "Metabase",
-        "LLMs"
+        "LLMs",
+        "Linux",
+        "Git"
       ]
     },
     "exp": {

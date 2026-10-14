@@ -420,7 +420,7 @@ export default function AdminDashboard() {
   if (!isLogged) {
     return (
       <div className="login-wrap notranslate" translate="no">
-        <div className="glass-card login-card">
+        <div className="glass-card glass-card--static login-card">
           <div className="login-icon">
             <ShieldCheck size={28} />
           </div>
