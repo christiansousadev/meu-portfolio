@@ -4,12 +4,12 @@ import { useState } from "react";
 export default function SkillsVectorDiagram() {
   const [activeNodeId, setActiveNodeId] = useState(null);
 
-  // 8 Pilares reais do README do Christian: Frontend, Backend, IA, Automação, Banco de Dados, BI, DevOps, Governança
+  // 8 Pillars from Christian's stack in English
   const nodes = [
     {
       id: "frontend",
       title: "React & Next.js",
-      subtitle: "JavaScript · UI Reativa",
+      subtitle: "JavaScript · Reactive UI",
       tag: "Frontend",
       color: "#61DAFB",
       x: 60,
@@ -21,7 +21,7 @@ export default function SkillsVectorDiagram() {
       id: "ai",
       title: "LLMs & RAG",
       subtitle: "GPT · Gemini · Embeddings",
-      tag: "Inteligência",
+      tag: "AI & Intelligence",
       color: "#8B5CF6",
       x: 215,
       y: 24,
@@ -42,8 +42,8 @@ export default function SkillsVectorDiagram() {
     {
       id: "automation",
       title: "n8n Workflows",
-      subtitle: "Integrações & ERP/CRM",
-      tag: "Automação",
+      subtitle: "Integrations & ERP/CRM",
+      tag: "Automation",
       color: "#FF6D5A",
       x: 25,
       y: 226,
@@ -54,7 +54,7 @@ export default function SkillsVectorDiagram() {
       id: "data",
       title: "PostgreSQL & SQL",
       subtitle: "MySQL · Firebird · CTEs",
-      tag: "Banco de Dados",
+      tag: "Databases",
       color: "#336791",
       x: 405,
       y: 226,
@@ -75,8 +75,8 @@ export default function SkillsVectorDiagram() {
     {
       id: "governance",
       title: "ITIL® 4 & ISO",
-      subtitle: "ISO 27001 · LGPD · SLAs",
-      tag: "Governança & ITSM",
+      subtitle: "ISO 27001 · Security · SLAs",
+      tag: "IT Governance",
       color: "#10B981",
       x: 215,
       y: 428,
@@ -86,7 +86,7 @@ export default function SkillsVectorDiagram() {
     {
       id: "bi",
       title: "Metabase BI",
-      subtitle: "Dashboards & Relatórios",
+      subtitle: "Dashboards & Reports",
       tag: "Analytics & BI",
       color: "#509EE3",
       x: 370,
@@ -97,7 +97,7 @@ export default function SkillsVectorDiagram() {
   ];
 
   return (
-    <div className="skills-vector-wrapper" role="region" aria-label="Diagrama do Ecossistema de Habilidades Técnicas">
+    <div className="skills-vector-wrapper" role="region" aria-label="Technical Skills Ecosystem Diagram">
       <svg
         viewBox="0 0 540 500"
         fill="none"
@@ -105,7 +105,7 @@ export default function SkillsVectorDiagram() {
         className="skills-vector-svg"
       >
         <defs>
-          {/* Gradientes Neon dos Circuitos */}
+          {/* Neon Gradients */}
           <linearGradient id="grad-core" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.9" />
             <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.9" />
@@ -124,27 +124,27 @@ export default function SkillsVectorDiagram() {
             <stop offset="100%" stopColor="#0B0F19" stopOpacity="0" />
           </linearGradient>
 
-          {/* Filtro Glow para nós ativos */}
+          {/* Glow filter */}
           <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
 
-          {/* Grid Pontilhado Tecnológico */}
+          {/* Dot Grid */}
           <pattern id="dot-grid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
             <circle cx="2" cy="2" r="1" fill="#3B82F6" fillOpacity="0.12" />
           </pattern>
         </defs>
 
-        {/* Fundo do Card com Grid */}
+        {/* Card Background */}
         <rect width="540" height="500" rx="20" className="vector-card-bg" />
         <rect width="540" height="500" rx="20" fill="url(#dot-grid)" />
         <rect width="540" height="500" rx="20" className="vector-card-border" />
 
-        {/* Aura Central de Iluminação */}
+        {/* Central Radial Aura */}
         <circle cx="270" cy="250" r="170" fill="url(#grad-glow-radial)" />
 
-        {/* Circuitos Base Conectores (Anel Octagonal) */}
+        {/* Octagonal Base Circuits */}
         <g className="vector-circuits-base">
           <polygon
             points="270,48 425,110 460,250 425,390 270,452 115,390 80,250 115,110"
@@ -154,7 +154,7 @@ export default function SkillsVectorDiagram() {
             strokeDasharray="4 6"
           />
 
-          {/* Trilhas Radiais conectando o Hub a cada um dos 8 nós */}
+          {/* Radial Lines connecting Hub to all 8 nodes */}
           <line x1="270" y1="215" x2="270" y2="72" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="1.5" />
           <line x1="315" y1="225" x2="380" y2="134" stroke="rgba(0, 150, 136, 0.3)" strokeWidth="1.5" />
           <line x1="330" y1="250" x2="405" y2="250" stroke="rgba(51, 103, 145, 0.3)" strokeWidth="1.5" />
@@ -165,7 +165,7 @@ export default function SkillsVectorDiagram() {
           <line x1="225" y1="225" x2="160" y2="134" stroke="rgba(97, 218, 251, 0.3)" strokeWidth="1.5" />
         </g>
 
-        {/* Linhas de Fluxo de Dados Animadas (Pulsos) */}
+        {/* Animated Data Pulses */}
         <g className="vector-circuits-animated">
           <polygon
             points="270,48 425,110 460,250 425,390 270,452 115,390 80,250 115,110"
@@ -176,7 +176,7 @@ export default function SkillsVectorDiagram() {
             className="circuit-pulse"
           />
 
-          {/* Pulsos de Dados Radiais */}
+          {/* Radial Pulses */}
           <line x1="270" y1="215" x2="270" y2="72" stroke="#8B5CF6" strokeWidth="2" strokeDasharray="6 12" className="circuit-pulse" />
           <line x1="315" y1="225" x2="380" y2="134" stroke="#009688" strokeWidth="2" strokeDasharray="6 12" className="circuit-pulse" />
           <line x1="330" y1="250" x2="405" y2="250" stroke="#336791" strokeWidth="2" strokeDasharray="6 12" className="circuit-pulse" />
@@ -187,13 +187,12 @@ export default function SkillsVectorDiagram() {
           <line x1="225" y1="225" x2="160" y2="134" stroke="#61DAFB" strokeWidth="2" strokeDasharray="6 12" className="circuit-pulse" />
         </g>
 
-        {/* NÚCLEO CENTRAL */}
+        {/* Central Core Hub */}
         <g className="vector-core-hub">
-          {/* Anéis orbitais concêntricos */}
           <circle cx="270" cy="250" r="54" fill="none" stroke="rgba(59, 130, 246, 0.25)" strokeWidth="1" strokeDasharray="3 3" />
           <circle cx="270" cy="250" r="44" fill="none" stroke="url(#grad-core)" strokeWidth="1.5" className="core-orbit-ring" />
 
-          {/* Cápsula Central 2D Flat */}
+          {/* Central 2D Flat Capsule */}
           <rect
             x="212"
             y="222"
@@ -206,7 +205,6 @@ export default function SkillsVectorDiagram() {
             filter="url(#neon-glow)"
           />
 
-          {/* Indicador Central */}
           <circle cx="270" cy="238" r="4.5" fill="#38BDF8" />
           <circle cx="270" cy="238" r="9" fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="2 2" />
 
@@ -218,7 +216,7 @@ export default function SkillsVectorDiagram() {
           </text>
         </g>
 
-        {/* 8 NÓS DAS HABILIDADES REAIS */}
+        {/* 8 Skill Nodes */}
         {nodes.map((node) => {
           const isHovered = activeNodeId === node.id;
           const cardWidth = 110;
@@ -235,7 +233,6 @@ export default function SkillsVectorDiagram() {
               role="button"
               aria-label={`${node.title}: ${node.subtitle}`}
             >
-              {/* Sombra de destaque no hover */}
               {isHovered && (
                 <rect
                   x={node.x - 4}
@@ -249,7 +246,6 @@ export default function SkillsVectorDiagram() {
                 />
               )}
 
-              {/* Fundo do Card 2D Flat */}
               <rect
                 x={node.x}
                 y={node.y}
@@ -261,22 +257,18 @@ export default function SkillsVectorDiagram() {
                 strokeWidth={isHovered ? "2" : "1.2"}
               />
 
-              {/* Tag Superior */}
               <text x={node.x + 9} y={node.y + 15} fill={node.color} className="node-tag-text">
                 {node.tag}
               </text>
 
-              {/* Título da Stack */}
               <text x={node.x + 9} y={node.y + 29} className="node-title-text">
                 {node.title}
               </text>
 
-              {/* Subtítulo das Tecnologias */}
               <text x={node.x + 9} y={node.y + 40} className="node-sub-text">
                 {node.subtitle}
               </text>
 
-              {/* Ponto indicador com a cor oficial */}
               <circle cx={node.x + cardWidth - 10} cy={node.y + 13} r="3" fill={node.color} />
             </g>
           );
