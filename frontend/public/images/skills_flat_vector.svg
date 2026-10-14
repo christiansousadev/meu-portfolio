@@ -1,18 +1,20 @@
 <svg viewBox="0 0 540 500" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="grad-core" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.8" />
+      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.9" />
     </linearGradient>
 
-    <linearGradient id="grad-circuit" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38BDF8" />
-      <stop offset="50%" stop-color="#3B82F6" />
-      <stop offset="100%" stop-color="#8B5CF6" />
+    <linearGradient id="grad-circuit-loop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#61DAFB" />
+      <stop offset="25%" stop-color="#8B5CF6" />
+      <stop offset="50%" stop-color="#009688" />
+      <stop offset="75%" stop-color="#509EE3" />
+      <stop offset="100%" stop-color="#FF6D5A" />
     </linearGradient>
 
     <linearGradient id="grad-glow-radial" x1="50%" y1="50%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.16" />
+      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.18" />
       <stop offset="100%" stop-color="#0B0F19" stop-opacity="0" />
     </linearGradient>
 
@@ -21,19 +23,23 @@
     </pattern>
 
     <style>
-      .telemetry-text { font-family: monospace; font-size: 10px; fill: #64748B; letter-spacing: 0.05em; }
-      .telemetry-text--success { fill: #10B981; font-weight: bold; }
       .hub-title { font-family: system-ui, -apple-system, sans-serif; font-size: 8.5px; font-weight: 800; fill: #FFFFFF; letter-spacing: 0.08em; }
-      .hub-subtitle { font-family: monospace; font-size: 6.5px; fill: #38BDF8; font-weight: 600; letter-spacing: 0.05em; }
-      .node-tag-text { font-family: monospace; font-size: 7.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.04em; }
+      .hub-subtitle { font-family: monospace; font-size: 6.5px; fill: #38BDF8; font-weight: 700; letter-spacing: 0.05em; }
+      .node-tag-text { font-family: monospace; font-size: 7.2px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.04em; }
       .node-title-text { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; fill: #FFFFFF; }
-      .node-sub-text { font-family: system-ui, -apple-system, sans-serif; font-size: 8px; fill: #94A3B8; }
-      .footer-default-text { font-family: system-ui, -apple-system, sans-serif; font-size: 9.5px; fill: #64748B; }
+      .node-sub-text { font-family: system-ui, -apple-system, sans-serif; font-size: 7.8px; fill: #94A3B8; }
       @keyframes dash {
-        to { stroke-dashoffset: -40; }
+        to { stroke-dashoffset: -34; }
       }
       .circuit-pulse {
-        animation: dash 3s linear infinite;
+        animation: dash 3.5s linear infinite;
+      }
+      @keyframes orbitSpin {
+        to { transform: rotate(360deg); }
+      }
+      .core-orbit-ring {
+        transform-origin: 270px 250px;
+        animation: orbitSpin 18s linear infinite;
       }
     </style>
   </defs>
@@ -43,106 +49,114 @@
   <rect width="540" height="500" rx="20" fill="url(#dot-grid)" />
 
   <!-- Aura Central de Iluminação Neon -->
-  <circle cx="270" cy="235" r="160" fill="url(#grad-glow-radial)" />
+  <circle cx="270" cy="250" r="170" fill="url(#grad-glow-radial)" />
 
-  <!-- Telemetria de Cabeçalho -->
+  <!-- Circuitos Base Conectores (Octógono) -->
   <g>
-    <text x="24" y="28" class="telemetry-text">[SYS: ARCH-ECOSYSTEM v2.5]</text>
-    <text x="516" y="28" text-anchor="end" class="telemetry-text telemetry-text--success">● 99.98% OPERACIONAL</text>
-  </g>
-
-  <!-- Circuitos Conectores Base -->
-  <g>
-    <polygon points="270,42 435,135 435,335 270,430 105,335 105,135" fill="none" stroke="rgba(59, 130, 246, 0.2)" stroke-width="1.5" stroke-dasharray="4 6" />
-    <line x1="270" y1="92" x2="270" y2="185" stroke="rgba(139, 92, 246, 0.3)" stroke-width="1.5" />
-    <line x1="380" y1="165" x2="320" y2="210" stroke="rgba(0, 150, 136, 0.3)" stroke-width="1.5" />
-    <line x1="380" y1="310" x2="320" y2="260" stroke="rgba(51, 103, 145, 0.3)" stroke-width="1.5" />
-    <line x1="270" y1="380" x2="270" y2="285" stroke="rgba(16, 185, 129, 0.3)" stroke-width="1.5" />
-    <line x1="160" y1="310" x2="220" y2="260" stroke="rgba(36, 150, 237, 0.3)" stroke-width="1.5" />
-    <line x1="160" y1="165" x2="220" y2="210" stroke="rgba(255, 109, 90, 0.3)" stroke-width="1.5" />
+    <polygon points="270,48 425,110 460,250 425,390 270,452 115,390 80,250 115,110" fill="none" stroke="rgba(59, 130, 246, 0.2)" stroke-width="1.5" stroke-dasharray="4 6" />
+    <line x1="270" y1="215" x2="270" y2="72" stroke="rgba(139, 92, 246, 0.3)" stroke-width="1.5" />
+    <line x1="315" y1="225" x2="380" y2="134" stroke="rgba(0, 150, 136, 0.3)" stroke-width="1.5" />
+    <line x1="330" y1="250" x2="405" y2="250" stroke="rgba(51, 103, 145, 0.3)" stroke-width="1.5" />
+    <line x1="315" y1="275" x2="380" y2="366" stroke="rgba(80, 158, 227, 0.3)" stroke-width="1.5" />
+    <line x1="270" y1="285" x2="270" y2="428" stroke="rgba(16, 185, 129, 0.3)" stroke-width="1.5" />
+    <line x1="225" y1="275" x2="160" y2="366" stroke="rgba(36, 150, 237, 0.3)" stroke-width="1.5" />
+    <line x1="210" y1="250" x2="135" y2="250" stroke="rgba(255, 109, 90, 0.3)" stroke-width="1.5" />
+    <line x1="225" y1="225" x2="160" y2="134" stroke="rgba(97, 218, 251, 0.3)" stroke-width="1.5" />
   </g>
 
   <!-- Linhas de Fluxo de Dados Animadas -->
   <g>
-    <polygon points="270,42 435,135 435,335 270,430 105,335 105,135" fill="none" stroke="url(#grad-circuit)" stroke-width="2" stroke-dasharray="10 25" class="circuit-pulse" />
-    <line x1="270" y1="92" x2="270" y2="185" stroke="#8B5CF6" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
-    <line x1="380" y1="165" x2="320" y2="210" stroke="#009688" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
-    <line x1="380" y1="310" x2="320" y2="260" stroke="#336791" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
-    <line x1="270" y1="380" x2="270" y2="285" stroke="#10B981" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
-    <line x1="160" y1="310" x2="220" y2="260" stroke="#2496ED" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
-    <line x1="160" y1="165" x2="220" y2="210" stroke="#FF6D5A" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <polygon points="270,48 425,110 460,250 425,390 270,452 115,390 80,250 115,110" fill="none" stroke="url(#grad-circuit-loop)" stroke-width="2" stroke-dasharray="10 24" class="circuit-pulse" />
+    <line x1="270" y1="215" x2="270" y2="72" stroke="#8B5CF6" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <line x1="315" y1="225" x2="380" y2="134" stroke="#009688" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <line x1="330" y1="250" x2="405" y2="250" stroke="#336791" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <line x1="315" y1="275" x2="380" y2="366" stroke="#509EE3" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <line x1="270" y1="285" x2="270" y2="428" stroke="#10B981" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <line x1="225" y1="275" x2="160" y2="366" stroke="#2496ED" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <line x1="210" y1="250" x2="135" y2="250" stroke="#FF6D5A" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
+    <line x1="225" y1="225" x2="160" y2="134" stroke="#61DAFB" stroke-width="2" stroke-dasharray="6 12" class="circuit-pulse" />
   </g>
 
   <!-- HUB CENTRAL -->
   <g>
-    <circle cx="270" cy="235" r="54" fill="none" stroke="rgba(59, 130, 246, 0.25)" stroke-width="1" stroke-dasharray="3 3" />
-    <circle cx="270" cy="235" r="44" fill="none" stroke="url(#grad-core)" stroke-width="1.5" />
-    <rect x="215" y="205" width="110" height="60" rx="12" fill="#0F172A" stroke="url(#grad-core)" stroke-width="1.8" />
-    <circle cx="270" cy="223" r="5" fill="#38BDF8" />
-    <circle cx="270" cy="223" r="10" fill="none" stroke="#38BDF8" stroke-width="1" stroke-dasharray="2 2" />
-    <text x="270" y="244" text-anchor="middle" class="hub-title">CHRISTIAN SOUSA</text>
-    <text x="270" y="256" text-anchor="middle" class="hub-subtitle">GOVERNANÇA &amp; DADOS</text>
+    <circle cx="270" cy="250" r="54" fill="none" stroke="rgba(59, 130, 246, 0.25)" stroke-width="1" stroke-dasharray="3 3" />
+    <circle cx="270" cy="250" r="44" fill="none" stroke="url(#grad-core)" stroke-width="1.5" class="core-orbit-ring" />
+    <rect x="212" y="222" width="116" height="56" rx="12" fill="#0F172A" stroke="url(#grad-core)" stroke-width="1.8" />
+    <circle cx="270" cy="238" r="4.5" fill="#38BDF8" />
+    <circle cx="270" cy="238" r="9" fill="none" stroke="#38BDF8" stroke-width="1" stroke-dasharray="2 2" />
+    <text x="270" y="258" text-anchor="middle" class="hub-title">CHRISTIAN SOUSA</text>
+    <text x="270" y="269" text-anchor="middle" class="hub-subtitle">SOFTWARE ENGINEER</text>
   </g>
 
-  <!-- NÓ 1: RAG & LLMs -->
-  <g transform="translate(211, 16)">
-    <rect width="118" height="52" rx="10" fill="#0F172A" stroke="#8B5CF6" stroke-width="1.2" />
-    <text x="10" y="16" fill="#8B5CF6" class="node-tag-text">Inteligência</text>
-    <text x="10" y="31" class="node-title-text">RAG &amp; LLMs</text>
-    <text x="10" y="43" class="node-sub-text">Vector Search &amp; IA</text>
-    <circle cx="106" cy="14" r="3" fill="#8B5CF6" />
+  <!-- 1. Frontend: React & Next.js -->
+  <g transform="translate(60, 86)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#61DAFB" stroke-width="1.2" />
+    <text x="9" y="15" fill="#61DAFB" class="node-tag-text">Frontend</text>
+    <text x="9" y="29" class="node-title-text">React &amp; Next.js</text>
+    <text x="9" y="40" class="node-sub-text">JavaScript · UI Reativa</text>
+    <circle cx="100" cy="13" r="3" fill="#61DAFB" />
   </g>
 
-  <!-- NÓ 2: Python / FastAPI -->
-  <g transform="translate(376, 109)">
-    <rect width="118" height="52" rx="10" fill="#0F172A" stroke="#009688" stroke-width="1.2" />
-    <text x="10" y="16" fill="#009688" class="node-tag-text">Core Backend</text>
-    <text x="10" y="31" class="node-title-text">Python / FastAPI</text>
-    <text x="10" y="43" class="node-sub-text">Microsserviços Async</text>
-    <circle cx="106" cy="14" r="3" fill="#009688" />
+  <!-- 2. IA: LLMs & RAG -->
+  <g transform="translate(215, 24)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#8B5CF6" stroke-width="1.2" />
+    <text x="9" y="15" fill="#8B5CF6" class="node-tag-text">Inteligência</text>
+    <text x="9" y="29" class="node-title-text">LLMs &amp; RAG</text>
+    <text x="9" y="40" class="node-sub-text">GPT · Gemini · Embeddings</text>
+    <circle cx="100" cy="13" r="3" fill="#8B5CF6" />
   </g>
 
-  <!-- NÓ 3: PostgreSQL & BI -->
-  <g transform="translate(376, 309)">
-    <rect width="118" height="52" rx="10" fill="#0F172A" stroke="#336791" stroke-width="1.2" />
-    <text x="10" y="16" fill="#336791" class="node-tag-text">Dados &amp; Analytics</text>
-    <text x="10" y="31" class="node-title-text">PostgreSQL &amp; BI</text>
-    <text x="10" y="43" class="node-sub-text">CTEs &amp; Metabase</text>
-    <circle cx="106" cy="14" r="3" fill="#336791" />
+  <!-- 3. Backend: Python / FastAPI -->
+  <g transform="translate(370, 86)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#009688" stroke-width="1.2" />
+    <text x="9" y="15" fill="#009688" class="node-tag-text">Backend &amp; APIs</text>
+    <text x="9" y="29" class="node-title-text">Python / FastAPI</text>
+    <text x="9" y="40" class="node-sub-text">Node.js · PHP · Async APIs</text>
+    <circle cx="100" cy="13" r="3" fill="#009688" />
   </g>
 
-  <!-- NÓ 4: ITIL® 4 & ISO -->
-  <g transform="translate(211, 404)">
-    <rect width="118" height="52" rx="10" fill="#0F172A" stroke="#10B981" stroke-width="1.2" />
-    <text x="10" y="16" fill="#10B981" class="node-tag-text">Compliance &amp; ITSM</text>
-    <text x="10" y="31" class="node-title-text">ITIL® 4 &amp; ISO</text>
-    <text x="10" y="43" class="node-sub-text">Governança &amp; LGPD</text>
-    <circle cx="106" cy="14" r="3" fill="#10B981" />
+  <!-- 4. Automação: n8n Workflows -->
+  <g transform="translate(25, 226)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#FF6D5A" stroke-width="1.2" />
+    <text x="9" y="15" fill="#FF6D5A" class="node-tag-text">Automação</text>
+    <text x="9" y="29" class="node-title-text">n8n Workflows</text>
+    <text x="9" y="40" class="node-sub-text">Integrações &amp; ERP/CRM</text>
+    <circle cx="100" cy="13" r="3" fill="#FF6D5A" />
   </g>
 
-  <!-- NÓ 5: Docker & Linux -->
-  <g transform="translate(46, 309)">
-    <rect width="118" height="52" rx="10" fill="#0F172A" stroke="#2496ED" stroke-width="1.2" />
-    <text x="10" y="16" fill="#2496ED" class="node-tag-text">Containerização</text>
-    <text x="10" y="31" class="node-title-text">Docker &amp; Linux</text>
-    <text x="10" y="43" class="node-sub-text">Infra &amp; Nginx</text>
-    <circle cx="106" cy="14" r="3" fill="#2496ED" />
+  <!-- 5. Banco de Dados: PostgreSQL & SQL -->
+  <g transform="translate(405, 226)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#336791" stroke-width="1.2" />
+    <text x="9" y="15" fill="#336791" class="node-tag-text">Banco de Dados</text>
+    <text x="9" y="29" class="node-title-text">PostgreSQL &amp; SQL</text>
+    <text x="9" y="40" class="node-sub-text">MySQL · Firebird · CTEs</text>
+    <circle cx="100" cy="13" r="3" fill="#336791" />
   </g>
 
-  <!-- NÓ 6: n8n Workflows -->
-  <g transform="translate(46, 109)">
-    <rect width="118" height="52" rx="10" fill="#0F172A" stroke="#FF6D5A" stroke-width="1.2" />
-    <text x="10" y="16" fill="#FF6D5A" class="node-tag-text">Automação</text>
-    <text x="10" y="31" class="node-title-text">n8n Workflows</text>
-    <text x="10" y="43" class="node-sub-text">Orquestração ETL</text>
-    <circle cx="106" cy="14" r="3" fill="#FF6D5A" />
+  <!-- 6. DevOps: Docker & Linux -->
+  <g transform="translate(60, 366)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#2496ED" stroke-width="1.2" />
+    <text x="9" y="15" fill="#2496ED" class="node-tag-text">DevOps &amp; Infra</text>
+    <text x="9" y="29" class="node-title-text">Docker &amp; Linux</text>
+    <text x="9" y="40" class="node-sub-text">Git · Containers · Nginx</text>
+    <circle cx="100" cy="13" r="3" fill="#2496ED" />
   </g>
 
-  <!-- Rodapé do SVG -->
-  <g>
-    <line x1="20" y1="466" x2="520" y2="466" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1" />
-    <text x="270" y="484" text-anchor="middle" class="footer-default-text">
-      Arquitetura Integrada: APIs Assíncronas, Orquestração e Governança de TI
-    </text>
+  <!-- 7. Governança: ITIL® 4 & ISO -->
+  <g transform="translate(215, 428)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#10B981" stroke-width="1.2" />
+    <text x="9" y="15" fill="#10B981" class="node-tag-text">Governança &amp; ITSM</text>
+    <text x="9" y="29" class="node-title-text">ITIL® 4 &amp; ISO</text>
+    <text x="9" y="40" class="node-sub-text">ISO 27001 · LGPD · SLAs</text>
+    <circle cx="100" cy="13" r="3" fill="#10B981" />
+  </g>
+
+  <!-- 8. Analytics & BI: Metabase BI -->
+  <g transform="translate(370, 366)">
+    <rect width="110" height="48" rx="10" fill="#0F172A" stroke="#509EE3" stroke-width="1.2" />
+    <text x="9" y="15" fill="#509EE3" class="node-tag-text">Analytics &amp; BI</text>
+    <text x="9" y="29" class="node-title-text">Metabase BI</text>
+    <text x="9" y="40" class="node-sub-text">Dashboards &amp; Relatórios</text>
+    <circle cx="100" cy="13" r="3" fill="#509EE3" />
   </g>
 </svg>
