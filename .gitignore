@@ -34,6 +34,10 @@ __pycache__/
 backend/data/runtime_state.json
 backend/data/*.jsonl
 
+# Dados operacionais / cadastros (persistidos em prod/dev, nunca sobrescrever via git pull)
+backend/data/portfolio.json
+backend/data/portfolio_data.json
+
 # ============================================================
 # Frontend - Node/Vite
 # ============================================================

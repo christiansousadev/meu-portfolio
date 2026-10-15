@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Trash2, Plus, Save, Loader2, Check, X, ChevronDown,
-  Briefcase, Rocket, Award, Sparkles, FileText
+  Briefcase, Rocket, Award, Sparkles, FileText, Download
 } from "lucide-react";
 
 // duracao em ms que o toast permanece visivel antes de auto-fechar
@@ -175,6 +175,25 @@ export default function JsonEditor({ onSessionLost }) {
     }
   };
 
+  // BAIXA UMA COPIA DE SEGURANCA DO ARQUIVO ATUAL EM JSON
+  const EXPORT_JSON = () => {
+    try {
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = activeFile;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      SHOW_TOAST("success", `Backup de ${activeFile} baixado com sucesso.`);
+    } catch (e) {
+      SHOW_TOAST("error", "Falha ao gerar download do backup.");
+    }
+  };
+
   // ADICIONA ITENS DINAMICAMENTE BASEADO NO ARQUIVO ATUAL — itens de lista
   // (objetos) sao criados e imediatamente expandidos para edicao
   const ADD_ITEM = (section, subArray = "items") => {
@@ -326,16 +345,28 @@ export default function JsonEditor({ onSessionLost }) {
               </span>
             )}
 
-            <button type="button" className="btn-primary btn-sm" onClick={SAVE} disabled={isSaving}>
-              {isSaving ? (
-                <Loader2 size={16} className="icon-spin" />
-              ) : justSaved ? (
-                <Check size={16} />
-              ) : (
-                <Save size={16} />
-              )}
-              {isSaving ? "Salvando..." : justSaved ? "Salvo!" : "Salvar Alterações"}
-            </button>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button
+                type="button"
+                className="btn-secondary btn-sm"
+                onClick={EXPORT_JSON}
+                title={`Baixar cópia de segurança de ${activeFile}`}
+              >
+                <Download size={15} />
+                Baixar Backup
+              </button>
+
+              <button type="button" className="btn-primary btn-sm" onClick={SAVE} disabled={isSaving}>
+                {isSaving ? (
+                  <Loader2 size={16} className="icon-spin" />
+                ) : justSaved ? (
+                  <Check size={16} />
+                ) : (
+                  <Save size={16} />
+                )}
+                {isSaving ? "Salvando..." : justSaved ? "Salvo!" : "Salvar Alterações"}
+              </button>
+            </div>
           </div>
         </div>
 

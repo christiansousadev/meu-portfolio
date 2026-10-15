@@ -49,6 +49,19 @@ def _is_within(path: Path, root: Path) -> bool:
 def read_config(filename: AllowedConfigFile) -> dict:
     path = resolve_path(filename)
     if not path.exists():
+        example_path = path.with_name(f"{path.name}.example")
+        if example_path.exists():
+            try:
+                content = example_path.read_text(encoding="utf-8")
+                path.write_text(content, encoding="utf-8")
+                logging.info(
+                    f"arquivo {filename.value} inicializado com sucesso a partir de {example_path.name}",
+                    extra={"event": "config_seeded_from_example", "file_name": filename.value},
+                )
+                return json.loads(content)
+            except Exception as exc:
+                logging.error(f"falha ao auto-inicializar {filename.value} a partir de example: {exc}")
+
         logging.warning(
             "arquivo de configuracao ausente",
             extra={"event": "config_read_missing", "file_name": filename.value, "path": str(path)},

@@ -16,6 +16,11 @@ else:
 # CARREGA O CONTEXTO BRUTO DO ARQUIVO JSON
 def load_portfolio_context() -> dict:
     try:
+        if not settings.portfolio_data_path.exists():
+            example_path = settings.portfolio_data_path.with_name(f"{settings.portfolio_data_path.name}.example")
+            if example_path.exists():
+                settings.portfolio_data_path.write_text(example_path.read_text(encoding="utf-8"), encoding="utf-8")
+                logging.info(f"portfolio_data.json inicializado a partir de {example_path.name}")
         return json.loads(settings.portfolio_data_path.read_text(encoding="utf-8"))
     except Exception as exc:
         logging.error(f"falha ao carregar o contexto json: {exc}")
