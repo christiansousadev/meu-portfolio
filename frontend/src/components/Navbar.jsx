@@ -2,15 +2,20 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sun, Moon, Globe, Lock, Menu, X } from "lucide-react";
+import { EASE_OUT, SPRING_INDICATOR } from "../utils/motion";
 
 export default function Navbar({ t, theme, setTheme, lang, setLang }) {
   const nextLang = lang === "pt" ? "en" : "pt";
   const nextTheme = theme === "dark" ? "light" : "dark";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [hoveredLink, setHoveredLink] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
+      setIsScrolled(window.scrollY > 8);
+
       const sections = ["skills", "experience", "projects", "certifications"];
       const scrollPos = window.scrollY + 180;
 
@@ -32,6 +37,7 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
       }
     };
 
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -44,16 +50,21 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
   ];
 
   return (
-    <header className="navbar">
+    <header className={`navbar ${isScrolled || mobileMenuOpen ? "is-scrolled" : ""}`}>
       <div className="navbar-inner">
         <a href="#" className="navbar-logo" aria-label="Ir para o início">
+          <span className="navbar-mark" aria-hidden="true">CS</span>
           <span className="navbar-brand-name">Christian Sousa</span>
           <span className="navbar-brand-sep" aria-hidden="true">/</span>
           <span className="navbar-brand-role">Engenharia & Governança</span>
         </a>
 
         <div className="navbar-desktop">
-          <nav className="navbar-links" aria-label="Seções principais">
+          <nav
+            className="navbar-links"
+            aria-label="Seções principais"
+            onMouseLeave={() => setHoveredLink(null)}
+          >
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
               return (
@@ -61,8 +72,28 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
                   key={link.id}
                   href={link.href}
                   className={`navbar-link ${isActive ? "is-active" : ""}`}
+                  aria-current={isActive ? "location" : undefined}
+                  onMouseEnter={() => setHoveredLink(link.id)}
+                  onFocus={() => setHoveredLink(link.id)}
                 >
-                  {link.label}
+                  {hoveredLink === link.id && (
+                    <motion.span
+                      layoutId="navbar-hover"
+                      className="navbar-link-hover"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={SPRING_INDICATOR}
+                    />
+                  )}
+                  <span className="navbar-link-label">{link.label}</span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="navbar-active"
+                      className="navbar-link-indicator"
+                      transition={SPRING_INDICATOR}
+                    />
+                  )}
                 </a>
               );
             })}
@@ -125,7 +156,7 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.32, ease: EASE_OUT }}
             className="mobile-drawer"
           >
             <nav className="mobile-drawer-links" aria-label="Menu móvel">

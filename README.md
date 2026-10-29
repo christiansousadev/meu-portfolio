@@ -24,7 +24,7 @@ O sistema opera como portfólio técnico de engenharia de software, automação 
 
 | Camada | Tecnologia | Função no Sistema |
 |---|---|---|
-| **Frontend** | React 18, Vite 5, Framer Motion, Lucide Icons | SPA editorial técnica (`IBM Plex Sans` + `IBM Plex Mono`), ledger cronológico, modal de especificação e console `/admin` |
+| **Frontend** | React 18, Vite 5, Framer Motion, Lucide Icons | SPA interativa (`Instrument Sans` + `JetBrains Mono`), coreografia `layoutId`, timeline dinâmica, diagrama SVG e console `/admin` |
 | **Borda / Edge** | Cloudflare Tunnel (`cloudflared`) & Cloudflare Turnstile | Tunelamento criptografado outbound, terminação TLS 1.3, mitigação DDoS e proteção antibot |
 | **Proxy / Servidor Web** | Nginx 1.27 Alpine | Proxy reverso interno `/api/`, compressão Gzip, cache de assets estáticos e SPA fallback |
 | **Backend API** | Python 3.12, FastAPI, Uvicorn, Pydantic V2 | API REST assíncrona, validação estrita (`extra='forbid'`), sessão por cookie `HttpOnly` e rate limiting |
@@ -87,11 +87,11 @@ A infraestrutura adota o paradigma **Zero Port Exposure**: o servidor não preci
 ## 3. Módulos e Recursos do Sistema
 
 ### 3.1 Interface do Usuário (Frontend)
-- **Design System Editorial de Engenharia:** Tipografia `IBM Plex Sans` + `IBM Plex Mono` com `tabular-nums`, superfícies neutras de alto contraste (*Obsidian Graphite* `#0B0D10` no modo escuro e *Technical Paper* `#F7F8FA` no modo claro) e divisórias precisas de `1px`.
-- **Navbar & Internacionalização Resiliente:** Identidade `Christian Sousa / Engenharia & Governança`, *drawer* móvel, indicador de seção ativa (*scroll spy*) e tradução PT/EN via Google Website Translator (`googleTranslate.js`) sobre fonte única em português, acompanhada de patch defensivo de reconciliação DOM em `main.jsx` e blindagem `notranslate` no `/admin`.
-- **Hero & Credenciais:** Ilustração autoral emoldurada (`hero_developer.png`), CTAs objetivos, atalhos externos (GitHub e LinkedIn) e barra horizontal `.hero-credentials-bar` com qualificações centrais (`+6 anos`, `ITIL® 4`, `ISO 27001 & LGPD`, `Python & SQL`).
-- **Matriz de Competências (`Skills`):** Grade arquitetural em 3 domínios (*Backend, APIs & Automação*, *Engenharia de Dados & IA Aplicada*, *Governança, Infra & Segurança*), lista de entregas e leitura dinâmica das `tags` cadastradas no JSON.
-- **Ledger Cronológico (`Experience`):** Registro profissional em duas colunas (`Período` tabular à esquerda e `Cargo · Empresa` + escopo à direita) com expansão progressiva do histórico completo.
+- **Design System & Motion Coreografado:** Tipografia `Instrument Sans` + `JetBrains Mono` com `tabular-nums`, profundidade atmosférica com grid esmaecido e superfícies translúcidas, além de utilitários centralizados de animação em `motion.js` respeitando `prefers-reduced-motion`.
+- **Navbar & Internacionalização Resiliente:** Indicadores deslizantes via `layoutId`, *drawer* móvel, *scroll spy* e tradução PT/EN via Google Website Translator (`googleTranslate.js`) sobre fonte única em português, acompanhada de patch defensivo de reconciliação DOM em `main.jsx` e blindagem `notranslate` no `/admin`.
+- **Hero & Credenciais:** Entrada coreografada (`staggerChildren`), caricatura autoral (`hero_developer.png`) em moldura com inclinação 3D sutil e feixe de borda, CTAs diretos e barra de credenciais com iluminação reativa ao hover.
+- **Matriz de Competências & Diagrama de Fluxo (`Skills`):** Diagrama SVG interativo (*ERPs/CRMs/APIs → Integração → Dados & IA → Governança*) sincronizado no hover com os 3 domínios arquiteturais, lista de entregas e `tags` dinâmicas lidas do JSON.
+- **Timeline Interativa (`Experience`):** Linha guia preenchida conforme a rolagem, marcador luminoso, destaque deslizante entre experiências e expansão animada (`AnimatePresence`) do histórico completo.
 - **Projetos & Modal de Especificação (`Projects`):** Abas de filtro derivadas dinamicamente das categorias cadastradas, grade uniforme em 2 colunas e modal condicional **Especificação** exibido quando o projeto possui detalhamento técnico (`architecture`).
 - **Certificações (`Certifications`):** Credenciais oficiais com emissor, ano tabular, escopo da competência e link de verificação externa.
 - **Assistente Conversacional (`ChatWidget`):** Painel discreto com sugestões rápidas, parser seguro de Markdown (negrito, listas, links externos, blocos de código copiáveis sem `dangerouslySetInnerHTML`) e fechamento por `Esc`.
@@ -155,7 +155,8 @@ meu-portfolio/
 │   │   │   ├── AdminDashboard.jsx # Console de governança, Turnstile, KPIs e auditoria
 │   │   │   └── JsonEditor.jsx     # Editor semântico do portfólio (Hero/Skills/Exp/Proj/Cert) e RAG
 │   │   ├── utils/
-│   │   │   └── googleTranslate.js # Integração controlada com Google Website Translator
+│   │   │   ├── googleTranslate.js # Integração controlada com Google Website Translator
+│   │   │   └── motion.js          # Curvas, variantes e presets compartilhados de Framer Motion
 │   │   ├── App.jsx                # Orquestração de rotas (/ e /admin), tema e rodapé
 │   │   ├── index.css              # Design system Obsidian Graphite / Technical Paper
 │   │   └── main.jsx               # Bootstrap React + patch defensivo de reconciliação DOM

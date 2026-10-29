@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
+  AnimatePresence,
+  LayoutGroup,
+  animate,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
+import {
   Download,
   Search,
   AlertTriangle,
@@ -12,6 +19,55 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import JsonEditor from "./JsonEditor";
+import { EASE_OUT, SPRING_INDICATOR, trackSpotlight } from "../utils/motion";
+
+const ADMIN_TABS = [
+  { id: "stats", label: "Telemetria & Auditoria" },
+  { id: "editor", label: "Conteúdo & Base RAG" },
+];
+
+const panelTransition = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE_OUT } },
+  exit: { opacity: 0, y: -6, transition: { duration: 0.18, ease: EASE_OUT } },
+};
+
+const kpiContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+
+const kpiItem = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE_OUT } },
+};
+
+// Contagem animada dos KPIs a partir do último valor exibido
+const AnimatedNumber = ({ value }) => {
+  const prefersReducedMotion = useReducedMotion();
+  const target = Number(value) || 0;
+  const [display, setDisplay] = useState(prefersReducedMotion ? target : 0);
+  const lastValueRef = useRef(0);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setDisplay(target);
+      lastValueRef.current = target;
+      return undefined;
+    }
+    const controls = animate(lastValueRef.current, target, {
+      duration: 0.9,
+      ease: EASE_OUT,
+      onUpdate: (latest) => {
+        lastValueRef.current = latest;
+        setDisplay(Math.round(latest));
+      },
+    });
+    return () => controls.stop();
+  }, [target, prefersReducedMotion]);
+
+  return <>{display.toLocaleString("pt-BR")}</>;
+};
 
 const adminFetch = (path, options = {}) =>
   fetch(path, {
@@ -401,7 +457,12 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
   if (!isLogged) {
     return (
       <div className="login-wrap notranslate" translate="no">
-        <div className="surface-card login-card">
+        <motion.div
+          className="surface-card login-card"
+          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: EASE_OUT }}
+        >
           <div className="login-header">
             <span className="login-kicker">christiansousa.dev</span>
             <h1 className="login-title">Console de Governança</h1>
@@ -459,7 +520,21 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
             Entrar no console
           </button>
 
-          {error && <p className="login-error">{error}</p>}
+          <AnimatePresence initial={false}>
+            {error && (
+              <motion.p
+                key="login-error"
+                className="login-error"
+                role="alert"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: EASE_OUT }}
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
 
           <div className="login-footer-link">
             <a href="/">
@@ -467,7 +542,7 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
               <span>Voltar ao portfólio</span>
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -531,238 +606,290 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
           </div>
         </header>
 
-        <nav className="underline-tabs admin-nav-tabs" aria-label="Áreas do console">
-          <button
-            type="button"
-            className={`underline-tab ${activeTab === "stats" ? "is-active" : ""}`}
-            onClick={() => setActiveTab("stats")}
-          >
-            Telemetria & Auditoria
-          </button>
-          <button
-            type="button"
-            className={`underline-tab ${activeTab === "editor" ? "is-active" : ""}`}
-            onClick={() => setActiveTab("editor")}
-          >
-            Conteúdo & Base RAG
-          </button>
-        </nav>
-
-        {activeTab === "stats" ? (
-          <>
-            <section className="kpi-strip" aria-label="Indicadores operacionais">
-              <div className="kpi-cell">
-                <span className="kpi-label">Diálogos processados</span>
-                <div className="kpi-metric-row">
-                  <span className="kpi-number">{stats.total_chats ?? 0}</span>
-                  <span className="kpi-unit">msgs</span>
-                </div>
-                <span className="kpi-sub">Janela de retenção: 90 dias</span>
-              </div>
-
-              <div className="kpi-cell">
-                <span className="kpi-label">Visualizações de página</span>
-                <div className="kpi-metric-row">
-                  <span className="kpi-number">{stats.total_views ?? 0}</span>
-                  <span className="kpi-unit">views</span>
-                </div>
-                <span className="kpi-sub">Eventos page_view registrados</span>
-              </div>
-
-              <div className="kpi-cell">
-                <span className="kpi-label">Latência média do chat</span>
-                <div className="kpi-metric-row">
-                  <span className="kpi-number">{stats.avg_response_ms ?? 0}</span>
-                  <span className="kpi-unit">ms</span>
-                </div>
-                <span className={`kpi-sub ${slaHealthy ? "kpi-sub--ok" : "kpi-sub--warn"}`}>
-                  {slaHealthy ? "Dentro do SLA (< 2.000 ms)" : "Acima do SLA (> 2.000 ms)"}
-                </span>
-              </div>
-
-              <div className="kpi-cell kpi-cell--control">
-                <label htmlFor="interpreter-select" className="kpi-label">
-                  Motor de resposta (Runtime)
-                </label>
-                <select
-                  id="interpreter-select"
-                  className="provider-select"
-                  value={activeInterpreter}
-                  disabled={isChangingInterpreter}
-                  onChange={(e) => changeInterpreter(e.target.value)}
+        <LayoutGroup id="admin-tabs">
+          <nav className="underline-tabs admin-nav-tabs" aria-label="Áreas do console">
+            {ADMIN_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`underline-tab ${isActive ? "is-active" : ""}`}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => setActiveTab(tab.id)}
                 >
-                  <option value="gemini">Gemini 1.5 Flash (RAG)</option>
-                  <option value="json_only">JSON Determinístico (Local)</option>
-                </select>
-                <span
-                  className={`kpi-sub ${
-                    interpreterStatus?.type === "ok"
-                      ? "kpi-sub--ok"
-                      : interpreterStatus?.type === "err"
-                      ? "kpi-sub--warn"
-                      : ""
-                  }`}
-                >
-                  {interpreterStatus
-                    ? interpreterStatus.text
-                    : activeInterpreter === "gemini"
-                    ? "Inferência com recorte semântico"
-                    : "Custo zero de tokens"}
-                </span>
-              </div>
-            </section>
+                  <span className="underline-tab-label">{tab.label}</span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="admin-tab-indicator"
+                      className="underline-tab-indicator"
+                      transition={SPRING_INDICATOR}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </LayoutGroup>
 
-            <div className="dashboard-columns">
-              <section>
-                <div className="panel-head">
-                  <h2 className="panel-title">
-                    Histórico de diálogos ({filteredLogs.length})
-                  </h2>
-
-                  <div className="panel-controls">
-                    <div className="search-field">
-                      <Search size={14} className="search-field-icon" />
-                      <input
-                        type="text"
-                        placeholder="Filtrar pergunta ou trace..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="search-input"
-                      />
-                    </div>
-
-                    <label className="sla-toggle">
-                      <input
-                        type="checkbox"
-                        checked={onlySlaBreaches}
-                        onChange={(e) => setOnlySlaBreaches(e.target.checked)}
-                      />
-                      <span>SLA &gt; 2s</span>
-                    </label>
+        <AnimatePresence mode="wait" initial={false}>
+          {activeTab === "stats" ? (
+            <motion.div key="stats" {...panelTransition}>
+              <motion.section
+                className="kpi-strip"
+                aria-label="Indicadores operacionais"
+                initial="hidden"
+                animate="show"
+                variants={kpiContainer}
+              >
+                <motion.div className="kpi-cell spotlight" variants={kpiItem} onPointerMove={trackSpotlight}>
+                  <span className="kpi-label">Diálogos processados</span>
+                  <div className="kpi-metric-row">
+                    <span className="kpi-number">
+                      <AnimatedNumber value={stats.total_chats} />
+                    </span>
+                    <span className="kpi-unit">msgs</span>
                   </div>
-                </div>
+                  <span className="kpi-sub">Janela de retenção: 90 dias</span>
+                </motion.div>
 
-                <div className="surface-card data-panel table-scroll">
-                  <table className="logs-table">
-                    <thead>
-                      <tr>
-                        <th>Pergunta / Metadados</th>
-                        <th className="logs-table-col-sla">Latência</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredLogs.length === 0 ? (
+                <motion.div className="kpi-cell spotlight" variants={kpiItem} onPointerMove={trackSpotlight}>
+                  <span className="kpi-label">Visualizações de página</span>
+                  <div className="kpi-metric-row">
+                    <span className="kpi-number">
+                      <AnimatedNumber value={stats.total_views} />
+                    </span>
+                    <span className="kpi-unit">views</span>
+                  </div>
+                  <span className="kpi-sub">Eventos page_view registrados</span>
+                </motion.div>
+
+                <motion.div className="kpi-cell spotlight" variants={kpiItem} onPointerMove={trackSpotlight}>
+                  <span className="kpi-label">Latência média do chat</span>
+                  <div className="kpi-metric-row">
+                    <span className="kpi-number">
+                      <AnimatedNumber value={stats.avg_response_ms} />
+                    </span>
+                    <span className="kpi-unit">ms</span>
+                  </div>
+                  <span className={`kpi-sub ${slaHealthy ? "kpi-sub--ok" : "kpi-sub--warn"}`}>
+                    {slaHealthy ? "Dentro do SLA (< 2.000 ms)" : "Acima do SLA (> 2.000 ms)"}
+                  </span>
+                </motion.div>
+
+                <motion.div
+                  className="kpi-cell kpi-cell--control spotlight"
+                  variants={kpiItem}
+                  onPointerMove={trackSpotlight}
+                >
+                  <label htmlFor="interpreter-select" className="kpi-label">
+                    Motor de resposta (Runtime)
+                  </label>
+                  <select
+                    id="interpreter-select"
+                    className="provider-select"
+                    value={activeInterpreter}
+                    disabled={isChangingInterpreter}
+                    onChange={(e) => changeInterpreter(e.target.value)}
+                  >
+                    <option value="gemini">Gemini 1.5 Flash (RAG)</option>
+                    <option value="json_only">JSON Determinístico (Local)</option>
+                  </select>
+                  <span
+                    className={`kpi-sub ${
+                      interpreterStatus?.type === "ok"
+                        ? "kpi-sub--ok"
+                        : interpreterStatus?.type === "err"
+                        ? "kpi-sub--warn"
+                        : ""
+                    }`}
+                  >
+                    {interpreterStatus
+                      ? interpreterStatus.text
+                      : activeInterpreter === "gemini"
+                      ? "Inferência com recorte semântico"
+                      : "Custo zero de tokens"}
+                  </span>
+                </motion.div>
+              </motion.section>
+
+              <div className="dashboard-columns">
+                <section>
+                  <div className="panel-head">
+                    <h2 className="panel-title">
+                      Histórico de diálogos ({filteredLogs.length})
+                    </h2>
+
+                    <div className="panel-controls">
+                      <div className="search-field">
+                        <Search size={14} className="search-field-icon" />
+                        <input
+                          type="text"
+                          placeholder="Filtrar pergunta ou trace..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="search-input"
+                        />
+                      </div>
+
+                      <label className="sla-toggle">
+                        <input
+                          type="checkbox"
+                          checked={onlySlaBreaches}
+                          onChange={(e) => setOnlySlaBreaches(e.target.checked)}
+                        />
+                        <span>SLA &gt; 2s</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="surface-card data-panel table-scroll">
+                    <table className="logs-table">
+                      <thead>
                         <tr>
-                          <td colSpan={2} className="logs-empty-cell">
-                            Nenhum diálogo corresponde ao filtro atual.
-                          </td>
+                          <th>Pergunta / Metadados</th>
+                          <th className="logs-table-col-sla">Latência</th>
                         </tr>
-                      ) : (
-                        filteredLogs.map((log, idx) => (
-                          <tr key={rowKey(log, idx)}>
-                            <td>
-                              <div className="log-question">{log.user_prompt}</div>
-                              <div className="log-meta">
-                                {formatTimestamp(log.timestamp)} · {log.source} · trace {log.trace_id?.slice(0, 8)}
-                              </div>
-                            </td>
-                            <td>
-                              <span
-                                className={`sla-badge ${
-                                  log.response_time_ms > 2000
-                                    ? "sla-badge--bad"
-                                    : "sla-badge--good"
-                                }`}
-                              >
-                                {log.response_time_ms} ms
-                              </span>
+                      </thead>
+                      <tbody>
+                        {filteredLogs.length === 0 ? (
+                          <tr>
+                            <td colSpan={2} className="logs-empty-cell">
+                              Nenhum diálogo corresponde ao filtro atual.
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+                        ) : (
+                          filteredLogs.map((log, idx) => (
+                            <tr key={rowKey(log, idx)}>
+                              <td>
+                                <div className="log-question">{log.user_prompt}</div>
+                                <div className="log-meta">
+                                  {formatTimestamp(log.timestamp)} · {log.source} · trace {log.trace_id?.slice(0, 8)}
+                                </div>
+                              </td>
+                              <td>
+                                <span
+                                  className={`sla-badge ${
+                                    log.response_time_ms > 2000
+                                      ? "sla-badge--bad"
+                                      : "sla-badge--good"
+                                  }`}
+                                >
+                                  {log.response_time_ms} ms
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
 
-              <section>
-                <div className="panel-head">
-                  <h2 className="panel-title">Acessos recentes</h2>
-                </div>
-                <div className="surface-card data-panel telemetry-panel">
-                  {stats.recent_events?.length ? (
-                    stats.recent_events.map((ev, idx) => (
-                      <div key={rowKey(ev, idx)} className="telemetry-item">
-                        <div className="telemetry-row-top">
-                          <span className="telemetry-event">{ev.event_type}</span>
-                          <span className="telemetry-path">{ev.page_path}</span>
+                <section>
+                  <div className="panel-head">
+                    <h2 className="panel-title">Acessos recentes</h2>
+                  </div>
+                  <div className="surface-card data-panel telemetry-panel">
+                    {stats.recent_events?.length ? (
+                      stats.recent_events.map((ev, idx) => (
+                        <div key={rowKey(ev, idx)} className="telemetry-item">
+                          <div className="telemetry-row-top">
+                            <span className="telemetry-event">{ev.event_type}</span>
+                            <span className="telemetry-path">{ev.page_path}</span>
+                          </div>
+                          <span className="telemetry-meta">
+                            {formatTimestamp(ev.timestamp)} · {ev.client_ip || "proxy"}
+                          </span>
                         </div>
-                        <span className="telemetry-meta">
-                          {formatTimestamp(ev.timestamp)} · {ev.client_ip || "proxy"}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="telemetry-empty">Nenhum acesso registrado.</p>
-                  )}
-                </div>
-              </section>
-            </div>
-          </>
-        ) : (
-          <JsonEditor onSessionLost={() => setIsLogged(false)} />
-        )}
+                      ))
+                    ) : (
+                      <p className="telemetry-empty">Nenhum acesso registrado.</p>
+                    )}
+                  </div>
+                </section>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div key="editor" {...panelTransition}>
+              <JsonEditor onSessionLost={() => setIsLogged(false)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {isPurgeModalOpen && (
-        <div className="purge-modal-overlay" onClick={() => setIsPurgeModalOpen(false)}>
-          <div className="surface-card purge-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="purge-modal-head">
-              <AlertTriangle size={20} />
-              <h3>Confirmar expurgo de retenção (LGPD)</h3>
-            </div>
-
-            <p className="purge-modal-text">
-              Remove permanentemente registros de <code>chat_logs.jsonl</code> e{" "}
-              <code>analytics.jsonl</code> anteriores a <strong>90 dias</strong> (Art. 6º, III da LGPD).
-            </p>
-
-            {purgeResult && !purgeResult.error && (
-              <div className="purge-result">
-                Expurgo concluído: {purgeResult.chat_logs_deleted} diálogos e{" "}
-                {purgeResult.analytics_deleted} eventos removidos.
+      <AnimatePresence>
+        {isPurgeModalOpen && (
+          <motion.div
+            key="purge-modal"
+            className="purge-modal-overlay"
+            onClick={() => setIsPurgeModalOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: EASE_OUT }}
+          >
+            <motion.div
+              className="surface-card purge-modal"
+              role="dialog"
+              aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, y: 18, scale: 0.97 }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                transition: { type: "spring", stiffness: 360, damping: 30 },
+              }}
+              exit={{ opacity: 0, y: 10, scale: 0.98, transition: { duration: 0.16 } }}
+            >
+              <div className="purge-modal-head">
+                <AlertTriangle size={20} />
+                <h3>Confirmar expurgo de retenção (LGPD)</h3>
               </div>
-            )}
 
-            {purgeResult?.error && (
-              <div className="purge-result purge-result--err">
-                {purgeResult.error}
+              <p className="purge-modal-text">
+                Remove permanentemente registros de <code>chat_logs.jsonl</code> e{" "}
+                <code>analytics.jsonl</code> anteriores a <strong>90 dias</strong> (Art. 6º, III da LGPD).
+              </p>
+
+              {purgeResult && !purgeResult.error && (
+                <div className="purge-result">
+                  Expurgo concluído: {purgeResult.chat_logs_deleted} diálogos e{" "}
+                  {purgeResult.analytics_deleted} eventos removidos.
+                </div>
+              )}
+
+              {purgeResult?.error && (
+                <div className="purge-result purge-result--err">
+                  {purgeResult.error}
+                </div>
+              )}
+
+              <div className="purge-actions">
+                <button
+                  type="button"
+                  className="btn-secondary btn-sm"
+                  onClick={() => {
+                    setIsPurgeModalOpen(false);
+                    setPurgeResult(null);
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary btn-sm btn-primary--danger"
+                  onClick={executePurge}
+                  disabled={isPurging}
+                >
+                  {isPurging ? "Expurgando..." : "Executar expurgo"}
+                </button>
               </div>
-            )}
-
-            <div className="purge-actions">
-              <button
-                type="button"
-                className="btn-secondary btn-sm"
-                onClick={() => {
-                  setIsPurgeModalOpen(false);
-                  setPurgeResult(null);
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn-primary btn-sm btn-primary--danger"
-                onClick={executePurge}
-                disabled={isPurging}
-              >
-                {isPurging ? "Expurgando..." : "Executar expurgo"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

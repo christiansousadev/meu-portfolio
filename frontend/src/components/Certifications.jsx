@@ -1,5 +1,12 @@
 // frontend/src/components/Certifications.jsx
-import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowUpRight, BadgeCheck } from "lucide-react";
+import {
+  VIEWPORT_ONCE,
+  revealContainer,
+  revealItem,
+  trackSpotlight,
+} from "../utils/motion";
 
 export default function Certifications({ data }) {
   if (!data || !data.items || data.items.length === 0) {
@@ -8,17 +15,46 @@ export default function Certifications({ data }) {
 
   return (
     <section id="certifications" className="section-block">
-      <div className="section-header">
-        {data.subtitle && <span className="section-kicker">{data.subtitle}</span>}
-        <h2 className="section-title">{data.title}</h2>
-      </div>
+      <motion.div
+        className="section-header"
+        initial="hidden"
+        whileInView="show"
+        viewport={VIEWPORT_ONCE}
+        variants={revealContainer}
+      >
+        <motion.h2 className="section-title" variants={revealItem}>
+          {data.title}
+        </motion.h2>
+        {data.subtitle && (
+          <motion.p className="section-subtitle" variants={revealItem}>
+            {data.subtitle}
+          </motion.p>
+        )}
+      </motion.div>
 
-      <div className="cert-grid">
+      <motion.div
+        className="cert-grid"
+        initial="hidden"
+        whileInView="show"
+        viewport={VIEWPORT_ONCE}
+        variants={revealContainer}
+      >
         {data.items.map((cert, index) => (
-          <article key={`${cert.name}-${index}`} className="surface-card cert-card">
+          <motion.article
+            key={`${cert.name}-${index}`}
+            className="surface-card cert-card spotlight"
+            variants={revealItem}
+            whileHover={{ y: -3 }}
+            onPointerMove={trackSpotlight}
+          >
             <div className="cert-body">
               <div className="cert-meta-row">
-                <span className="cert-issuer">{cert.issuer}</span>
+                <span className="cert-issuer">
+                  <span className="cert-seal" aria-hidden="true">
+                    <BadgeCheck size={14} />
+                  </span>
+                  {cert.issuer}
+                </span>
                 {cert.year && <span className="cert-year">{cert.year}</span>}
               </div>
 
@@ -39,9 +75,9 @@ export default function Certifications({ data }) {
                 </a>
               </div>
             )}
-          </article>
+          </motion.article>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 }

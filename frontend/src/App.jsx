@@ -1,7 +1,7 @@
 // frontend/src/App.jsx
 
 import { useState, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 
 import Navbar from "./components/Navbar";
@@ -95,7 +95,11 @@ export default function App() {
   };
 
   if (isAdminRoute) {
-    return <AdminDashboard theme={theme} setTheme={setTheme} />;
+    return (
+      <MotionConfig reducedMotion="user">
+        <AdminDashboard theme={theme} setTheme={setTheme} />
+      </MotionConfig>
+    );
   }
 
   if (isLoading) {
@@ -120,79 +124,83 @@ export default function App() {
   const t = portfolioData.pt;
 
   return (
-    <div className="app-shell">
-      <div id="google_translate_element" className="google-translate-anchor" aria-hidden="true" />
+    <MotionConfig reducedMotion="user">
+      <div className="app-shell">
+        <div id="google_translate_element" className="google-translate-anchor" aria-hidden="true" />
 
-      <Navbar
-        t={t}
-        theme={theme}
-        setTheme={setTheme}
-        lang={lang}
-        setLang={handleLangChange}
-      />
+        <Navbar
+          t={t}
+          theme={theme}
+          setTheme={setTheme}
+          lang={lang}
+          setLang={handleLangChange}
+        />
 
-      <main className="container">
-        <Hero data={t.hero} />
-        <Skills data={t.skills} />
-        <Experience data={t.exp} />
-        <Projects data={t.proj} />
-        {t.cert && <Certifications data={t.cert} />}
-      </main>
+        <main className="container">
+          <Hero data={t.hero} />
+          <Skills data={t.skills} />
+          <Experience data={t.exp} />
+          <Projects data={t.proj} />
+          {t.cert && <Certifications data={t.cert} />}
+        </main>
 
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-identity">
-            <span className="footer-brand-name">Christian Sousa</span>
-            <span className="footer-brand-role">
-              Engenheiro de Software & Governança de TI · Fortaleza, CE
-            </span>
+        <footer className="site-footer">
+          <div className="footer-inner">
+            <div className="footer-identity">
+              <span className="footer-brand-name">Christian Sousa</span>
+              <span className="footer-brand-role">
+                Engenheiro de Software & Governança de TI · Fortaleza, CE
+              </span>
+            </div>
+
+            <nav className="footer-links" aria-label="Links externos">
+              <a
+                href="https://github.com/christiansousadev"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+              <a
+                href="https://www.linkedin.com/in/christiansousasilva/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                LinkedIn
+              </a>
+              <a href="mailto:christiansousadev@gmail.com">
+                christiansousadev@gmail.com
+              </a>
+            </nav>
+
+            <div className="footer-meta">
+              <span>Arquitetura Same-Origin · Cloudflare Zero Trust · Conformidade LGPD & ISO 27001</span>
+              <span>© {new Date().getFullYear()} Christian Sousa</span>
+            </div>
           </div>
+        </footer>
 
-          <nav className="footer-links" aria-label="Links externos">
-            <a
-              href="https://github.com/christiansousadev"
-              target="_blank"
-              rel="noopener noreferrer"
+        <AnimatePresence>
+          {showBackToTop && (
+            <motion.button
+              initial={{ opacity: 0, y: 10, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.92 }}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.94 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              type="button"
+              className="back-to-top"
+              onClick={scrollToTop}
+              aria-label="Voltar ao topo"
             >
-              GitHub
-            </a>
-            <a
-              href="https://www.linkedin.com/in/christiansousasilva/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              LinkedIn
-            </a>
-            <a href="mailto:christiansousadev@gmail.com">
-              christiansousadev@gmail.com
-            </a>
-          </nav>
+              <ChevronUp size={18} />
+            </motion.button>
+          )}
+        </AnimatePresence>
 
-          <div className="footer-meta">
-            <span>Arquitetura Same-Origin · Cloudflare Zero Trust · Conformidade LGPD & ISO 27001</span>
-            <span>© {new Date().getFullYear()} Christian Sousa</span>
-          </div>
-        </div>
-      </footer>
-
-      <AnimatePresence>
-        {showBackToTop && (
-          <motion.button
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.18 }}
-            type="button"
-            className="back-to-top"
-            onClick={scrollToTop}
-            aria-label="Voltar ao topo"
-          >
-            <ChevronUp size={18} />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      <ChatWidget data={t.chat} />
-    </div>
+        <ChatWidget data={t.chat} />
+      </div>
+    </MotionConfig>
   );
 }
