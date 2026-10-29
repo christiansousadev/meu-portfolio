@@ -1,7 +1,7 @@
 // frontend/src/components/Navbar.jsx
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, Globe, LogIn, Menu, X, Award, Briefcase, Code, FolderGit2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Sun, Moon, Globe, Lock, Menu, X } from "lucide-react";
 
 export default function Navbar({ t, theme, setTheme, lang, setLang }) {
   const nextLang = lang === "pt" ? "en" : "pt";
@@ -9,11 +9,15 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
 
-  // Rastreia a seção visível para destacar no menu
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["skills", "experience", "projects", "certifications"];
-      const scrollPos = window.scrollY + 200;
+      const scrollPos = window.scrollY + 180;
+
+      if (window.scrollY < 200) {
+        setActiveSection("");
+        return;
+      }
 
       for (const section of sections) {
         const el = document.getElementById(section);
@@ -28,36 +32,28 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const navLinks = [
-    { href: "#skills", label: t.nav.skills, id: "skills", icon: Code },
-    { href: "#experience", label: t.nav.exp, id: "experience", icon: Briefcase },
-    { href: "#projects", label: t.nav.proj, id: "projects", icon: FolderGit2 },
-    { href: "#certifications", label: t.nav.certs || "Certificações", id: "certifications", icon: Award },
+    { href: "#skills", label: t.nav.skills, id: "skills" },
+    { href: "#experience", label: t.nav.exp, id: "experience" },
+    { href: "#projects", label: t.nav.proj, id: "projects" },
+    { href: "#certifications", label: t.nav.certs || "Certificações", id: "certifications" },
   ];
 
   return (
-    <motion.nav
-      className="glass-nav navbar"
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
+    <header className="navbar">
       <div className="navbar-inner">
-        {/* Logo */}
-        <a href="#" className="navbar-logo" aria-label="Ir para o topo">
-          <h2 className="navbar-logo-title">
-            <span>&lt;Christian</span>
-            <span className="navbar-logo-bracket">/&gt;</span>
-          </h2>
+        <a href="#" className="navbar-logo" aria-label="Ir para o início">
+          <span className="navbar-brand-name">Christian Sousa</span>
+          <span className="navbar-brand-sep" aria-hidden="true">/</span>
+          <span className="navbar-brand-role">Engenharia & Governança</span>
         </a>
 
-        {/* Links Desktop */}
         <div className="navbar-desktop">
-          <div className="navbar-links">
+          <nav className="navbar-links" aria-label="Seções principais">
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
               return (
@@ -67,24 +63,20 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
                   className={`navbar-link ${isActive ? "is-active" : ""}`}
                 >
                   {link.label}
-                  {isActive && (
-                    <motion.div layoutId="navIndicator" className="navbar-link-indicator" />
-                  )}
                 </a>
               );
             })}
-          </div>
+          </nav>
 
-          {/* Controles: Idioma, Tema, Admin */}
           <div className="navbar-controls">
             <button
               type="button"
               className="btn-icon btn-icon--labeled"
               onClick={() => setLang(nextLang)}
-              title={`Mudar para ${nextLang.toUpperCase()}`}
-              aria-label={`Trocar idioma para ${nextLang.toUpperCase()}`}
+              title={`Mudar idioma para ${nextLang.toUpperCase()}`}
+              aria-label={`Mudar idioma para ${nextLang.toUpperCase()}`}
             >
-              <Globe size={18} aria-hidden="true" />
+              <Globe size={15} aria-hidden="true" />
               <span className="navbar-lang-code">{nextLang.toUpperCase()}</span>
             </button>
 
@@ -92,30 +84,28 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
               type="button"
               className="btn-icon"
               onClick={() => setTheme(nextTheme)}
-              title="Alternar Tema"
+              title={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
               aria-label={`Alternar para tema ${nextTheme}`}
               aria-pressed={theme === "dark"}
             >
               {theme === "dark" ? (
-                <Sun size={18} aria-hidden="true" />
+                <Sun size={16} aria-hidden="true" />
               ) : (
-                <Moon size={18} aria-hidden="true" />
+                <Moon size={16} aria-hidden="true" />
               )}
             </button>
 
-            <button
-              type="button"
+            <a
+              href="/admin"
               className="btn-icon"
-              onClick={() => (window.location.href = "/admin")}
-              title="Painel de Governança / Admin"
-              aria-label="Acessar painel de governança de TI"
+              title="Console de Governança"
+              aria-label="Acessar console de governança"
             >
-              <LogIn size={18} aria-hidden="true" />
-            </button>
+              <Lock size={15} aria-hidden="true" />
+            </a>
           </div>
         </div>
 
-        {/* Botão Hambúrguer Mobile */}
         <div className="mobile-toggle">
           <button
             type="button"
@@ -124,24 +114,22 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
             aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
-      {/* Drawer Mobile */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
             className="mobile-drawer"
           >
-            <div className="mobile-drawer-links">
+            <nav className="mobile-drawer-links" aria-label="Menu móvel">
               {navLinks.map((link) => {
-                const Icon = link.icon;
                 const isActive = activeSection === link.id;
                 return (
                   <a
@@ -150,7 +138,6 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`mobile-drawer-link ${isActive ? "is-active" : ""}`}
                   >
-                    <Icon size={18} />
                     {link.label}
                   </a>
                 );
@@ -159,13 +146,13 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
               <div className="mobile-drawer-controls">
                 <button
                   type="button"
-                  className="btn-icon"
+                  className="btn-icon btn-icon--labeled"
                   onClick={() => {
                     setLang(nextLang);
                     setMobileMenuOpen(false);
                   }}
                 >
-                  <Globe size={18} />
+                  <Globe size={16} />
                   <span className="navbar-lang-code">{nextLang.toUpperCase()}</span>
                 </button>
                 <button
@@ -175,21 +162,18 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
                     setTheme(nextTheme);
                     setMobileMenuOpen(false);
                   }}
+                  aria-label="Alternar tema"
                 >
-                  {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
                 </button>
-                <button
-                  type="button"
-                  className="btn-icon"
-                  onClick={() => (window.location.href = "/admin")}
-                >
-                  <LogIn size={18} />
-                </button>
+                <a href="/admin" className="btn-icon" aria-label="Console de Governança">
+                  <Lock size={16} />
+                </a>
               </div>
-            </div>
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </header>
   );
 }

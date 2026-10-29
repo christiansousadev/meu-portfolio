@@ -30,8 +30,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/usr/local/bin:${PATH}"
 
-# Cria usuario nao-root para mitigar escalation em caso de RCE
-RUN groupadd --system app && useradd --system --gid app --home /app app
+# Cria usuario nao-root alinhado ao UID/GID padrao do host Linux (1000:1000)
+# para que o bind mount ./backend/data:/app/data seja gravavel sem chmod 777
+ARG APP_UID=1000
+ARG APP_GID=1000
+RUN groupadd --gid ${APP_GID} --non-unique app \
+    && useradd --uid ${APP_UID} --gid ${APP_GID} --non-unique --no-create-home --home-dir /app --shell /usr/sbin/nologin app
 
 WORKDIR /app
 

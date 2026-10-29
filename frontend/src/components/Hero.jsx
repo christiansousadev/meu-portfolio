@@ -1,125 +1,94 @@
 // frontend/src/components/Hero.jsx
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Mail, FileText, ArrowRight } from "lucide-react";
+import { Mail, ArrowUpRight } from "lucide-react";
 
 const CONTACT_EMAIL = "christiansousadev@gmail.com";
-const RESUME_URL = "/cv.pdf";
 
-const ROLES = [
-  "Software Engineer & Tech Lead",
-  "Especialista em Governança de TI & ITIL",
-  "Arquiteto de Microsserviços Python / FastAPI",
-  "Engenheiro de Soluções com IA & RAG",
+const CREDENTIALS = [
+  {
+    value: "+6 anos",
+    label: "Trajetória dedicada em TI, ERPs e automação",
+  },
+  {
+    value: "ITIL® 4",
+    label: "Gestão de serviços, incidentes e mudanças (Axelos)",
+  },
+  {
+    value: "ISO 27001 & LGPD",
+    label: "Auditoria estruturada, segurança e minimização",
+  },
+  {
+    value: "Python & SQL",
+    label: "FastAPI, PostgreSQL, integrações n8n e RAG",
+  },
 ];
 
 export default function Hero({ data }) {
-  const [roleIndex, setRoleIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRoleIndex((prev) => (prev + 1) % ROLES.length);
-    }, 3200);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <section className="section-container hero-section">
-      <motion.div
-        className="section-text"
-        initial={{ opacity: 0, x: -40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        {/* Badge de Disponibilidade */}
-        <div className="status-badge">
-          <span className="status-dot" />
-          <span>Disponível para novos projetos & liderança técnica</span>
-        </div>
+    <section className="hero-section">
+      <div className="hero-grid">
+        <div className="hero-copy">
+          <p className="hero-eyebrow">
+            Engenharia de Software · Automação & Governança de TI
+          </p>
 
-        {/* Título Principal */}
-        <h1 className="hero-title">{data.greeting}</h1>
+          <h1 className="hero-title">{data.greeting}</h1>
 
-        {/* Ticker de Especialidades */}
-        <div className="hero-ticker">
-          <span className="hero-ticker-prefix">Foco atual —</span>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={roleIndex}
-              initial={{ y: 16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -16, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="hero-ticker-role"
+          <p className="hero-subtitle">{data.subtitle}</p>
+
+          <div className="hero-actions">
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="btn-primary"
+              aria-label={`Enviar e-mail para ${CONTACT_EMAIL}`}
             >
-              <span>{ROLES[roleIndex]}</span>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+              <Mail size={16} aria-hidden="true" />
+              <span>{data.contactBtn}</span>
+            </a>
 
-        {/* Subtítulo Descritivo */}
-        <p className="hero-subtitle">{data.subtitle}</p>
+            <a href="#experience" className="btn-secondary">
+              <span>{data.resumeBtn}</span>
+            </a>
 
-        {/* Botões de Chamada para Ação (CTAs) */}
-        <div className="hero-actions">
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="btn-primary"
-            aria-label={`Enviar email para ${CONTACT_EMAIL}`}
-          >
-            <Mail size={18} aria-hidden="true" /> {data.contactBtn}
-          </a>
-
-          <a
-            href={RESUME_URL}
-            download
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary"
-            aria-label="Baixar curriculo em pdf"
-          >
-            <FileText size={18} aria-hidden="true" /> {data.resumeBtn}
-          </a>
-
-          <a href="#projects" className="hero-link-more">
-            Ver Portfólio <ArrowRight size={16} />
-          </a>
-        </div>
-
-        {/* Grid de Métricas Rápidas (Bento) */}
-        <div className="metrics-grid">
-          <div className="metric-pill">
-            <span className="metric-value">+6 Anos</span>
-            <span className="metric-label">Trajetória em TI</span>
-          </div>
-          <div className="metric-pill">
-            <span className="metric-value">ITIL® 4</span>
-            <span className="metric-label">Governança & ISO</span>
-          </div>
-          <div className="metric-pill">
-            <span className="metric-value">+20 Soluções</span>
-            <span className="metric-label">Pipelines & ERPs</span>
-          </div>
-          <div className="metric-pill">
-            <span className="metric-value">Same-Origin</span>
-            <span className="metric-label">Docker Zero-Trust</span>
+            <div className="hero-external-links">
+              <a
+                href="https://github.com/christiansousadev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hero-text-link"
+              >
+                GitHub <ArrowUpRight size={14} aria-hidden="true" />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/christiansousasilva/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hero-text-link"
+              >
+                LinkedIn <ArrowUpRight size={14} aria-hidden="true" />
+              </a>
+            </div>
           </div>
         </div>
-      </motion.div>
 
-      {/* Imagem com Aura Glassmorphism */}
-      <motion.div
-        className="section-image"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <img
-          src="/images/hero_developer.png"
-          alt="Christian Sousa - Workspace de Desenvolvimento e Governança"
-          className="hero-avatar"
-        />
-      </motion.div>
+        <div className="hero-media">
+          <figure className="hero-portrait-frame">
+            <img
+              src="/images/hero_developer.png"
+              alt="Ilustração autoral de Christian Sousa em seu ambiente de desenvolvimento"
+              className="hero-avatar"
+            />
+          </figure>
+        </div>
+      </div>
+
+      <dl className="hero-credentials-bar" aria-label="Resumo de qualificações">
+        {CREDENTIALS.map((item) => (
+          <div key={item.value} className="credential-cell">
+            <dt className="credential-value">{item.value}</dt>
+            <dd className="credential-label">{item.label}</dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }

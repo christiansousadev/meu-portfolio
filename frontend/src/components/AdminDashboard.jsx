@@ -2,12 +2,17 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  Download, Search, AlertTriangle, ShieldCheck, Trash2,
-  BarChart3, Clock, MessageSquare, Eye, LogOut
+  Download,
+  Search,
+  AlertTriangle,
+  Trash2,
+  LogOut,
+  Sun,
+  Moon,
+  ArrowLeft,
 } from "lucide-react";
 import JsonEditor from "./JsonEditor";
 
-// helper de fetch same-origin com envio de cookies HttpOnly
 const adminFetch = (path, options = {}) =>
   fetch(path, {
     ...options,
@@ -18,8 +23,7 @@ const adminFetch = (path, options = {}) =>
     },
   });
 
-// formatador de timestamps iso do backend
-const FORMAT_TIMESTAMP = (iso) => {
+const formatTimestamp = (iso) => {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
@@ -31,50 +35,22 @@ const FORMAT_TIMESTAMP = (iso) => {
     d.getDate() === today.getDate();
 
   return sameDay
-    ? d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-    : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    ? d.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : d.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 };
 
-const ROW_KEY = (record, idx) => record?.trace_id ?? `row-${idx}`;
+const rowKey = (record, idx) => record?.trace_id ?? `row-${idx}`;
 
-// Mini Sparkline SVG puro — linha + área de suporte discreta (identidade
-// de dashboard executivo, sem parecer um gráfico desenhado à mão)
-const Sparkline = ({ points = [8, 14, 12, 19, 16, 24, 21], color = "var(--accent-color)", width = 110, height = 28 }) => {
-  if (!points || points.length < 2) return null;
-  const max = Math.max(...points, 1);
-  const min = Math.min(...points, 0);
-  const range = max - min || 1;
-  const coords = points.map((val, i) => {
-    const x = (i / (points.length - 1)) * width;
-    const y = height - ((val - min) / range) * (height - 6) - 3;
-    return [x, y];
-  });
-  const linePoints = coords.map(([x, y]) => `${x},${y}`).join(" ");
-  const areaPoints = `0,${height} ${linePoints} ${width},${height}`;
-  const gradientId = `spark-fill-${color.replace(/[^a-zA-Z0-9]/g, "")}`;
-
-  return (
-    <svg width={width} height={height} style={{ overflow: "visible" }}>
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={areaPoints} fill={`url(#${gradientId})`} stroke="none" />
-      <polyline
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points={linePoints}
-      />
-    </svg>
-  );
-};
-
-// Componente dedicado do Cloudflare Turnstile com ciclo de vida isolado e auto-carregamento
+// Widget isolado do Cloudflare Turnstile (container sem filhos React)
 const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
@@ -107,7 +83,6 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
       if (isCancelled) return;
 
       if (!siteKey) {
-        // Se nao houver Turnstile configurado no .env, libera o acesso para desenvolvimento
         setIsInitializing(false);
         onVerifyRef.current("bypass_dev");
         return;
@@ -139,7 +114,7 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
                 onExpireRef.current();
                 setIsInitializing(false);
                 setLoadError(
-                  `Aviso Turnstile (${errorCode || "erro"}). Verifique a autorização do domínio.`
+                  `Verificação Turnstile indisponível (${errorCode || "erro"}). Confira o domínio autorizado.`
                 );
               }
             },
@@ -164,17 +139,19 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
       }
     };
 
-    // Garante que o script da Cloudflare está inserido e ativo
     if (!document.querySelector('script[src*="turnstile"]')) {
       const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.src =
+        "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
       script.async = true;
       script.defer = true;
       script.onload = () => obtainSiteKeyAndRender();
       script.onerror = () => {
         if (!isCancelled) {
           setIsInitializing(false);
-          setLoadError("Não foi possível carregar a biblioteca do Cloudflare Turnstile.");
+          setLoadError(
+            "Não foi possível carregar o script do Cloudflare Turnstile."
+          );
         }
       };
       document.head.appendChild(script);
@@ -196,7 +173,6 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
     };
   }, []);
 
-  // Reseta o Turnstile quando o signal for disparado (ex: falha de senha)
   useEffect(() => {
     if (resetSignal > 0 && widgetIdRef.current && window.turnstile) {
       try {
@@ -211,22 +187,16 @@ const TurnstileWidget = ({ onVerify, onExpire, resetSignal }) => {
     <div className="turnstile-wrap">
       {isInitializing && !loadError && (
         <div className="turnstile-loading">
-          <span>Carregando desafio de segurança...</span>
+          <span>Carregando verificação de segurança...</span>
         </div>
       )}
-      {/*
-        IMPORTANTE: este container é gerenciado exclusivamente pelo script do
-        Cloudflare Turnstile (innerHTML/render acima). Não adicionar nós
-        filhos via React aqui — isso quebra o unmount do widget e causa o
-        erro "Failed to execute 'removeChild' on 'Node'".
-      */}
       <div ref={containerRef} className="turnstile-slot" />
       {loadError && <p className="turnstile-error">{loadError}</p>}
     </div>
   );
 };
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ theme = "dark", setTheme }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -242,7 +212,7 @@ export default function AdminDashboard() {
   const [purgeResult, setPurgeResult] = useState(null);
   const [isPurging, setIsPurging] = useState(false);
   const [activeInterpreter, setActiveInterpreter] = useState("gemini");
-  const [interpreterStatus, setInterpreterStatus] = useState("");
+  const [interpreterStatus, setInterpreterStatus] = useState(null);
   const [isChangingInterpreter, setIsChangingInterpreter] = useState(false);
 
   const [stats, setStats] = useState({
@@ -254,15 +224,15 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     (async () => {
-      await FETCH_DATA({ silent: true });
+      await fetchData({ silent: true });
       setBootChecked(true);
     })();
   }, []);
 
-  const HANDLE_LOGIN = async () => {
+  const handleLogin = async () => {
     setError("");
     if (!turnstileToken) {
-      setError("Por favor, conclua o desafio do Cloudflare Turnstile antes de continuar.");
+      setError("Conclua a verificação de segurança antes de entrar.");
       return;
     }
     try {
@@ -279,29 +249,31 @@ export default function AdminDashboard() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.detail || "Falha na verificação de segurança.");
       }
-      if (res.status === 401) throw new Error("Credenciais inválidas.");
-      if (!res.ok) throw new Error("Falha no serviço de autenticação.");
+      if (res.status === 401) throw new Error("Usuário ou senha incorretos.");
+      if (!res.ok) throw new Error("Serviço de autenticação indisponível.");
 
       setIsLogged(true);
       setPassword("");
       setTurnstileToken("");
-      await FETCH_DATA();
+      await fetchData();
     } catch (e) {
       setError(e.message);
-      // Reseta o Turnstile para permitir nova tentativa
       setTurnstileToken("");
       setResetTurnstileSignal((prev) => prev + 1);
     }
   };
 
-  const FETCH_DATA = async ({ silent = false } = {}) => {
+  const fetchData = async ({ silent = false } = {}) => {
     try {
       const [logsRes, statsRes] = await Promise.all([
         adminFetch("/api/admin/logs"),
         adminFetch("/api/admin/stats"),
       ]);
 
-      if ([401, 403].includes(logsRes.status) || [401, 403].includes(statsRes.status)) {
+      if (
+        [401, 403].includes(logsRes.status) ||
+        [401, 403].includes(statsRes.status)
+      ) {
         setIsLogged(false);
         return;
       }
@@ -324,9 +296,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const CHANGE_INTERPRETER = async (provider) => {
+  const changeInterpreter = async (provider) => {
     setIsChangingInterpreter(true);
-    setInterpreterStatus("Salvando alteração...");
+    setInterpreterStatus({ type: "pending", text: "Aplicando..." });
     try {
       const res = await adminFetch("/api/admin/interpreter", {
         method: "POST",
@@ -342,18 +314,24 @@ export default function AdminDashboard() {
       const data = await res.json();
       const updated = data.active || provider;
       setActiveInterpreter(updated);
-      setInterpreterStatus(`✓ Provedor alterado para: ${updated === "gemini" ? "Google Gemini" : updated === "json_only" ? "JSON Local" : updated}`);
-      setTimeout(() => setInterpreterStatus(""), 4000);
+      setInterpreterStatus({
+        type: "ok",
+        text: `Ativo: ${updated === "gemini" ? "Gemini 1.5 Flash" : "JSON Local"}`,
+      });
+      setTimeout(() => setInterpreterStatus(null), 3500);
     } catch (e) {
       console.error("falha ao trocar interprete", e);
-      setInterpreterStatus("❌ Erro ao atualizar intérprete.");
-      setTimeout(() => setInterpreterStatus(""), 4000);
+      setInterpreterStatus({
+        type: "err",
+        text: "Não foi possível alterar o motor.",
+      });
+      setTimeout(() => setInterpreterStatus(null), 4000);
     } finally {
       setIsChangingInterpreter(false);
     }
   };
 
-  const HANDLE_LOGOUT = async () => {
+  const handleLogout = async () => {
     try {
       await adminFetch("/api/admin/logout", { method: "POST" });
     } catch (e) {
@@ -365,13 +343,15 @@ export default function AdminDashboard() {
 
   const exportAuditReport = () => {
     const dataToExport = {
-      sistema: "Portfólio Christian Sousa - Auditoria de Governança",
+      sistema: "Portfólio Christian Sousa - Relatório de Auditoria",
       gerado_em: new Date().toISOString(),
       padrao_conformidade: "ISO 27001 A.12.4 / LGPD Art. 6",
       metricas: stats,
       historico_chat: logs,
     };
-    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -385,19 +365,20 @@ export default function AdminDashboard() {
   const executePurge = async () => {
     setIsPurging(true);
     try {
-      const res = await adminFetch("/api/admin/retention/purge", { method: "POST" });
-      if (!res.ok) throw new Error("Falha ao executar purga.");
+      const res = await adminFetch("/api/admin/retention/purge", {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Falha ao executar expurgo.");
       const data = await res.json();
       setPurgeResult(data);
-      await FETCH_DATA();
+      await fetchData();
     } catch (e) {
-      alert("Erro na purga: " + e.message);
+      setPurgeResult({ error: e.message });
     } finally {
       setIsPurging(false);
     }
   };
 
-  // Filtragem de Logs por busca ou SLA
   const filteredLogs = logs.filter((log) => {
     const matchesSearch =
       !searchQuery ||
@@ -412,7 +393,7 @@ export default function AdminDashboard() {
   if (!bootChecked) {
     return (
       <div className="full-screen-center">
-        <div className="skeleton" style={{ width: "200px", height: "16px" }} />
+        <div className="skeleton" style={{ width: "180px", height: "14px" }} />
       </div>
     );
   }
@@ -420,40 +401,46 @@ export default function AdminDashboard() {
   if (!isLogged) {
     return (
       <div className="login-wrap notranslate" translate="no">
-        <div className="glass-card glass-card--static login-card">
-          <div className="login-icon">
-            <ShieldCheck size={28} />
+        <div className="surface-card login-card">
+          <div className="login-header">
+            <span className="login-kicker">christiansousa.dev</span>
+            <h1 className="login-title">Console de Governança</h1>
+            <p className="login-desc">
+              Autenticação administrativa protegida por cookie HttpOnly e Cloudflare Turnstile.
+            </p>
           </div>
 
-          <h2 className="login-title">Governança de TI</h2>
-          <p className="login-desc">
-            Acesso administrativo restrito com autenticação por cookie seguro.
-          </p>
+          <div className="login-fields">
+            <label className="field-group" htmlFor="admin-username">
+              <span className="field-label">Usuário</span>
+              <input
+                id="admin-username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="admin@christiansousa.dev"
+                className="form-input"
+              />
+            </label>
 
-          <input
-            id="admin-username"
-            name="username"
-            type="text"
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Usuário"
-            className="form-input"
-          />
+            <label className="field-group" htmlFor="admin-password">
+              <span className="field-label">Senha</span>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                placeholder="••••••••"
+                className="form-input"
+              />
+            </label>
+          </div>
 
-          <input
-            id="admin-password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && HANDLE_LOGIN()}
-            placeholder="Senha"
-            className="form-input"
-          />
-
-          {/* Cloudflare Turnstile Anti-bot */}
           <TurnstileWidget
             onVerify={(token) => {
               setTurnstileToken(token);
@@ -466,186 +453,178 @@ export default function AdminDashboard() {
           <button
             type="button"
             className="btn-primary btn-primary--full"
-            onClick={HANDLE_LOGIN}
+            onClick={handleLogin}
             disabled={!turnstileToken}
           >
-            Acessar Painel Executivo
+            Entrar no console
           </button>
 
           {error && <p className="login-error">{error}</p>}
 
           <div className="login-footer-link">
-            <a href="/">← Voltar ao Portfólio</a>
+            <a href="/">
+              <ArrowLeft size={14} aria-hidden="true" />
+              <span>Voltar ao portfólio</span>
+            </a>
           </div>
         </div>
       </div>
     );
   }
 
-  const KpiCard = ({ title, value, unit, sparkPoints, icon: Icon }) => {
-    const display = value === null || value === undefined ? 0 : value;
-    return (
-      <div className="glass-card kpi-card">
-        <div className="kpi-card-head">
-          <span className="kpi-title">{title}</span>
-          {Icon && <Icon size={18} className="kpi-icon" />}
-        </div>
-
-        <div className="kpi-value-row">
-          <div className="kpi-value-group">
-            <span className="kpi-value">{display}</span>
-            <span className="kpi-unit">{unit}</span>
-          </div>
-
-          {sparkPoints && <Sparkline points={sparkPoints} color="var(--accent-color)" />}
-        </div>
-      </div>
-    );
-  };
-
-  const providerBadgeClass =
-    activeInterpreter === "gemini"
-      ? "provider-badge--gemini"
-      : activeInterpreter === "json_only"
-      ? "provider-badge--json"
-      : "provider-badge--other";
-
-  const providerStatusClass = interpreterStatus.startsWith("✓")
-    ? "provider-status--ok"
-    : interpreterStatus.startsWith("❌")
-    ? "provider-status--err"
-    : "";
+  const slaHealthy = (stats.avg_response_ms || 0) <= 2000;
 
   return (
     <div className="admin-page notranslate" translate="no">
       <div className="admin-container">
-        {/* Header do Painel */}
         <header className="admin-header">
           <div>
-            <h1 className="admin-header-title">Dashboard de Governança</h1>
-            <p className="admin-header-desc">
-              Monitoramento de telemetria, integridade de RAG e gestão em tempo real.
-            </p>
+            <div className="admin-breadcrumb">
+              <a href="/">christiansousa.dev</a>
+              <span aria-hidden="true">/</span>
+              <span>admin</span>
+            </div>
+            <h1 className="admin-header-title">Console de Governança</h1>
           </div>
 
           <div className="admin-header-actions">
+            {typeof setTheme === "function" && (
+              <button
+                type="button"
+                className="btn-icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                title="Alternar tema"
+                aria-label="Alternar tema"
+              >
+                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+            )}
+
             <button
               type="button"
               className="btn-secondary btn-sm"
               onClick={exportAuditReport}
-              title="Exportar Relatório de Auditoria em JSON"
+              title="Exportar relatório de auditoria em JSON"
             >
-              <Download size={16} /> Exportar JSON
+              <Download size={14} />
+              <span>Exportar auditoria</span>
             </button>
 
             <button
               type="button"
               className="btn-secondary btn-sm btn-secondary--danger"
               onClick={() => setIsPurgeModalOpen(true)}
-              title="Executar Purga de Retenção (LGPD 90 dias)"
+              title="Expurgar registros anteriores a 90 dias (LGPD)"
             >
-              <Trash2 size={16} /> Purga LGPD
+              <Trash2 size={14} />
+              <span>Expurgo 90d</span>
             </button>
 
-            <button type="button" className="btn-primary btn-sm" onClick={HANDLE_LOGOUT}>
-              <LogOut size={16} /> Sair
+            <button
+              type="button"
+              className="btn-ghost btn-sm"
+              onClick={handleLogout}
+            >
+              <LogOut size={14} />
+              <span>Sair</span>
             </button>
           </div>
         </header>
 
-        {/* Abas */}
-        <div className="admin-tabs">
+        <nav className="underline-tabs admin-nav-tabs" aria-label="Áreas do console">
           <button
             type="button"
-            className={`category-pill ${activeTab === "stats" ? "active" : ""}`}
+            className={`underline-tab ${activeTab === "stats" ? "is-active" : ""}`}
             onClick={() => setActiveTab("stats")}
           >
-            <BarChart3 size={16} className="admin-tab-icon" />
-            KPIs, Logs & Telemetria
+            Telemetria & Auditoria
           </button>
           <button
             type="button"
-            className={`category-pill ${activeTab === "editor" ? "active" : ""}`}
+            className={`underline-tab ${activeTab === "editor" ? "is-active" : ""}`}
             onClick={() => setActiveTab("editor")}
           >
-            Editor de Configurações (JSON)
+            Conteúdo & Base RAG
           </button>
-        </div>
+        </nav>
 
         {activeTab === "stats" ? (
           <>
-            {/* Seletor do Provedor de IA */}
-            <div className="glass-card provider-card">
-              <div>
-                <div className="provider-heading">
-                  <h3 className="provider-title">Intérprete Ativo (Runtime)</h3>
-                  <span className={`provider-badge ${providerBadgeClass}`}>
-                    {activeInterpreter === "gemini" && "● Gemini 1.5 Flash (Ativo)"}
-                    {activeInterpreter === "json_only" && "● JSON Local (Custo Zero / Sem LLM)"}
-                    {activeInterpreter !== "gemini" && activeInterpreter !== "json_only" && `● ${activeInterpreter}`}
-                  </span>
+            <section className="kpi-strip" aria-label="Indicadores operacionais">
+              <div className="kpi-cell">
+                <span className="kpi-label">Diálogos processados</span>
+                <div className="kpi-metric-row">
+                  <span className="kpi-number">{stats.total_chats ?? 0}</span>
+                  <span className="kpi-unit">msgs</span>
                 </div>
-                <p className="provider-desc">
-                  Alterne entre o Gemini (LLM inteligente) e o modo Local (zero custo de tokens).
-                </p>
+                <span className="kpi-sub">Janela de retenção: 90 dias</span>
               </div>
 
-              <div className="provider-controls">
+              <div className="kpi-cell">
+                <span className="kpi-label">Visualizações de página</span>
+                <div className="kpi-metric-row">
+                  <span className="kpi-number">{stats.total_views ?? 0}</span>
+                  <span className="kpi-unit">views</span>
+                </div>
+                <span className="kpi-sub">Eventos page_view registrados</span>
+              </div>
+
+              <div className="kpi-cell">
+                <span className="kpi-label">Latência média do chat</span>
+                <div className="kpi-metric-row">
+                  <span className="kpi-number">{stats.avg_response_ms ?? 0}</span>
+                  <span className="kpi-unit">ms</span>
+                </div>
+                <span className={`kpi-sub ${slaHealthy ? "kpi-sub--ok" : "kpi-sub--warn"}`}>
+                  {slaHealthy ? "Dentro do SLA (< 2.000 ms)" : "Acima do SLA (> 2.000 ms)"}
+                </span>
+              </div>
+
+              <div className="kpi-cell kpi-cell--control">
+                <label htmlFor="interpreter-select" className="kpi-label">
+                  Motor de resposta (Runtime)
+                </label>
                 <select
                   id="interpreter-select"
-                  aria-label="Selecionar intérprete de IA"
                   className="provider-select"
                   value={activeInterpreter}
                   disabled={isChangingInterpreter}
-                  onChange={(e) => CHANGE_INTERPRETER(e.target.value)}
+                  onChange={(e) => changeInterpreter(e.target.value)}
                 >
-                  <option value="gemini">Google Gemini 1.5 Flash (LLM com RAG)</option>
-                  <option value="json_only">Apenas JSON Local (Teste Local / Custo Zero)</option>
+                  <option value="gemini">Gemini 1.5 Flash (RAG)</option>
+                  <option value="json_only">JSON Determinístico (Local)</option>
                 </select>
-                {interpreterStatus && (
-                  <span className={`provider-status ${providerStatusClass}`}>{interpreterStatus}</span>
-                )}
+                <span
+                  className={`kpi-sub ${
+                    interpreterStatus?.type === "ok"
+                      ? "kpi-sub--ok"
+                      : interpreterStatus?.type === "err"
+                      ? "kpi-sub--warn"
+                      : ""
+                  }`}
+                >
+                  {interpreterStatus
+                    ? interpreterStatus.text
+                    : activeInterpreter === "gemini"
+                    ? "Inferência com recorte semântico"
+                    : "Custo zero de tokens"}
+                </span>
               </div>
-            </div>
+            </section>
 
-            {/* Cards de KPIs */}
-            <div className="kpi-grid">
-              <KpiCard
-                title="Interações IA"
-                value={stats.total_chats}
-                unit="msgs"
-                icon={MessageSquare}
-                sparkPoints={[stats.total_chats * 0.4, stats.total_chats * 0.6, stats.total_chats * 0.8, stats.total_chats]}
-              />
-              <KpiCard
-                title="Visualizações"
-                value={stats.total_views}
-                unit="views"
-                icon={Eye}
-                sparkPoints={[stats.total_views * 0.3, stats.total_views * 0.5, stats.total_views * 0.7, stats.total_views]}
-              />
-              <KpiCard
-                title="SLA Médio de Resposta"
-                value={stats.avg_response_ms}
-                unit="ms"
-                icon={Clock}
-                sparkPoints={[stats.avg_response_ms * 1.1, stats.avg_response_ms * 0.95, stats.avg_response_ms]}
-              />
-            </div>
-
-            {/* Seções de Histórico e Telemetria */}
             <div className="dashboard-columns">
-              {/* Histórico com Busca e Filtro SLA */}
               <section>
                 <div className="panel-head">
-                  <h3 className="panel-title">Histórico de Diálogos ({filteredLogs.length})</h3>
+                  <h2 className="panel-title">
+                    Histórico de diálogos ({filteredLogs.length})
+                  </h2>
 
                   <div className="panel-controls">
                     <div className="search-field">
                       <Search size={14} className="search-field-icon" />
                       <input
                         type="text"
-                        placeholder="Buscar pergunta ou trace..."
+                        placeholder="Filtrar pergunta ou trace..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="search-input"
@@ -658,38 +637,44 @@ export default function AdminDashboard() {
                         checked={onlySlaBreaches}
                         onChange={(e) => setOnlySlaBreaches(e.target.checked)}
                       />
-                      SLA &gt; 2s
+                      <span>SLA &gt; 2s</span>
                     </label>
                   </div>
                 </div>
 
-                <div className="glass-card glass-card--static data-panel table-scroll">
+                <div className="surface-card data-panel table-scroll">
                   <table className="logs-table">
                     <thead>
                       <tr>
-                        <th>Pergunta / Prompt</th>
-                        <th className="logs-table-col-sla">SLA</th>
+                        <th>Pergunta / Metadados</th>
+                        <th className="logs-table-col-sla">Latência</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredLogs.length === 0 ? (
                         <tr>
                           <td colSpan={2} className="logs-empty-cell">
-                            Nenhum registro encontrado para este filtro.
+                            Nenhum diálogo corresponde ao filtro atual.
                           </td>
                         </tr>
                       ) : (
                         filteredLogs.map((log, idx) => (
-                          <tr key={ROW_KEY(log, idx)}>
+                          <tr key={rowKey(log, idx)}>
                             <td>
                               <div className="log-question">{log.user_prompt}</div>
-                              <small className="log-meta">
-                                Fonte: {log.source} · Trace: {log.trace_id?.slice(0, 8)}...
-                              </small>
+                              <div className="log-meta">
+                                {formatTimestamp(log.timestamp)} · {log.source} · trace {log.trace_id?.slice(0, 8)}
+                              </div>
                             </td>
                             <td>
-                              <span className={`sla-badge ${log.response_time_ms > 2000 ? "sla-badge--bad" : "sla-badge--good"}`}>
-                                {log.response_time_ms}ms
+                              <span
+                                className={`sla-badge ${
+                                  log.response_time_ms > 2000
+                                    ? "sla-badge--bad"
+                                    : "sla-badge--good"
+                                }`}
+                              >
+                                {log.response_time_ms} ms
                               </span>
                             </td>
                           </tr>
@@ -700,23 +685,25 @@ export default function AdminDashboard() {
                 </div>
               </section>
 
-              {/* Telemetria Ao Vivo */}
               <section>
-                <h3 className="panel-title panel-title--spaced">
-                  Telemetria Ao Vivo
-                </h3>
-                <div className="glass-card glass-card--static data-panel telemetry-panel">
+                <div className="panel-head">
+                  <h2 className="panel-title">Acessos recentes</h2>
+                </div>
+                <div className="surface-card data-panel telemetry-panel">
                   {stats.recent_events?.length ? (
                     stats.recent_events.map((ev, idx) => (
-                      <div key={ROW_KEY(ev, idx)} className="telemetry-item">
-                        <span className="telemetry-event">[{ev.event_type}]</span> acessou {ev.page_path}
+                      <div key={rowKey(ev, idx)} className="telemetry-item">
+                        <div className="telemetry-row-top">
+                          <span className="telemetry-event">{ev.event_type}</span>
+                          <span className="telemetry-path">{ev.page_path}</span>
+                        </div>
                         <span className="telemetry-meta">
-                          {FORMAT_TIMESTAMP(ev.timestamp)} · IP: {ev.client_ip || "Proxy"}
+                          {formatTimestamp(ev.timestamp)} · {ev.client_ip || "proxy"}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="telemetry-empty">Nenhum evento registrado ainda.</p>
+                    <p className="telemetry-empty">Nenhum acesso registrado.</p>
                   )}
                 </div>
               </section>
@@ -727,43 +714,50 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Modal de Confirmação de Purga */}
       {isPurgeModalOpen && (
-        <div className="purge-modal-overlay">
-          <div className="glass-card purge-modal">
+        <div className="purge-modal-overlay" onClick={() => setIsPurgeModalOpen(false)}>
+          <div className="surface-card purge-modal" onClick={(e) => e.stopPropagation()}>
             <div className="purge-modal-head">
-              <AlertTriangle size={26} />
-              <h3>Confirmar Purga LGPD</h3>
+              <AlertTriangle size={20} />
+              <h3>Confirmar expurgo de retenção (LGPD)</h3>
             </div>
 
             <p className="purge-modal-text">
-              Esta operação expurga permanentemente de forma atômica todos os registros de <code>chat_logs.jsonl</code> e <code>analytics.jsonl</code> anteriores à janela de <strong>90 dias</strong> (Art. 6º LGPD).
+              Remove permanentemente registros de <code>chat_logs.jsonl</code> e{" "}
+              <code>analytics.jsonl</code> anteriores a <strong>90 dias</strong> (Art. 6º, III da LGPD).
             </p>
 
-            {purgeResult && (
+            {purgeResult && !purgeResult.error && (
               <div className="purge-result">
-                Purga concluída! Logs removidos: {purgeResult.chat_logs_deleted} chats, {purgeResult.analytics_deleted} telemetrias.
+                Expurgo concluído: {purgeResult.chat_logs_deleted} diálogos e{" "}
+                {purgeResult.analytics_deleted} eventos removidos.
+              </div>
+            )}
+
+            {purgeResult?.error && (
+              <div className="purge-result purge-result--err">
+                {purgeResult.error}
               </div>
             )}
 
             <div className="purge-actions">
               <button
                 type="button"
-                className="btn-secondary"
+                className="btn-secondary btn-sm"
                 onClick={() => {
                   setIsPurgeModalOpen(false);
                   setPurgeResult(null);
                 }}
               >
-                Fechar
+                Cancelar
               </button>
               <button
                 type="button"
-                className="btn-primary btn-primary--danger"
+                className="btn-primary btn-sm btn-primary--danger"
                 onClick={executePurge}
                 disabled={isPurging}
               >
-                {isPurging ? "Expurgando..." : "Confirmar Purga"}
+                {isPurging ? "Expurgando..." : "Executar expurgo"}
               </button>
             </div>
           </div>

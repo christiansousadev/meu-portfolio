@@ -104,6 +104,7 @@ def write_config(filename: AllowedConfigFile, payload: dict, actor: str) -> int:
             os.fsync(tmp.fileno())
             tmp_path = tmp.name
 
+        os.chmod(tmp_path, 0o664)
         os.replace(tmp_path, path)
         tmp_path = None  # renomeado com sucesso; nao ha mais nada a limpar
     except PermissionError as exc:
@@ -122,7 +123,10 @@ def write_config(filename: AllowedConfigFile, payload: dict, actor: str) -> int:
         )
         raise HTTPException(
             status_code=500,
-            detail="Erro de permissão ao gravar em backend/data. Execute chmod 777 na pasta data.",
+            detail=(
+                "Erro de permissão ao gravar em backend/data. "
+                "No servidor, ajuste o dono da pasta: sudo chown -R $(id -u):$(id -g) backend/data && chmod -R 775 backend/data"
+            ),
         ) from exc
     except Exception as exc:
         logging.error(

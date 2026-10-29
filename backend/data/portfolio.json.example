@@ -8,19 +8,19 @@
     },
     "hero": {
       "greeting": "Olá, eu sou o Christian",
-      "subtitle": "Software Engineer focado em Governança de TI e Automações Inteligentes. Especialista em transformar arquiteturas complexas e dados brutos em soluções escaláveis com IA.",
-      "contactBtn": "Fale Comigo",
-      "resumeBtn": "Ver Currículo"
+      "subtitle": "Engenheiro de Software voltado à integração de ERPs, automação de fluxos contábeis/financeiros e governança de TI. Construo APIs em Python (FastAPI), pipelines em PostgreSQL e arquiteturas sob práticas ITIL® 4, ISO/IEC 27001 e LGPD.",
+      "contactBtn": "Entrar em contato",
+      "resumeBtn": "Ver trajetória"
     },
     "skills": {
-      "title": "O que eu faço",
-      "subtitle": "Desenvolvedor híbrido com foco em governança e dados",
+      "title": "Competências e entregas",
+      "subtitle": "Arquitetura, dados e governança operacional",
       "items": [
-        "⚡ APIs escaláveis com Python (FastAPI), Node.js e integrações seguras.",
-        "⚡ Interfaces reativas com React/Next.js focadas em UX técnica.",
-        "⚡ Orquestração de fluxos com n8n e automação de processos críticos.",
-        "⚡ Engenharia de dados, SQL avançado e dashboards em Metabase.",
-        "⚡ Implementação de RAG e integração de LLMs para eficiência operacional."
+        "APIs assíncronas em Python (FastAPI) e Node.js com validação estrita e contratos seguros.",
+        "Integrações de sistemas corporativos (SAP, TOTVS, CRMs) e orquestração de workflows com n8n.",
+        "Modelagem relacional em PostgreSQL/MySQL, consultas analíticas com CTEs e painéis executivos no Metabase.",
+        "Assistentes corporativos com RAG focado, controle de contexto e baixo consumo de tokens.",
+        "Infraestrutura containerizada em Docker/Linux com proxy reverso Nginx, Cloudflare Zero Trust e trilhas de auditoria."
       ],
       "tags": [
         "Python",
@@ -29,11 +29,15 @@
         "React",
         "Next.js",
         "PostgreSQL",
+        "SQL / CTEs",
         "n8n",
         "Docker",
-        "Metabase",
-        "LLMs",
+        "Nginx",
         "Linux",
+        "Metabase",
+        "RAG / LLMs",
+        "ITIL® 4",
+        "ISO 27001",
         "Git"
       ]
     },
@@ -133,11 +137,11 @@
       ]
     },
     "proj": {
-      "title": "Projetos em Destaque",
+      "title": "Projetos selecionados",
       "items": [
         {
           "name": "ITSM Health Dashboard",
-          "desc": "Monitoramento de SLA e ROI em tempo real com ETL Python e PostgreSQL.",
+          "desc": "Pipeline ETL em Python e PostgreSQL para apuração em tempo real de SLAs operacionais, MTTR e impacto financeiro de indisponibilidade.",
           "link": "https://github.com/christiansousadev/itsm-dashboard-db",
           "category": "Governança & Dados",
           "tags": [
@@ -147,11 +151,12 @@
             "ETL",
             "Metabase",
             "ITIL"
-          ]
+          ],
+          "architecture": "Ingestão assíncrona via FastAPI persistindo eventos normalizados em PostgreSQL.\nCamada analítica estruturada com Views e CTEs para cálculo de violação de SLA e custo de downtime por serviço crítico, consumida diretamente pelo Metabase."
         },
         {
           "name": "ChatContabil Architecture",
-          "desc": "Arquitetura baseada em IA para automação de fluxos financeiros complexos.",
+          "desc": "Arquitetura orientada a eventos e IA para triagem, consulta fiscal/contábil e automação de rotinas financeiras integradas a ERPs.",
           "link": "https://github.com/christiansousadev/ChatContabil-Architecture",
           "category": "IA & Automação",
           "tags": [
@@ -160,12 +165,13 @@
             "LLMs",
             "Docker",
             "Python",
-            "IA"
-          ]
+            "SQL"
+          ],
+          "architecture": "Serviços isolados em Docker combinando roteamento determinístico e recuperação contextual (RAG) sobre base contábil estruturada, reduzindo latência e consumo de tokens em consultas recorrentes."
         },
         {
           "name": "Enterprise Governance Platform",
-          "desc": "Plataforma de portfólio e auditoria estruturada (LGPD/ISO 27001) com arquitetura same-origin.",
+          "desc": "Plataforma web same-origin com túnel Zero Trust, trilha de auditoria padrão CIM, redação automática de PII e retenção LGPD.",
           "link": "https://github.com/christiansousadev/meu-portfolio",
           "category": "Fullstack & Cloud",
           "tags": [
@@ -173,9 +179,10 @@
             "FastAPI",
             "Docker",
             "Nginx",
-            "LGPD",
-            "Segurança"
-          ]
+            "Cloudflare",
+            "LGPD"
+          ],
+          "architecture": "Topologia Zero Port Exposure via Cloudflare Tunnel entregando tráfego ao Nginx Alpine (read-only), que atua como proxy reverso same-origin para o backend FastAPI sem expor a porta 8000 no host. Persistência atômica (tempfile + fsync + replace) com validação Pydantic estrita e autenticação HttpOnly + Turnstile."
         }
       ]
     },

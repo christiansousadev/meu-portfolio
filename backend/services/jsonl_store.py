@@ -149,6 +149,7 @@ def purge_older_than(path: Path, days: int) -> int:
             tmp.flush()
             os.fsync(tmp.fileno())
             tmp_path = tmp.name
+        os.chmod(tmp_path, 0o664)
         os.replace(tmp_path, path)
 
     return removed

@@ -1,7 +1,14 @@
 // frontend/src/components/ChatWidget.jsx
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, X, Send, Trash2, Copy, Check, Sparkles } from "lucide-react";
+import { MessageSquare, X, Send, Trash2, Copy, Check } from "lucide-react";
+
+const SUGGESTIONS = [
+  "Quais são suas principais tecnologias?",
+  "Fale sobre sua experiência com Governança e ITIL",
+  "Quais projetos você desenvolveu?",
+  "Como entrar em contato com o Christian?",
+];
 
 export default function ChatWidget({ data }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -12,19 +19,11 @@ export default function ChatWidget({ data }) {
 
   const messagesEndRef = useRef(null);
 
-  const SUGGESTIONS = [
-    "Quais suas principais tecnologias?",
-    "Fale sobre sua experiência com Governança e ITIL",
-    "Quais projetos de destaque você desenvolveu?",
-    "Como posso entrar em contato com você?",
-  ];
-
   useEffect(() => {
     if (!isChatOpen) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading, isChatOpen]);
 
-  // Fechar no Escape
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && isChatOpen) {
@@ -35,7 +34,7 @@ export default function ChatWidget({ data }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isChatOpen]);
 
-  const HANDLE_SEND = async (overrideMessage = null) => {
+  const handleSend = async (overrideMessage = null) => {
     const messageToSend = typeof overrideMessage === "string" ? overrideMessage : input;
     const trimmed = messageToSend.trim();
     if (!trimmed || loading) return;
@@ -64,7 +63,7 @@ export default function ChatWidget({ data }) {
         ...prev,
         {
           role: "ai",
-          content: "Erro de conexão com o assistente inteligente. Por favor, tente novamente.",
+          content: "Não foi possível obter resposta agora. Tente novamente em instantes.",
         },
       ]);
     } finally {
@@ -72,10 +71,10 @@ export default function ChatWidget({ data }) {
     }
   };
 
-  const HANDLE_KEYDOWN = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      HANDLE_SEND();
+      handleSend();
     }
   };
 
@@ -85,11 +84,32 @@ export default function ChatWidget({ data }) {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  // Parser de Markdown Simples e Seguro
+  const formatInline = (str) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const segments = str.split(urlRegex);
+
+    return segments.map((seg, sIdx) => {
+      if (seg.match(urlRegex)) {
+        return (
+          <a key={sIdx} href={seg} target="_blank" rel="noopener noreferrer">
+            {seg}
+          </a>
+        );
+      }
+
+      const boldParts = seg.split(/\*\*(.*?)\*\*/g);
+      return boldParts.map((bPart, bIdx) => {
+        if (bIdx % 2 === 1) {
+          return <strong key={bIdx}>{bPart}</strong>;
+        }
+        return bPart;
+      });
+    });
+  };
+
   const renderMarkdown = (text, msgIdx) => {
     if (!text) return null;
 
-    // Se houver bloco de código ```...```
     const codeBlockRegex = /```([\s\S]*?)```/g;
     const parts = [];
     let lastIndex = 0;
@@ -127,7 +147,6 @@ export default function ChatWidget({ data }) {
         );
       }
 
-      // Processa parágrafos, listas e formatação
       const lines = part.content.split("\n");
       return (
         <div key={pIdx} className="chat-markdown">
@@ -135,7 +154,6 @@ export default function ChatWidget({ data }) {
             const trimmed = line.trim();
             if (!trimmed) return <div key={lIdx} className="chat-line-break" />;
 
-            // Linha com lista (- ou *)
             if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
               const itemContent = trimmed.substring(2);
               return <li key={lIdx}>{formatInline(itemContent)}</li>;
@@ -148,62 +166,32 @@ export default function ChatWidget({ data }) {
     });
   };
 
-  const formatInline = (str) => {
-    // Quebra por links e negritos
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const segments = str.split(urlRegex);
-
-    return segments.map((seg, sIdx) => {
-      if (seg.match(urlRegex)) {
-        return (
-          <a key={sIdx} href={seg} target="_blank" rel="noopener noreferrer">
-            {seg}
-          </a>
-        );
-      }
-
-      // Negrito **bold**
-      const boldParts = seg.split(/\*\*(.*?)\*\*/g);
-      return boldParts.map((bPart, bIdx) => {
-        if (bIdx % 2 === 1) {
-          return <strong key={bIdx}>{bPart}</strong>;
-        }
-        return bPart;
-      });
-    });
-  };
-
   return (
     <>
-      {/* Botão Flutuante do Chat */}
-      <motion.button
+      <button
         type="button"
-        aria-label={isChatOpen ? "Fechar assistente de chat" : "Abrir assistente virtual"}
+        aria-label={isChatOpen ? "Fechar assistente" : "Abrir assistente"}
         aria-expanded={isChatOpen}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
         onClick={() => setIsChatOpen(!isChatOpen)}
         className="chat-fab"
       >
-        {isChatOpen ? <X size={26} /> : <MessageSquare size={26} />}
-      </motion.button>
+        {isChatOpen ? <X size={20} /> : <MessageSquare size={20} />}
+      </button>
 
-      {/* Janela Modal do Chat */}
       <AnimatePresence>
         {isChatOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.25 }}
-            className="glass-card chat-panel"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.18 }}
+            className="surface-card chat-panel"
             role="dialog"
             aria-label={data.title}
           >
-            {/* Cabeçalho */}
             <div className="chat-panel-header">
               <div className="chat-panel-title">
-                <Sparkles size={18} />
+                <span className="chat-status-indicator" aria-hidden="true" />
                 <span>{data.title}</span>
               </div>
 
@@ -211,39 +199,38 @@ export default function ChatWidget({ data }) {
                 {messages.length > 0 && (
                   <button
                     type="button"
-                    title="Limpar histórico"
-                    aria-label="Limpar histórico"
+                    title="Limpar conversa"
+                    aria-label="Limpar conversa"
                     onClick={() => setMessages([])}
-                    className="btn-icon btn-icon--on-accent"
+                    className="btn-icon"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={15} />
                   </button>
                 )}
                 <button
                   type="button"
-                  aria-label="Fechar chat"
+                  aria-label="Fechar assistente"
                   onClick={() => setIsChatOpen(false)}
-                  className="btn-icon btn-icon--on-accent"
+                  className="btn-icon"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
             </div>
 
-            {/* Mensagens & Conteúdo */}
             <div className="chat-body" aria-live="polite" aria-busy={loading}>
               {messages.length === 0 && (
                 <div className="chat-empty">
                   <p className="chat-empty-text">
-                    Olá! Sou o assistente com RAG corporativo do Christian. Sobre o que gostaria de saber?
+                    Consulte informações objetivas sobre trajetória, projetos, stack e contatos do Christian.
                   </p>
-                  <div className="chat-chips-container">
+                  <div className="chat-suggestions">
                     {SUGGESTIONS.map((s, idx) => (
                       <button
                         key={idx}
                         type="button"
-                        className="chat-chip"
-                        onClick={() => HANDLE_SEND(s)}
+                        className="chat-suggestion-btn"
+                        onClick={() => handleSend(s)}
                       >
                         {s}
                       </button>
@@ -262,9 +249,8 @@ export default function ChatWidget({ data }) {
 
               {loading && (
                 <div className="chat-typing">
-                  <span className="status-dot" />
                   <span className="chat-typing-text">
-                    {data.loading || "Consultando dados corporativos..."}
+                    {data.loading || "Consultando base..."}
                   </span>
                 </div>
               )}
@@ -272,25 +258,24 @@ export default function ChatWidget({ data }) {
               <div ref={messagesEndRef} aria-hidden="true" />
             </div>
 
-            {/* Input e Envio */}
             <div className="chat-footer">
               <textarea
                 id="chat-input"
                 rows={1}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={HANDLE_KEYDOWN}
+                onKeyDown={handleKeyDown}
                 placeholder={data.placeholder}
                 className="chat-textarea"
               />
               <button
                 type="button"
                 aria-label={data.send || "Enviar mensagem"}
-                onClick={() => HANDLE_SEND()}
+                onClick={() => handleSend()}
                 disabled={loading || !input.trim()}
                 className="btn-primary chat-send-btn"
               >
-                <Send size={16} />
+                <Send size={15} />
               </button>
             </div>
           </motion.div>

@@ -1,7 +1,7 @@
 // frontend/src/components/Projects.jsx
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, FolderGit2, Info, X, CheckCircle } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowUpRight, FileText, X } from "lucide-react";
 
 export default function Projects({ data }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -25,175 +25,176 @@ export default function Projects({ data }) {
     };
   }, [activeModalProject]);
 
-  if (!data || !data.items) {
+  const items = useMemo(() => data?.items || [], [data]);
+
+  const categories = useMemo(() => {
+    const unique = Array.from(
+      new Set(items.map((p) => p.category?.trim()).filter(Boolean))
+    );
+    return [
+      { id: "all", label: "Todos" },
+      ...unique.map((cat) => ({ id: cat, label: cat })),
+    ];
+  }, [items]);
+
+  if (!items.length) {
     return null;
   }
 
-  // Coleta categorias únicas
-  const categories = [
-    { id: "all", label: "Todos os Projetos" },
-    { id: "Governança & Dados", label: "Governança & Dados" },
-    { id: "IA & Automação", label: "IA & Automação" },
-    { id: "Fullstack & Cloud", label: "Fullstack & Cloud" },
-  ];
-
   const filteredItems =
     selectedCategory === "all"
-      ? data.items
-      : data.items.filter(
-          (p) =>
-            p.category?.toLowerCase() === selectedCategory.toLowerCase() ||
-            (selectedCategory === "all")
+      ? items
+      : items.filter(
+          (p) => p.category?.trim().toLowerCase() === selectedCategory.toLowerCase()
         );
 
   return (
-    <motion.section
-      id="projects"
-      className="section-block"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true, margin: "-80px" }}
-    >
-      <div className="section-header">
-        <h2 className="section-title">{data.title}</h2>
-        <p className="section-subtitle">
-          Aplicações corporativas e microsserviços desenhados com foco em resiliência, escalabilidade e governança.
-        </p>
+    <section id="projects" className="section-block">
+      <div className="section-header-split">
+        <div className="section-header section-header--flush">
+          <span className="section-kicker">Engenharia aplicada</span>
+          <h2 className="section-title">{data.title}</h2>
+          <p className="section-subtitle">
+            Sistemas, pipelines de dados e plataformas construídas com foco em confiabilidade operacional e rastreabilidade.
+          </p>
+        </div>
+
+        {categories.length > 2 && (
+          <div className="underline-tabs" role="tablist" aria-label="Filtrar projetos por área">
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={`underline-tab ${isActive ? "is-active" : ""}`}
+                  onClick={() => setSelectedCategory(cat.id)}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Filtros por Categoria */}
-      <div className="filter-container">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            type="button"
-            className={`category-pill ${selectedCategory === cat.id ? "active" : ""}`}
-            onClick={() => setSelectedCategory(cat.id)}
-            aria-pressed={selectedCategory === cat.id}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
+      <div className="projects-grid">
+        {filteredItems.map((project) => {
+          const hasArch = Boolean(project.architecture && project.architecture.trim());
+          return (
+            <article key={project.name} className="surface-card project-card">
+              <div className="project-body">
+                {project.category && (
+                  <span className="project-category">{project.category}</span>
+                )}
 
-      {/* Grid de Cards de Projetos (Bento) */}
-      <motion.div layout className="projects-grid">
-        <AnimatePresence>
-          {filteredItems.map((project, idx) => {
-            const isFeatured = selectedCategory === "all" && idx === 0;
-            return (
-              <motion.div
-                layout
-                key={project.name}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-                className={`glass-card project-card ${isFeatured ? "is-featured" : ""}`}
-              >
-                {/* Topo do Card: Categoria & Badge Featured */}
-                <div className="project-top-row">
-                  {project.category && (
-                    <span className="project-category">{project.category}</span>
-                  )}
-                  {isFeatured && (
-                    <span className="project-featured-badge">★ Destaque de Arquitetura</span>
-                  )}
-                </div>
+                <h3 className="project-title">{project.name}</h3>
+                <p className="project-desc">{project.desc}</p>
 
-                <div className="project-body">
-                  <h3 className="project-title">
-                    <FolderGit2 size={20} className="icon-accent" />
-                    {project.name}
-                  </h3>
+                {project.tags && project.tags.length > 0 && (
+                  <div className="tag-list project-tags">
+                    {project.tags.map((tag, tIdx) => (
+                      <span key={`${tag}-${tIdx}`} className="tech-tag">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                  <p className="project-desc">{project.desc}</p>
+              <div className="project-footer">
+                {project.link && (
+                  <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="project-link"
+                  >
+                    <span>Repositório GitHub</span>
+                    <ArrowUpRight size={15} aria-hidden="true" />
+                  </a>
+                )}
 
-                  {/* Tags de Tecnologias */}
-                  {project.tags && project.tags.length > 0 && (
-                    <div className="tag-list project-tags">
-                      {project.tags.map((tag, tIdx) => (
-                        <span key={tIdx} className="tech-tag">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Ações: Repositório e Detalhes */}
-                <div className="project-footer">
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-secondary btn-sm"
-                    >
-                      Repositório <ExternalLink size={14} />
-                    </a>
-                  )}
-
+                {hasArch && (
                   <button
                     type="button"
                     onClick={() => setActiveModalProject(project)}
                     className="project-detail-btn"
                   >
-                    <Info size={16} /> Arquitetura
+                    <FileText size={14} aria-hidden="true" />
+                    <span>Especificação</span>
                   </button>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </motion.div>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
 
-      {/* Modal de Arquitetura & Detalhes Técnicos */}
       <AnimatePresence>
         {activeModalProject && (
           <div className="modal-overlay" onClick={() => setActiveModalProject(null)}>
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card modal-card"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.18 }}
+              className="surface-card modal-card"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="project-modal-title"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-head">
-                <h3 className="modal-title">{activeModalProject.name}</h3>
+                <div>
+                  {activeModalProject.category && (
+                    <span className="project-category">{activeModalProject.category}</span>
+                  )}
+                  <h3 id="project-modal-title" className="modal-title">
+                    {activeModalProject.name}
+                  </h3>
+                </div>
                 <button
                   type="button"
                   className="btn-icon"
                   onClick={() => setActiveModalProject(null)}
-                  aria-label="Fechar modal"
+                  aria-label="Fechar especificação"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
 
               <div className="modal-section">
-                <span className="status-badge">
-                  <CheckCircle size={14} /> Produção & Código Auditado
-                </span>
+                <h4 className="modal-section-label">Resumo</h4>
                 <p className="modal-text">{activeModalProject.desc}</p>
               </div>
 
-              <div className="modal-section">
-                <h4 className="modal-section-label">Tecnologias Envolvidas</h4>
-                <div className="tag-list">
-                  {activeModalProject.tags?.map((t, idx) => (
-                    <span key={idx} className="tech-tag">
-                      {t}
-                    </span>
-                  ))}
+              {activeModalProject.architecture && (
+                <div className="modal-section">
+                  <h4 className="modal-section-label">Arquitetura e decisões técnicas</h4>
+                  <p className="modal-text">{activeModalProject.architecture}</p>
                 </div>
-              </div>
+              )}
+
+              {activeModalProject.tags?.length > 0 && (
+                <div className="modal-section">
+                  <h4 className="modal-section-label">Stack utilizada</h4>
+                  <div className="tag-list">
+                    {activeModalProject.tags.map((t, idx) => (
+                      <span key={`${t}-${idx}`} className="tech-tag">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="btn-secondary btn-sm"
                   onClick={() => setActiveModalProject(null)}
                 >
                   Fechar
@@ -203,9 +204,10 @@ export default function Projects({ data }) {
                     href={activeModalProject.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-primary"
+                    className="btn-primary btn-sm"
                   >
-                    Ver no GitHub <ExternalLink size={16} />
+                    <span>Abrir repositório</span>
+                    <ArrowUpRight size={15} aria-hidden="true" />
                   </a>
                 )}
               </div>
@@ -213,6 +215,6 @@ export default function Projects({ data }) {
           </div>
         )}
       </AnimatePresence>
-    </motion.section>
+    </section>
   );
 }

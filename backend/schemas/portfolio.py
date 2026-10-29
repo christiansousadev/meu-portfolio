@@ -138,6 +138,7 @@ class ProjItem(StrictModel):
     link: HttpUrl
     category: Annotated[str, Field(default="Fullstack", max_length=100)] = "Fullstack"
     tags: Annotated[list[ShortStr], Field(default_factory=list, max_length=30)] = []
+    architecture: Annotated[str, Field(default="", max_length=4_000)] = ""
 
 
 class ProjSection(StrictModel):

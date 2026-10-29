@@ -66,6 +66,7 @@ def _write_state_atomic(payload: dict) -> None:
         os.fsync(tmp.fileno())
         tmp_path = tmp.name
 
+    os.chmod(tmp_path, 0o664)
     os.replace(tmp_path, RUNTIME_STATE_PATH)
 
 

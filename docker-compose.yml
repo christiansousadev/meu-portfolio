@@ -19,8 +19,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        APP_UID: "${PUID:-1000}"
+        APP_GID: "${PGID:-1000}"
     image: portfolio-backend:latest
     container_name: portfolio-backend
+    user: "${PUID:-1000}:${PGID:-1000}"
     restart: unless-stopped
     env_file:
       - .env

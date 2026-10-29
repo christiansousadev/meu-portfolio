@@ -1,6 +1,5 @@
 // frontend/src/components/Certifications.jsx
-import { motion } from "framer-motion";
-import { Award, ShieldCheck, ExternalLink } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Certifications({ data }) {
   if (!data || !data.items || data.items.length === 0) {
@@ -8,49 +7,23 @@ export default function Certifications({ data }) {
   }
 
   return (
-    <motion.section
-      id="certifications"
-      className="section-block"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true, margin: "-80px" }}
-    >
+    <section id="certifications" className="section-block">
       <div className="section-header">
-        <span className="section-kicker">{data.subtitle}</span>
+        {data.subtitle && <span className="section-kicker">{data.subtitle}</span>}
         <h2 className="section-title">{data.title}</h2>
-        <p className="section-subtitle">
-          Credenciais reconhecidas em gestão de serviços de TI, padrões internacionais de segurança e arquitetura de software.
-        </p>
       </div>
 
       <div className="cert-grid">
         {data.items.map((cert, index) => (
-          <motion.div
-            key={index}
-            className="glass-card cert-card"
-            whileHover={{ y: -5 }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.1 }}
-            viewport={{ once: true }}
-          >
-            <div>
-              <div className="cert-card-top">
-                <div className="cert-icon">
-                  <Award size={22} />
-                </div>
+          <article key={`${cert.name}-${index}`} className="surface-card cert-card">
+            <div className="cert-body">
+              <div className="cert-meta-row">
+                <span className="cert-issuer">{cert.issuer}</span>
                 {cert.year && <span className="cert-year">{cert.year}</span>}
               </div>
 
               <h3 className="cert-name">{cert.name}</h3>
-
-              <div className="cert-issuer">
-                <ShieldCheck size={16} />
-                <span>{cert.issuer}</span>
-              </div>
-
-              <p className="cert-desc">{cert.description}</p>
+              {cert.description && <p className="cert-desc">{cert.description}</p>}
             </div>
 
             {cert.credential_url && (
@@ -61,13 +34,14 @@ export default function Certifications({ data }) {
                   rel="noopener noreferrer"
                   className="cert-link"
                 >
-                  Verificar Credencial <ExternalLink size={14} />
+                  <span>Verificar credencial</span>
+                  <ArrowUpRight size={14} aria-hidden="true" />
                 </a>
               </div>
             )}
-          </motion.div>
+          </article>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }
