@@ -722,6 +722,14 @@ select:focus-visible,
   transition: transform 0.4s var(--ease-out);
 }
 
+.navbar-logo-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+
 .navbar-logo:hover .navbar-mark {
   transform: rotate(-6deg) scale(1.04);
 }

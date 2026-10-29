@@ -111,7 +111,15 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
     <header className={`navbar ${isScrolled || mobileMenuOpen ? "is-scrolled" : ""}`}>
       <div className="navbar-inner">
         <a href="#" className="navbar-logo" aria-label={copy.home}>
-          <span className="navbar-mark" aria-hidden="true">CS</span>
+          <span className="navbar-mark" aria-hidden="true">
+            <img
+              src="/images/logo.png"
+              alt=""
+              className="navbar-logo-img"
+              width={18}
+              height={18}
+            />
+          </span>
           <span className="navbar-brand-name">Christian Sousa</span>
           <span className="navbar-brand-sep" aria-hidden="true">/</span>
           <span className="navbar-brand-role">{copy.role}</span>
