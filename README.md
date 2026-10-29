@@ -154,7 +154,10 @@ meu-portfolio/
 │   │   │   ├── ChatWidget.jsx     # Assistente conversacional com parser seguro de Markdown
 │   │   │   ├── AdminDashboard.jsx # Console de governança, Turnstile, KPIs e auditoria
 │   │   │   └── JsonEditor.jsx     # Editor semântico do portfólio (Hero/Skills/Exp/Proj/Cert) e RAG
+│   │   ├── hooks/
+│   │   │   └── useContentStore.js # Gerenciamento de estado de conteúdo e dirty tracking no admin
 │   │   ├── utils/
+│   │   │   ├── adminApi.js        # Utilitário centralizado de chamadas autenticadas à API admin
 │   │   │   ├── googleTranslate.js # Integração controlada com Google Website Translator
 │   │   │   └── motion.js          # Curvas, variantes e presets compartilhados de Framer Motion
 │   │   ├── App.jsx                # Orquestração de rotas (/ e /admin), tema e rodapé

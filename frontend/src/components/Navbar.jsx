@@ -4,9 +4,65 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Sun, Moon, Globe, Lock, Menu, X } from "lucide-react";
 import { EASE_OUT, SPRING_INDICATOR } from "../utils/motion";
 
+const NAV_COPY = {
+  pt: {
+    home: "Ir para o início",
+    role: "Engenharia & Governança",
+    sections: "Seções principais",
+    certsFallback: "Certificações",
+    switchLang: "Mudar idioma para inglês",
+    lightTheme: "Ativar tema claro",
+    darkTheme: "Ativar tema escuro",
+    console: "Acessar console de governança",
+    openMenu: "Abrir menu",
+    closeMenu: "Fechar menu",
+    mobileMenu: "Menu móvel",
+  },
+  en: {
+    home: "Go to top",
+    role: "Engineering & Governance",
+    sections: "Main sections",
+    certsFallback: "Certifications",
+    switchLang: "Switch language to Portuguese",
+    lightTheme: "Switch to light theme",
+    darkTheme: "Switch to dark theme",
+    console: "Open governance console",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+    mobileMenu: "Mobile menu",
+  },
+};
+
+// Mostra os dois idiomas com o atual destacado: o visitante sabe onde está
+// e para onde o clique leva, sem depender de ícone ou bandeira.
+function LangToggle({ lang, onToggle, label }) {
+  return (
+    <button
+      type="button"
+      className="btn-icon btn-icon--labeled lang-toggle"
+      onClick={onToggle}
+      title={label}
+      aria-label={label}
+    >
+      <Globe size={15} aria-hidden="true" />
+      <span className="lang-toggle-options" aria-hidden="true">
+        {["pt", "en"].map((code) => (
+          <span
+            key={code}
+            className={`lang-toggle-option ${lang === code ? "is-current" : ""}`}
+          >
+            {code.toUpperCase()}
+          </span>
+        ))}
+      </span>
+    </button>
+  );
+}
+
 export default function Navbar({ t, theme, setTheme, lang, setLang }) {
   const nextLang = lang === "pt" ? "en" : "pt";
   const nextTheme = theme === "dark" ? "light" : "dark";
+  const copy = NAV_COPY[lang] || NAV_COPY.pt;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [hoveredLink, setHoveredLink] = useState(null);
@@ -46,23 +102,25 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
     { href: "#skills", label: t.nav.skills, id: "skills" },
     { href: "#experience", label: t.nav.exp, id: "experience" },
     { href: "#projects", label: t.nav.proj, id: "projects" },
-    { href: "#certifications", label: t.nav.certs || "Certificações", id: "certifications" },
+    { href: "#certifications", label: t.nav.certs || copy.certsFallback, id: "certifications" },
   ];
+
+  const themeLabel = theme === "dark" ? copy.lightTheme : copy.darkTheme;
 
   return (
     <header className={`navbar ${isScrolled || mobileMenuOpen ? "is-scrolled" : ""}`}>
       <div className="navbar-inner">
-        <a href="#" className="navbar-logo" aria-label="Ir para o início">
+        <a href="#" className="navbar-logo" aria-label={copy.home}>
           <span className="navbar-mark" aria-hidden="true">CS</span>
           <span className="navbar-brand-name">Christian Sousa</span>
           <span className="navbar-brand-sep" aria-hidden="true">/</span>
-          <span className="navbar-brand-role">Engenharia & Governança</span>
+          <span className="navbar-brand-role">{copy.role}</span>
         </a>
 
         <div className="navbar-desktop">
           <nav
             className="navbar-links"
-            aria-label="Seções principais"
+            aria-label={copy.sections}
             onMouseLeave={() => setHoveredLink(null)}
           >
             {navLinks.map((link) => {
@@ -100,24 +158,14 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
           </nav>
 
           <div className="navbar-controls">
-            <button
-              type="button"
-              className="btn-icon btn-icon--labeled"
-              onClick={() => setLang(nextLang)}
-              title={`Mudar idioma para ${nextLang.toUpperCase()}`}
-              aria-label={`Mudar idioma para ${nextLang.toUpperCase()}`}
-            >
-              <Globe size={15} aria-hidden="true" />
-              <span className="navbar-lang-code">{nextLang.toUpperCase()}</span>
-            </button>
+            <LangToggle lang={lang} onToggle={() => setLang(nextLang)} label={copy.switchLang} />
 
             <button
               type="button"
               className="btn-icon"
               onClick={() => setTheme(nextTheme)}
-              title={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
-              aria-label={`Alternar para tema ${nextTheme}`}
-              aria-pressed={theme === "dark"}
+              title={themeLabel}
+              aria-label={themeLabel}
             >
               {theme === "dark" ? (
                 <Sun size={16} aria-hidden="true" />
@@ -129,8 +177,8 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
             <a
               href="/admin"
               className="btn-icon"
-              title="Console de Governança"
-              aria-label="Acessar console de governança"
+              title={copy.console}
+              aria-label={copy.console}
             >
               <Lock size={15} aria-hidden="true" />
             </a>
@@ -142,7 +190,7 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
             type="button"
             className="btn-icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-label={mobileMenuOpen ? copy.closeMenu : copy.openMenu}
             aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -159,7 +207,7 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
             transition={{ duration: 0.32, ease: EASE_OUT }}
             className="mobile-drawer"
           >
-            <nav className="mobile-drawer-links" aria-label="Menu móvel">
+            <nav className="mobile-drawer-links" aria-label={copy.mobileMenu}>
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
@@ -175,17 +223,14 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
               })}
 
               <div className="mobile-drawer-controls">
-                <button
-                  type="button"
-                  className="btn-icon btn-icon--labeled"
-                  onClick={() => {
+                <LangToggle
+                  lang={lang}
+                  onToggle={() => {
                     setLang(nextLang);
                     setMobileMenuOpen(false);
                   }}
-                >
-                  <Globe size={16} />
-                  <span className="navbar-lang-code">{nextLang.toUpperCase()}</span>
-                </button>
+                  label={copy.switchLang}
+                />
                 <button
                   type="button"
                   className="btn-icon"
@@ -193,11 +238,11 @@ export default function Navbar({ t, theme, setTheme, lang, setLang }) {
                     setTheme(nextTheme);
                     setMobileMenuOpen(false);
                   }}
-                  aria-label="Alternar tema"
+                  aria-label={themeLabel}
                 >
                   {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
                 </button>
-                <a href="/admin" className="btn-icon" aria-label="Console de Governança">
+                <a href="/admin" className="btn-icon" aria-label={copy.console}>
                   <Lock size={16} />
                 </a>
               </div>

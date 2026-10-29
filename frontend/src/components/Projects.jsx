@@ -13,6 +13,37 @@ import {
 
 const CARD_TRANSITION = { duration: 0.45, ease: EASE_OUT };
 
+const PROJ_COPY = {
+  pt: {
+    subtitle:
+      "Sistemas, pipelines de dados e plataformas construídas com foco em confiabilidade operacional e rastreabilidade.",
+    all: "Todos",
+    filterLabel: "Filtrar projetos por área",
+    repo: "Repositório GitHub",
+    spec: "Especificação",
+    closeSpec: "Fechar especificação",
+    summary: "Resumo",
+    architecture: "Arquitetura e decisões técnicas",
+    stack: "Stack utilizada",
+    close: "Fechar",
+    openRepo: "Abrir repositório",
+  },
+  en: {
+    subtitle:
+      "Systems, data pipelines and platforms built for operational reliability and traceability.",
+    all: "All",
+    filterLabel: "Filter projects by area",
+    repo: "GitHub repository",
+    spec: "Specification",
+    closeSpec: "Close specification",
+    summary: "Summary",
+    architecture: "Architecture and technical decisions",
+    stack: "Tech stack",
+    close: "Close",
+    openRepo: "Open repository",
+  },
+};
+
 const modalStagger = {
   hidden: {},
   show: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } },
@@ -23,7 +54,8 @@ const modalItem = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE_OUT } },
 };
 
-export default function Projects({ data }) {
+export default function Projects({ data, lang = "pt" }) {
+  const copy = PROJ_COPY[lang] || PROJ_COPY.pt;
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [activeModalProject, setActiveModalProject] = useState(null);
 
@@ -52,20 +84,25 @@ export default function Projects({ data }) {
       new Set(items.map((p) => p.category?.trim()).filter(Boolean))
     );
     return [
-      { id: "all", label: "Todos" },
+      { id: "all", label: copy.all },
       ...unique.map((cat) => ({ id: cat, label: cat })),
     ];
-  }, [items]);
+  }, [items, copy.all]);
 
   if (!items.length) {
     return null;
   }
 
+  // Categorias mudam de nome entre idiomas: se a seleção não existir mais, volta para "todos"
+  const activeCategory = categories.some((cat) => cat.id === selectedCategory)
+    ? selectedCategory
+    : "all";
+
   const filteredItems =
-    selectedCategory === "all"
+    activeCategory === "all"
       ? items
       : items.filter(
-          (p) => p.category?.trim().toLowerCase() === selectedCategory.toLowerCase()
+          (p) => p.category?.trim().toLowerCase() === activeCategory.toLowerCase()
         );
 
   return (
@@ -82,16 +119,16 @@ export default function Projects({ data }) {
             {data.title}
           </motion.h2>
           <motion.p className="section-subtitle" variants={revealItem}>
-            Sistemas, pipelines de dados e plataformas construídas com foco em confiabilidade operacional e rastreabilidade.
+            {copy.subtitle}
           </motion.p>
         </div>
 
         {categories.length > 2 && (
           <motion.div variants={revealItem}>
             <LayoutGroup id="projects-filter">
-              <div className="underline-tabs" role="tablist" aria-label="Filtrar projetos por área">
+              <div className="underline-tabs" role="tablist" aria-label={copy.filterLabel}>
                 {categories.map((cat) => {
-                  const isActive = selectedCategory === cat.id;
+                  const isActive = activeCategory === cat.id;
                   return (
                     <button
                       key={cat.id}
@@ -167,7 +204,7 @@ export default function Projects({ data }) {
                       rel="noopener noreferrer"
                       className="project-link"
                     >
-                      <span>Repositório GitHub</span>
+                      <span>{copy.repo}</span>
                       <ArrowUpRight size={15} aria-hidden="true" />
                     </a>
                   )}
@@ -179,7 +216,7 @@ export default function Projects({ data }) {
                       className="project-detail-btn"
                     >
                       <FileText size={14} aria-hidden="true" />
-                      <span>Especificação</span>
+                      <span>{copy.spec}</span>
                     </button>
                   )}
                 </div>
@@ -229,27 +266,27 @@ export default function Projects({ data }) {
                     type="button"
                     className="btn-icon"
                     onClick={() => setActiveModalProject(null)}
-                    aria-label="Fechar especificação"
+                    aria-label={copy.closeSpec}
                   >
                     <X size={18} />
                   </button>
                 </motion.div>
 
                 <motion.div className="modal-section" variants={modalItem}>
-                  <h4 className="modal-section-label">Resumo</h4>
+                  <h4 className="modal-section-label">{copy.summary}</h4>
                   <p className="modal-text">{activeModalProject.desc}</p>
                 </motion.div>
 
                 {activeModalProject.architecture && (
                   <motion.div className="modal-section" variants={modalItem}>
-                    <h4 className="modal-section-label">Arquitetura e decisões técnicas</h4>
+                    <h4 className="modal-section-label">{copy.architecture}</h4>
                     <p className="modal-text">{activeModalProject.architecture}</p>
                   </motion.div>
                 )}
 
                 {activeModalProject.tags?.length > 0 && (
                   <motion.div className="modal-section" variants={modalItem}>
-                    <h4 className="modal-section-label">Stack utilizada</h4>
+                    <h4 className="modal-section-label">{copy.stack}</h4>
                     <div className="tag-list">
                       {activeModalProject.tags.map((t, idx) => (
                         <span key={`${t}-${idx}`} className="tech-tag">
@@ -266,7 +303,7 @@ export default function Projects({ data }) {
                     className="btn-secondary btn-sm"
                     onClick={() => setActiveModalProject(null)}
                   >
-                    Fechar
+                    {copy.close}
                   </button>
                   {activeModalProject.link && (
                     <a
@@ -275,7 +312,7 @@ export default function Projects({ data }) {
                       rel="noopener noreferrer"
                       className="btn-primary btn-sm"
                     >
-                      <span>Abrir repositório</span>
+                      <span>{copy.openRepo}</span>
                       <ArrowUpRight size={15} aria-hidden="true" />
                     </a>
                   )}

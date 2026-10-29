@@ -6,29 +6,37 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { Mail, ArrowUpRight, MapPin } from "lucide-react";
+import { Mail, ArrowUpRight } from "lucide-react";
 import { EASE_OUT, trackSpotlight } from "../utils/motion";
 
 const CONTACT_EMAIL = "christiansousadev@gmail.com";
 
-const CREDENTIALS = [
-  {
-    value: "+6 anos",
-    label: "Trajetória dedicada em TI, ERPs e automação",
+const HERO_COPY = {
+  pt: {
+    status: "Disponível para novos projetos e liderança técnica",
+    emailLabel: `Enviar e-mail para ${CONTACT_EMAIL}`,
+    portraitAlt: "Ilustração autoral de Christian Sousa em seu ambiente de desenvolvimento",
+    credentialsLabel: "Resumo de qualificações",
+    credentials: [
+      { value: "+6 anos", label: "Trajetória dedicada em TI, ERPs e automação" },
+      { value: "ITIL® 4", label: "Gestão de serviços, incidentes e mudanças (Axelos)" },
+      { value: "ISO 27001 & LGPD", label: "Auditoria estruturada, segurança e minimização" },
+      { value: "Python & SQL", label: "FastAPI, PostgreSQL, integrações n8n e RAG" },
+    ],
   },
-  {
-    value: "ITIL® 4",
-    label: "Gestão de serviços, incidentes e mudanças (Axelos)",
+  en: {
+    status: "Available for new projects and technical leadership",
+    emailLabel: `Send an email to ${CONTACT_EMAIL}`,
+    portraitAlt: "Illustrated portrait of Christian Sousa at his development workspace",
+    credentialsLabel: "Qualifications summary",
+    credentials: [
+      { value: "6+ years", label: "Dedicated track record in IT, ERPs and automation" },
+      { value: "ITIL® 4", label: "Service, incident and change management (Axelos)" },
+      { value: "ISO 27001 & LGPD", label: "Structured auditing, security and data minimization" },
+      { value: "Python & SQL", label: "FastAPI, PostgreSQL, n8n integrations and RAG" },
+    ],
   },
-  {
-    value: "ISO 27001 & LGPD",
-    label: "Auditoria estruturada, segurança e minimização",
-  },
-  {
-    value: "Python & SQL",
-    label: "FastAPI, PostgreSQL, integrações n8n e RAG",
-  },
-];
+};
 
 const copyContainer = {
   hidden: {},
@@ -67,7 +75,7 @@ const credentialItem = {
 
 const TILT_SPRING = { stiffness: 140, damping: 18, mass: 0.6 };
 
-function PortraitFrame() {
+function PortraitFrame({ alt }) {
   const prefersReducedMotion = useReducedMotion();
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
@@ -96,22 +104,16 @@ function PortraitFrame() {
       <div className="hero-portrait">
         <div className="hero-portrait-halo" aria-hidden="true" />
         <motion.figure className="hero-portrait-frame" style={{ rotateX, rotateY }}>
-          <img
-            src="/images/hero_developer.png"
-            alt="Ilustração autoral de Christian Sousa em seu ambiente de desenvolvimento"
-            className="hero-avatar"
-          />
-          <figcaption className="hero-portrait-caption">
-            <MapPin size={13} aria-hidden="true" />
-            <span>Fortaleza, CE</span>
-          </figcaption>
+          <img src="/images/hero_developer.png" alt={alt} className="hero-avatar" />
         </motion.figure>
       </div>
     </motion.div>
   );
 }
 
-export default function Hero({ data }) {
+export default function Hero({ data, lang = "pt" }) {
+  const copy = HERO_COPY[lang] || HERO_COPY.pt;
+
   return (
     <section className="hero-section">
       <div className="hero-atmosphere" aria-hidden="true">
@@ -133,7 +135,7 @@ export default function Hero({ data }) {
         <div className="hero-copy">
           <motion.p className="hero-status" variants={copyItem}>
             <span className="status-dot" aria-hidden="true" />
-            <span>Disponível para novos projetos e liderança técnica</span>
+            <span>{copy.status}</span>
           </motion.p>
 
           <motion.h1 className="hero-title" variants={copyItem}>
@@ -148,7 +150,7 @@ export default function Hero({ data }) {
             <motion.a
               href={`mailto:${CONTACT_EMAIL}`}
               className="btn-primary"
-              aria-label={`Enviar e-mail para ${CONTACT_EMAIL}`}
+              aria-label={copy.emailLabel}
               whileTap={{ scale: 0.97 }}
             >
               <Mail size={16} aria-hidden="true" />
@@ -184,17 +186,17 @@ export default function Hero({ data }) {
           </motion.div>
         </div>
 
-        <PortraitFrame />
+        <PortraitFrame alt={copy.portraitAlt} />
       </motion.div>
 
       <motion.dl
         className="hero-credentials-bar"
-        aria-label="Resumo de qualificações"
+        aria-label={copy.credentialsLabel}
         initial="hidden"
         animate="show"
         variants={credentialsContainer}
       >
-        {CREDENTIALS.map((item) => (
+        {copy.credentials.map((item) => (
           <motion.div
             key={item.value}
             className="credential-cell spotlight"

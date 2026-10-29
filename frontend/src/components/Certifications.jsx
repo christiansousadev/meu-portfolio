@@ -8,7 +8,9 @@ import {
   trackSpotlight,
 } from "../utils/motion";
 
-export default function Certifications({ data }) {
+const VERIFY_LABEL = { pt: "Verificar credencial", en: "Verify credential" };
+
+export default function Certifications({ data, lang = "pt" }) {
   if (!data || !data.items || data.items.length === 0) {
     return null;
   }
@@ -70,7 +72,7 @@ export default function Certifications({ data }) {
                   rel="noopener noreferrer"
                   className="cert-link"
                 >
-                  <span>Verificar credencial</span>
+                  <span>{VERIFY_LABEL[lang] || VERIFY_LABEL.pt}</span>
                   <ArrowUpRight size={14} aria-hidden="true" />
                 </a>
               </div>

@@ -805,10 +805,31 @@ select:focus-visible,
   border-left: 1px solid var(--card-border);
 }
 
-.navbar-lang-code {
+/* Alternador PT | EN com o idioma atual destacado */
+.lang-toggle-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
+}
+
+.lang-toggle-option {
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lang-toggle-option.is-current {
+  color: var(--text-color);
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 1px var(--card-border-hover);
+}
+
+.lang-toggle:hover .lang-toggle-option:not(.is-current) {
+  color: var(--text-secondary);
 }
 
 .mobile-toggle {
@@ -1081,30 +1102,6 @@ select:focus-visible,
   aspect-ratio: 4 / 5;
   object-fit: cover;
   border-radius: 14px;
-}
-
-.hero-portrait-caption {
-  position: absolute;
-  left: -18px;
-  bottom: 26px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-color);
-  background: var(--card-bg-translucent);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  box-shadow: var(--shadow-raised), var(--highlight-inset);
-  transform: translateZ(40px);
-}
-
-.hero-portrait-caption svg {
-  color: var(--signal-color);
 }
 
 /* Faixa de qualificações em vidro */
@@ -2307,14 +2304,6 @@ select:focus-visible,
   margin-bottom: 24px;
 }
 
-.login-kicker {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
 .login-title {
   font-size: 1.35rem;
   font-weight: 600;
@@ -2441,8 +2430,136 @@ select:focus-visible,
   flex-wrap: wrap;
 }
 
-.admin-nav-tabs {
-  margin-bottom: 28px;
+/* Barra de comando fixa: navegação única + ações de conteúdo sempre à mão */
+.admin-commandbar {
+  position: sticky;
+  top: 12px;
+  z-index: 60;
+  margin-bottom: 24px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--nav-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: var(--shadow-raised), var(--highlight-inset);
+}
+
+.admin-sections {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.admin-sections::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-section-tab {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-section-tab:hover {
+  color: var(--text-color);
+  background: var(--surface-hover);
+}
+
+.admin-section-tab.is-active {
+  color: var(--text-color);
+}
+
+.admin-section-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--surface-elevated);
+  border: 1px solid var(--card-border-hover);
+  box-shadow: var(--shadow-subtle), var(--highlight-inset);
+}
+
+.admin-section-icon,
+.admin-section-label,
+.admin-section-count {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-section-icon {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.admin-section-tab.is-active .admin-section-icon {
+  color: var(--accent-color);
+}
+
+.admin-section-count {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 22px;
+  padding: 1px 6px;
+  text-align: center;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--card-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-section-tab.is-active .admin-section-count {
+  color: var(--accent-color);
+  background: var(--accent-subtle);
+  border-color: transparent;
+}
+
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 6px 2px;
+  border-top: 1px solid var(--card-border);
+}
+
+.admin-toolbar-context {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  min-width: 0;
+}
+
+.admin-toolbar-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding-left: 6px;
+}
+
+.admin-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* Faixa Tabular de KPIs + Controle de Runtime */
@@ -2533,9 +2650,19 @@ select:focus-visible,
 /* Tabelas & Telemetria */
 .dashboard-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
-  gap: 20px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.dashboard-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dashboard-panel .data-panel {
+  flex: 1;
 }
 
 .panel-head {
@@ -2544,14 +2671,28 @@ select:focus-visible,
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  min-height: 34px;
+  min-height: 36px;
   margin-bottom: 12px;
 }
 
 .panel-title {
-  font-size: 0.96rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.98rem;
   font-weight: 600;
   color: var(--text-color);
+}
+
+.panel-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--card-border);
 }
 
 .panel-controls {
@@ -2601,10 +2742,10 @@ select:focus-visible,
 }
 
 .data-panel {
-  overflow: hidden;
-  max-height: 460px;
-  min-height: 220px;
+  height: 540px;
+  overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .table-scroll {
@@ -2810,37 +2951,83 @@ select:focus-visible,
    Editor Semântico de Conteúdo (JsonEditor)
    ========================================================================== */
 
-.editor-shell {
-  display: flex;
-  flex-direction: column;
-}
-
 .editor-panel {
-  padding: 24px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.editor-toolbar-bar {
+.editor-header {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--card-border);
 }
 
-.editor-toolbar-row {
+.editor-header-text {
+  min-width: 0;
+  max-width: 64ch;
+}
+
+.editor-header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-color);
+}
+
+.editor-header-desc {
+  margin-top: 4px;
+  font-size: 0.87rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.editor-header-file {
+  font-size: 0.76rem;
+}
+
+.editor-lang-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  color: var(--accent-color);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-ring);
+}
+
+.editor-list-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 12px;
 }
 
-.editor-toolbar-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+.editor-list-count {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Ação de inclusão com destaque próprio, abaixo do CTA de salvar */
+.btn-add {
+  color: var(--accent-color);
+  border-color: var(--accent-ring);
+  background: var(--accent-subtle);
+}
+
+.btn-add:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent-color);
+  background: var(--accent-subtle);
 }
 
 /* Segmented Control Neutro (sem azul saturado competindo com o CTA) */
@@ -2936,37 +3123,15 @@ select:focus-visible,
     0 8px 24px -8px var(--accent-color);
 }
 
+/* Confirmação breve de gravação no próprio CTA */
+.btn-primary.is-saved,
+.btn-primary.is-saved:hover {
+  background: var(--success-color);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 3px var(--success-subtle);
+}
+
 .btn-icon-swap {
   display: inline-flex;
-}
-
-.editor-view {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.editor-subtabs {
-  margin-top: 2px;
-}
-
-.editor-tab-count {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: var(--bg-secondary);
-  border: 1px solid var(--card-border);
-  padding: 0 6px;
-  border-radius: 4px;
-  line-height: 1.5;
-}
-
-.editor-file-meta {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--card-border);
 }
 
 .editor-section {
@@ -3085,22 +3250,29 @@ select:focus-visible,
   min-height: 220px;
 }
 
-/* Accordion Limpo (sem ícones repetitivos) */
+/* Accordion em cartões separados: cada registro é escaneável isoladamente */
 .accordion-list {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--bg-secondary);
-}
-
-.accordion-item + .accordion-item {
-  border-top: 1px solid var(--card-border);
+  gap: 8px;
 }
 
 .accordion-item {
   position: relative;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.3s var(--ease-out);
+}
+
+.accordion-item:hover {
+  border-color: var(--card-border-hover);
+}
+
+.accordion-item.is-open {
+  border-color: var(--card-border-hover);
+  box-shadow: var(--shadow-raised);
 }
 
 /* Barra de acento lateral que cresce ao abrir o item */
@@ -3129,8 +3301,8 @@ select:focus-visible,
 .accordion-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: 10px;
+  padding: 14px 14px 14px 18px;
   transition: background-color 0.15s ease;
 }
 
@@ -3153,15 +3325,17 @@ select:focus-visible,
 }
 
 .accordion-heading {
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 3px;
 }
 
 .accordion-title {
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.94rem;
+  letter-spacing: -0.01em;
   color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
@@ -3174,11 +3348,37 @@ select:focus-visible,
 }
 
 .accordion-subtitle {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.accordion-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  max-width: 46%;
+}
+
+.accordion-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--accent-color);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-ring);
+  white-space: nowrap;
+}
+
+.accordion-tag--more {
+  color: var(--text-muted);
+  background: var(--card-bg);
+  border-color: var(--card-border);
 }
 
 .badge-neutral {
@@ -3349,8 +3549,8 @@ select:focus-visible,
 
 .editor-toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  bottom: 24px;
+  right: 24px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -3460,11 +3660,6 @@ select:focus-visible,
 
   .hero-portrait {
     max-width: 320px;
-  }
-
-  .hero-portrait-caption {
-    left: auto;
-    right: -12px;
   }
 
   .hero-credentials-bar {
@@ -3587,8 +3782,47 @@ select:focus-visible,
     text-align: center;
   }
 
-  .badge-neutral {
+  .badge-neutral,
+  .accordion-tags,
+  .admin-toolbar-hint {
     display: none;
+  }
+
+  .admin-commandbar {
+    top: 8px;
+  }
+
+  .admin-toolbar-context {
+    width: 100%;
+  }
+
+  .admin-toolbar-actions {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+
+  .admin-toolbar-actions .sync-badge {
+    margin-right: auto;
+    padding: 8px;
+  }
+
+  /* Status e backup viram ícones; o texto segue disponível para leitores de tela */
+  .admin-toolbar-actions .toolbar-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .admin-toolbar-actions .btn-primary {
+    flex: 1;
+  }
+
+  .data-panel {
+    height: 420px;
   }
 
   .chat-panel {

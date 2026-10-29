@@ -18,11 +18,45 @@ import {
   setGoogleTranslateLanguage,
 } from "./utils/googleTranslate";
 
+const LANG_STORAGE_KEY = "portfolio_lang";
+const SUPPORTED_LANGS = ["pt", "en"];
+
+const SHELL_COPY = {
+  pt: {
+    loadError: "Não foi possível carregar os dados do portfólio. Verifique a conexão com a API.",
+    role: "Engenheiro de Software & Governança de TI",
+    externalLinks: "Links externos",
+    footerMeta: "Arquitetura Same-Origin · Cloudflare Zero Trust · Conformidade LGPD & ISO 27001",
+    backToTop: "Voltar ao topo",
+  },
+  en: {
+    loadError: "Could not load the portfolio data. Check the API connection.",
+    role: "Software Engineer & IT Governance",
+    externalLinks: "External links",
+    footerMeta: "Same-Origin architecture · Cloudflare Zero Trust · LGPD & ISO 27001 compliance",
+    backToTop: "Back to top",
+  },
+};
+
+// Preferência salva tem prioridade; o cookie do Google Translate cobre
+// visitantes que escolheram o idioma antes da troca nativa existir.
+const readInitialLang = () => {
+  try {
+    const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
+    if (SUPPORTED_LANGS.includes(stored)) return stored;
+  } catch {
+    // storage indisponível (modo privado/bloqueado): segue para o cookie
+  }
+  const fromCookie = readGoogleTranslateLanguage();
+  return SUPPORTED_LANGS.includes(fromCookie) ? fromCookie : "pt";
+};
+
 export default function App() {
   const [theme, setTheme] = useState("dark");
-  // "pt" é a fonte de verdade única do conteúdo; este estado reflete o idioma
-  // exibido pelo Google Website Translator, inicializado a partir do cookie.
-  const [lang, setLang] = useState(() => readGoogleTranslateLanguage());
+  // O conteúdo é trocado nativamente entre os blocos "pt" e "en" do
+  // portfolio.json; o Google Website Translator só entra como fallback
+  // quando o idioma escolhido não tem bloco próprio.
+  const [lang, setLang] = useState(readInitialLang);
   const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [portfolioData, setPortfolioData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,12 +67,25 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    initGoogleTranslate();
-  }, []);
+    document.documentElement.setAttribute("lang", lang === "en" ? "en" : "pt-BR");
+  }, [lang]);
+
+  useEffect(() => {
+    if (portfolioData && !portfolioData[lang]) {
+      initGoogleTranslate();
+    }
+  }, [portfolioData, lang]);
 
   const handleLangChange = (nextLang) => {
     setLang(nextLang);
-    setGoogleTranslateLanguage(nextLang);
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, nextLang);
+    } catch {
+      // preferência não persiste, mas a troca na sessão atual continua válida
+    }
+    if (portfolioData && !portfolioData[nextLang]) {
+      setGoogleTranslateLanguage(nextLang);
+    }
   };
 
   useEffect(() => {
@@ -94,6 +141,8 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const copy = SHELL_COPY[lang] || SHELL_COPY.pt;
+
   if (isAdminRoute) {
     return (
       <MotionConfig reducedMotion="user">
@@ -114,14 +163,12 @@ export default function App() {
   if (!portfolioData || !portfolioData.pt) {
     return (
       <div className="full-screen-center">
-        <p className="error-text">
-          Não foi possível carregar os dados do portfólio. Verifique a conexão com a API.
-        </p>
+        <p className="error-text">{copy.loadError}</p>
       </div>
     );
   }
 
-  const t = portfolioData.pt;
+  const t = portfolioData && portfolioData[lang] ? portfolioData[lang] : portfolioData.pt;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -137,23 +184,21 @@ export default function App() {
         />
 
         <main className="container">
-          <Hero data={t.hero} />
-          <Skills data={t.skills} />
-          <Experience data={t.exp} />
-          <Projects data={t.proj} />
-          {t.cert && <Certifications data={t.cert} />}
+          <Hero data={t.hero} lang={lang} />
+          <Skills data={t.skills} lang={lang} />
+          <Experience data={t.exp} lang={lang} />
+          <Projects data={t.proj} lang={lang} />
+          {t.cert && <Certifications data={t.cert} lang={lang} />}
         </main>
 
         <footer className="site-footer">
           <div className="footer-inner">
             <div className="footer-identity">
               <span className="footer-brand-name">Christian Sousa</span>
-              <span className="footer-brand-role">
-                Engenheiro de Software & Governança de TI · Fortaleza, CE
-              </span>
+              <span className="footer-brand-role">{copy.role}</span>
             </div>
 
-            <nav className="footer-links" aria-label="Links externos">
+            <nav className="footer-links" aria-label={copy.externalLinks}>
               <a
                 href="https://github.com/christiansousadev"
                 target="_blank"
@@ -174,7 +219,7 @@ export default function App() {
             </nav>
 
             <div className="footer-meta">
-              <span>Arquitetura Same-Origin · Cloudflare Zero Trust · Conformidade LGPD & ISO 27001</span>
+              <span>{copy.footerMeta}</span>
               <span>© {new Date().getFullYear()} Christian Sousa</span>
             </div>
           </div>
@@ -192,14 +237,14 @@ export default function App() {
               type="button"
               className="back-to-top"
               onClick={scrollToTop}
-              aria-label="Voltar ao topo"
+              aria-label={copy.backToTop}
             >
               <ChevronUp size={18} />
             </motion.button>
           )}
         </AnimatePresence>
 
-        <ChatWidget data={t.chat} />
+        <ChatWidget data={t.chat} lang={lang} />
       </div>
     </MotionConfig>
   );

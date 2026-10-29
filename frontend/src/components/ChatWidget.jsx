@@ -3,14 +3,45 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Trash2, Copy, Check } from "lucide-react";
 
-const SUGGESTIONS = [
-  "Quais são suas principais tecnologias?",
-  "Fale sobre sua experiência com Governança e ITIL",
-  "Quais projetos você desenvolveu?",
-  "Como entrar em contato com o Christian?",
-];
+const CHAT_COPY = {
+  pt: {
+    suggestions: [
+      "Quais são suas principais tecnologias?",
+      "Fale sobre sua experiência com Governança e ITIL",
+      "Quais projetos você desenvolveu?",
+      "Como entrar em contato com o Christian?",
+    ],
+    intro: "Consulte informações objetivas sobre trajetória, projetos, stack e contatos do Christian.",
+    error: "Não foi possível obter resposta agora. Tente novamente em instantes.",
+    copied: "Copiado",
+    copy: "Copiar",
+    open: "Abrir assistente",
+    close: "Fechar assistente",
+    clear: "Limpar conversa",
+    loading: "Consultando base...",
+    send: "Enviar mensagem",
+  },
+  en: {
+    suggestions: [
+      "What are your main technologies?",
+      "Tell me about your experience with governance and ITIL",
+      "Which projects have you built?",
+      "How can I get in touch with Christian?",
+    ],
+    intro: "Ask for straightforward facts about Christian's career, projects, stack and contact details.",
+    error: "Could not get a response right now. Please try again in a moment.",
+    copied: "Copied",
+    copy: "Copy",
+    open: "Open assistant",
+    close: "Close assistant",
+    clear: "Clear conversation",
+    loading: "Searching the knowledge base...",
+    send: "Send message",
+  },
+};
 
-export default function ChatWidget({ data }) {
+export default function ChatWidget({ data, lang = "pt" }) {
+  const copy = CHAT_COPY[lang] || CHAT_COPY.pt;
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -63,7 +94,7 @@ export default function ChatWidget({ data }) {
         ...prev,
         {
           role: "ai",
-          content: "Não foi possível obter resposta agora. Tente novamente em instantes.",
+          content: copy.error,
         },
       ]);
     } finally {
@@ -138,7 +169,7 @@ export default function ChatWidget({ data }) {
               className="chat-code-copy"
             >
               {copiedIndex === copyKey ? <Check size={12} /> : <Copy size={12} />}
-              {copiedIndex === copyKey ? "Copiado" : "Copiar"}
+              {copiedIndex === copyKey ? copy.copied : copy.copy}
             </button>
             <pre className="chat-code-pre">
               <code>{part.content}</code>
@@ -170,7 +201,7 @@ export default function ChatWidget({ data }) {
     <>
       <button
         type="button"
-        aria-label={isChatOpen ? "Fechar assistente" : "Abrir assistente"}
+        aria-label={isChatOpen ? copy.close : copy.open}
         aria-expanded={isChatOpen}
         onClick={() => setIsChatOpen(!isChatOpen)}
         className="chat-fab"
@@ -199,8 +230,8 @@ export default function ChatWidget({ data }) {
                 {messages.length > 0 && (
                   <button
                     type="button"
-                    title="Limpar conversa"
-                    aria-label="Limpar conversa"
+                    title={copy.clear}
+                    aria-label={copy.clear}
                     onClick={() => setMessages([])}
                     className="btn-icon"
                   >
@@ -209,7 +240,7 @@ export default function ChatWidget({ data }) {
                 )}
                 <button
                   type="button"
-                  aria-label="Fechar assistente"
+                  aria-label={copy.close}
                   onClick={() => setIsChatOpen(false)}
                   className="btn-icon"
                 >
@@ -222,10 +253,10 @@ export default function ChatWidget({ data }) {
               {messages.length === 0 && (
                 <div className="chat-empty">
                   <p className="chat-empty-text">
-                    Consulte informações objetivas sobre trajetória, projetos, stack e contatos do Christian.
+                    {copy.intro}
                   </p>
                   <div className="chat-suggestions">
-                    {SUGGESTIONS.map((s, idx) => (
+                    {copy.suggestions.map((s, idx) => (
                       <button
                         key={idx}
                         type="button"
@@ -250,7 +281,7 @@ export default function ChatWidget({ data }) {
               {loading && (
                 <div className="chat-typing">
                   <span className="chat-typing-text">
-                    {data.loading || "Consultando base..."}
+                    {data.loading || copy.loading}
                   </span>
                 </div>
               )}
@@ -270,7 +301,7 @@ export default function ChatWidget({ data }) {
               />
               <button
                 type="button"
-                aria-label={data.send || "Enviar mensagem"}
+                aria-label={data.send || copy.send}
                 onClick={() => handleSend()}
                 disabled={loading || !input.trim()}
                 className="btn-primary chat-send-btn"

@@ -9,22 +9,53 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import {
-  Download,
-  Search,
+  Activity,
   AlertTriangle,
-  Trash2,
-  LogOut,
-  Sun,
-  Moon,
   ArrowLeft,
+  Award,
+  BrainCircuit,
+  BriefcaseBusiness,
+  Check,
+  Download,
+  FolderGit2,
+  Layers,
+  Loader2,
+  LogOut,
+  Moon,
+  Save,
+  Search,
+  Sun,
+  Trash2,
+  UserRound,
+  X,
 } from "lucide-react";
 import JsonEditor from "./JsonEditor";
+import useContentStore, { CONTENT_FILE, RAG_FILE } from "../hooks/useContentStore";
+import { adminFetch, downloadJson } from "../utils/adminApi";
 import { EASE_OUT, SPRING_INDICATOR, trackSpotlight } from "../utils/motion";
 
-const ADMIN_TABS = [
-  { id: "stats", label: "Telemetria & Auditoria" },
-  { id: "editor", label: "Conteúdo & Base RAG" },
+// Navegação única do console: telemetria, cada seção do portfólio e a base RAG
+const ADMIN_SECTIONS = [
+  { id: "stats", label: "Telemetria & Logs", icon: Activity },
+  { id: "hero", label: "Apresentação", icon: UserRound },
+  { id: "skills", label: "Habilidades", icon: Layers },
+  { id: "exp", label: "Experiências", icon: BriefcaseBusiness, counted: true },
+  { id: "proj", label: "Projetos", icon: FolderGit2, counted: true },
+  { id: "cert", label: "Certificações", icon: Award, counted: true },
+  { id: "rag", label: "Base Factual IA (RAG)", icon: BrainCircuit },
 ];
+
+const EDIT_LANGS = [
+  { id: "pt", label: "Português (PT)" },
+  { id: "en", label: "English (EN)" },
+];
+
+const iconSwap = {
+  initial: { opacity: 0, scale: 0.6, rotate: -20 },
+  animate: { opacity: 1, scale: 1, rotate: 0 },
+  exit: { opacity: 0, scale: 0.6 },
+  transition: { duration: 0.2, ease: EASE_OUT },
+};
 
 const panelTransition = {
   initial: { opacity: 0, y: 10 },
@@ -68,16 +99,6 @@ const AnimatedNumber = ({ value }) => {
 
   return <>{display.toLocaleString("pt-BR")}</>;
 };
-
-const adminFetch = (path, options = {}) =>
-  fetch(path, {
-    ...options,
-    credentials: "include",
-    headers: {
-      ...(options.headers || {}),
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-    },
-  });
 
 const formatTimestamp = (iso) => {
   if (!iso) return "—";
@@ -270,6 +291,12 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
   const [activeInterpreter, setActiveInterpreter] = useState("gemini");
   const [interpreterStatus, setInterpreterStatus] = useState(null);
   const [isChangingInterpreter, setIsChangingInterpreter] = useState(false);
+  const [editLang, setEditLang] = useState("pt");
+
+  const content = useContentStore({
+    enabled: isLogged,
+    onSessionLost: () => setIsLogged(false),
+  });
 
   const [stats, setStats] = useState({
     total_chats: 0,
@@ -398,24 +425,16 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
   };
 
   const exportAuditReport = () => {
-    const dataToExport = {
-      sistema: "Portfólio Christian Sousa - Relatório de Auditoria",
-      gerado_em: new Date().toISOString(),
-      padrao_conformidade: "ISO 27001 A.12.4 / LGPD Art. 6",
-      metricas: stats,
-      historico_chat: logs,
-    };
-    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `relatorio_auditoria_${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadJson(
+      {
+        sistema: "Portfólio Christian Sousa - Relatório de Auditoria",
+        gerado_em: new Date().toISOString(),
+        padrao_conformidade: "ISO 27001 A.12.4 / LGPD Art. 6",
+        metricas: stats,
+        historico_chat: logs,
+      },
+      `relatorio_auditoria_${new Date().toISOString().slice(0, 10)}.json`
+    );
   };
 
   const executePurge = async () => {
@@ -464,7 +483,6 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
           transition={{ duration: 0.6, ease: EASE_OUT }}
         >
           <div className="login-header">
-            <span className="login-kicker">christiansousa.dev</span>
             <h1 className="login-title">Console de Governança</h1>
             <p className="login-desc">
               Autenticação administrativa protegida por cookie HttpOnly e Cloudflare Turnstile.
@@ -548,6 +566,16 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
   }
 
   const slaHealthy = (stats.avg_response_ms || 0) <= 2000;
+  const isContentSection = activeTab !== "stats" && activeTab !== "rag";
+  const activeFile = activeTab === "rag" ? RAG_FILE : CONTENT_FILE;
+  const localeDoc = content.docs[CONTENT_FILE]?.[editLang];
+  const sectionCounts = {
+    exp: localeDoc?.exp?.items?.length,
+    proj: localeDoc?.proj?.items?.length,
+    cert: localeDoc?.cert?.items?.length,
+  };
+  const saveState = content.isSaving ? "saving" : content.justSaved ? "saved" : "idle";
+  const panelKey = isContentSection ? `${activeTab}-${editLang}` : activeTab;
 
   return (
     <div className="admin-page notranslate" translate="no">
@@ -606,31 +634,144 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
           </div>
         </header>
 
-        <LayoutGroup id="admin-tabs">
-          <nav className="underline-tabs admin-nav-tabs" aria-label="Áreas do console">
-            {ADMIN_TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`underline-tab ${isActive ? "is-active" : ""}`}
-                  aria-current={isActive ? "page" : undefined}
-                  onClick={() => setActiveTab(tab.id)}
+        <div className="admin-commandbar">
+          <LayoutGroup id="admin-sections">
+            <nav className="admin-sections" aria-label="Áreas do console">
+              {ADMIN_SECTIONS.map((item) => {
+                const isActive = activeTab === item.id;
+                const Icon = item.icon;
+                const count = item.counted ? sectionCounts[item.id] : null;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`admin-section-tab ${isActive ? "is-active" : ""}`}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={(e) => {
+                      setActiveTab(item.id);
+                      e.currentTarget.scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest",
+                        inline: "nearest",
+                      });
+                    }}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="admin-section-pill"
+                        className="admin-section-pill"
+                        transition={SPRING_INDICATOR}
+                      />
+                    )}
+                    <Icon size={15} aria-hidden="true" className="admin-section-icon" />
+                    <span className="admin-section-label">{item.label}</span>
+                    {typeof count === "number" && (
+                      <span className="admin-section-count">{count}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </LayoutGroup>
+
+          <div className="admin-toolbar">
+            <div className="admin-toolbar-context">
+              {isContentSection ? (
+                <div
+                  className="segmented-control"
+                  role="radiogroup"
+                  aria-label="Idioma do conteúdo em edição"
                 >
-                  <span className="underline-tab-label">{tab.label}</span>
-                  {isActive && (
-                    <motion.span
-                      layoutId="admin-tab-indicator"
-                      className="underline-tab-indicator"
-                      transition={SPRING_INDICATOR}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </LayoutGroup>
+                  <LayoutGroup id="admin-edit-lang">
+                    {EDIT_LANGS.map((opt) => {
+                      const isActive = editLang === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={isActive}
+                          className={`segmented-option ${isActive ? "is-active" : ""}`}
+                          onClick={() => setEditLang(opt.id)}
+                        >
+                          {isActive && (
+                            <motion.span
+                              layoutId="edit-lang-thumb"
+                              className="segmented-thumb"
+                              transition={SPRING_INDICATOR}
+                            />
+                          )}
+                          <span className="segmented-label">{opt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </LayoutGroup>
+                </div>
+              ) : (
+                <span className="admin-toolbar-hint">
+                  {activeTab === "rag"
+                    ? "A base factual é única e atende o chat nos dois idiomas."
+                    : "Ctrl + S grava alterações pendentes de qualquer seção."}
+                </span>
+              )}
+            </div>
+
+            <div className="admin-toolbar-actions">
+              <span
+                className={`sync-badge ${
+                  content.isDirty ? "sync-badge--pending" : "sync-badge--synced"
+                }`}
+                role="status"
+              >
+                <span className="sync-dot" />
+                <span className="toolbar-label">
+                  {content.isDirty ? "Alterações pendentes" : "Sincronizado"}
+                </span>
+              </span>
+
+              <button
+                type="button"
+                className="btn-secondary btn-sm"
+                onClick={() => content.exportFile(activeFile)}
+                disabled={!content.docs[activeFile]}
+                title={`Baixar cópia de segurança de ${activeFile}`}
+              >
+                <Download size={14} aria-hidden="true" />
+                <span className="toolbar-label">Backup JSON</span>
+              </button>
+
+              <motion.button
+                type="button"
+                className={`btn-primary btn-sm ${
+                  content.isDirty && !content.isSaving ? "is-dirty" : ""
+                } ${saveState === "saved" ? "is-saved" : ""}`}
+                onClick={content.save}
+                disabled={content.isSaving || (!content.isDirty && saveState !== "saved")}
+                whileTap={{ scale: 0.97 }}
+                title="Salvar alterações (Ctrl + S)"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span key={saveState} className="btn-icon-swap" {...iconSwap}>
+                    {saveState === "saving" ? (
+                      <Loader2 size={15} className="icon-spin" />
+                    ) : saveState === "saved" ? (
+                      <Check size={15} />
+                    ) : (
+                      <Save size={15} />
+                    )}
+                  </motion.span>
+                </AnimatePresence>
+                <span>
+                  {saveState === "saving"
+                    ? "Gravando..."
+                    : saveState === "saved"
+                    ? "Salvo"
+                    : "Salvar alterações"}
+                </span>
+              </motion.button>
+            </div>
+          </div>
+        </div>
 
         <AnimatePresence mode="wait" initial={false}>
           {activeTab === "stats" ? (
@@ -714,10 +855,11 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
               </motion.section>
 
               <div className="dashboard-columns">
-                <section>
+                <section className="dashboard-panel">
                   <div className="panel-head">
                     <h2 className="panel-title">
-                      Histórico de diálogos ({filteredLogs.length})
+                      Histórico de diálogos
+                      <span className="panel-count">{filteredLogs.length}</span>
                     </h2>
 
                     <div className="panel-controls">
@@ -786,9 +928,12 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
                   </div>
                 </section>
 
-                <section>
+                <section className="dashboard-panel">
                   <div className="panel-head">
-                    <h2 className="panel-title">Acessos recentes</h2>
+                    <h2 className="panel-title">
+                      Acessos recentes
+                      <span className="panel-count">{stats.recent_events?.length || 0}</span>
+                    </h2>
                   </div>
                   <div className="surface-card data-panel telemetry-panel">
                     {stats.recent_events?.length ? (
@@ -811,12 +956,19 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
               </div>
             </motion.div>
           ) : (
-            <motion.div key="editor" {...panelTransition}>
-              <JsonEditor onSessionLost={() => setIsLogged(false)} />
+            <motion.div key={panelKey} {...panelTransition}>
+              <JsonEditor
+                section={activeTab}
+                lang={editLang}
+                data={content.docs[activeFile]}
+                setData={(nextDoc) => content.replaceDoc(activeFile, nextDoc)}
+              />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      <Toast toast={content.toast} onClose={content.dismissToast} />
 
       <AnimatePresence>
         {isPurgeModalOpen && (
@@ -891,5 +1043,34 @@ export default function AdminDashboard({ theme = "dark", setTheme }) {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function Toast({ toast, onClose }) {
+  return (
+    <AnimatePresence>
+      {toast && (
+        <motion.div
+          key={toast.key}
+          role="status"
+          aria-live="polite"
+          initial={{ opacity: 0, y: 14, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          className={`surface-card editor-toast editor-toast--${toast.type}`}
+        >
+          <span className="editor-toast-message">{toast.message}</span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar notificação"
+            className="btn-icon"
+          >
+            <X size={15} />
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

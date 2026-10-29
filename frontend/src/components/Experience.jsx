@@ -12,6 +12,23 @@ import {
 
 const INITIAL_COUNT = 5;
 
+const EXP_COPY = {
+  pt: {
+    fallbackTitle: "Experiência Profissional",
+    subtitle:
+      "Atuação contínua em arquitetura de automações, integração de ERPs, análise de riscos e sustentação de sistemas críticos.",
+    showLess: "Mostrar menos",
+    showAll: (total) => `Mostrar histórico completo (${total} experiências)`,
+  },
+  en: {
+    fallbackTitle: "Work Experience",
+    subtitle:
+      "Continuous work on automation architecture, ERP integration, risk analysis and support of business-critical systems.",
+    showLess: "Show less",
+    showAll: (total) => `Show full history (${total} roles)`,
+  },
+};
+
 // Faixa central da viewport que "acende" o marcador durante a rolagem
 const ACTIVE_BAND = { amount: "some", margin: "-42% 0px -52% 0px" };
 
@@ -47,7 +64,8 @@ function ExperienceRow({ exp, idx, isActive, onActivate, ...motionProps }) {
   );
 }
 
-export default function Experience({ data }) {
+export default function Experience({ data, lang = "pt" }) {
+  const copy = EXP_COPY[lang] || EXP_COPY.pt;
   const [showAll, setShowAll] = useState(false);
   const [activeIdx, setActiveIdx] = useState(null);
   const timelineRef = useRef(null);
@@ -84,10 +102,10 @@ export default function Experience({ data }) {
         variants={revealContainer}
       >
         <motion.h2 className="section-title" variants={revealItem}>
-          {data?.title || "Experiência Profissional"}
+          {data?.title || copy.fallbackTitle}
         </motion.h2>
         <motion.p className="section-subtitle" variants={revealItem}>
-          Atuação contínua em arquitetura de automações, integração de ERPs, análise de riscos e sustentação de sistemas críticos.
+          {copy.subtitle}
         </motion.p>
       </motion.div>
 
@@ -158,9 +176,7 @@ export default function Experience({ data }) {
             whileTap={{ scale: 0.97 }}
           >
             <span>
-              {showAll
-                ? "Mostrar menos"
-                : `Mostrar histórico completo (${items.length} experiências)`}
+              {showAll ? copy.showLess : copy.showAll(items.length)}
             </span>
             <ChevronDown size={15} aria-hidden="true" />
           </motion.button>

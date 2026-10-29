@@ -9,46 +9,80 @@ import {
   trackSpotlight,
 } from "../utils/motion";
 
+// Stack é igual nos dois idiomas; textos ficam em SKILLS_COPY
 const ARCHITECTURAL_DOMAINS = [
-  {
-    id: "integration",
-    stage: "Integração",
-    title: "Backend, APIs & Automação",
-    stack: ["Python", "FastAPI", "Node.js", "n8n", "REST"],
-    description:
-      "Desenvolvimento de microsserviços assíncronos, validação estrita de contratos e integração entre ERPs (SAP, TOTVS), CRMs e rotinas contábeis.",
-  },
-  {
-    id: "data",
-    stage: "Dados & IA",
-    title: "Engenharia de Dados & IA Aplicada",
-    stack: ["PostgreSQL", "SQL/CTEs", "Metabase", "RAG"],
-    description:
-      "Modelagem relacional, consultas analíticas para diagnóstico de causa-raiz, pipelines ETL e assistentes corporativos com recorte focado de contexto.",
-  },
-  {
-    id: "governance",
-    stage: "Governança",
-    title: "Governança, Infra & Segurança",
-    stack: ["Docker", "Linux", "Nginx", "ITIL® 4", "ISO 27001"],
-    description:
-      "Topologias same-origin com Cloudflare Zero Trust, escrita atômica, mascaramento automático de PII (LGPD) e trilhas de auditoria padrão CIM.",
-  },
+  { id: "integration", stack: ["Python", "FastAPI", "Node.js", "n8n", "REST"] },
+  { id: "data", stack: ["PostgreSQL", "SQL/CTEs", "Metabase", "RAG"] },
+  { id: "governance", stack: ["Docker", "Linux", "Nginx", "ITIL® 4", "ISO 27001"] },
 ];
+
+const SKILLS_COPY = {
+  pt: {
+    fallbackTitle: "Competências e entregas",
+    deliverablesLabel: "Frentes de atuação",
+    toolsLabel: "Tecnologias e ferramentas",
+    flowLabel:
+      "Fluxo de engenharia: ERPs, CRMs e APIs passam por integração, dados e IA e governança até chegar a painéis, assistentes e trilhas de auditoria.",
+    loopLabel: "controles e evidências de auditoria",
+    sources: ["ERPs", "CRMs", "APIs"],
+    outputs: ["Painéis", "Assistentes", "Auditoria"],
+    domains: {
+      integration: {
+        stage: "Integração",
+        title: "Backend, APIs & Automação",
+        description:
+          "Desenvolvimento de microsserviços assíncronos, validação estrita de contratos e integração entre ERPs (SAP, TOTVS), CRMs e rotinas contábeis.",
+      },
+      data: {
+        stage: "Dados & IA",
+        title: "Engenharia de Dados & IA Aplicada",
+        description:
+          "Modelagem relacional, consultas analíticas para diagnóstico de causa-raiz, pipelines ETL e assistentes corporativos com recorte focado de contexto.",
+      },
+      governance: {
+        stage: "Governança",
+        title: "Governança, Infra & Segurança",
+        description:
+          "Topologias same-origin com Cloudflare Zero Trust, escrita atômica, mascaramento automático de PII (LGPD) e trilhas de auditoria padrão CIM.",
+      },
+    },
+  },
+  en: {
+    fallbackTitle: "Skills and deliverables",
+    deliverablesLabel: "Areas of focus",
+    toolsLabel: "Technologies and tools",
+    flowLabel:
+      "Engineering flow: ERPs, CRMs and APIs pass through integration, data and AI, and governance before reaching dashboards, assistants and audit trails.",
+    loopLabel: "audit controls & compliance evidence",
+    sources: ["ERPs", "CRMs", "APIs"],
+    outputs: ["Dashboards", "Assistants", "Auditing"],
+    domains: {
+      integration: {
+        stage: "Integration",
+        title: "Backend, APIs & Automation",
+        description:
+          "Asynchronous microservices, strict contract validation and integrations between ERPs (SAP, TOTVS), CRMs and accounting routines.",
+      },
+      data: {
+        stage: "Data & AI",
+        title: "Data Engineering & Applied AI",
+        description:
+          "Relational modeling, analytical queries for root-cause diagnosis, ETL pipelines and enterprise assistants with tightly scoped context.",
+      },
+      governance: {
+        stage: "Governance",
+        title: "Governance, Infrastructure & Security",
+        description:
+          "Same-origin topologies behind Cloudflare Zero Trust, atomic writes, automatic PII masking (LGPD) and CIM-standard audit trails.",
+      },
+    },
+  },
+};
 
 // Geometria do diagrama (viewBox 1000 x 170)
 const FLOW_Y = 96;
 const NODE_X = { integration: 330, data: 500, governance: 670 };
-const SOURCES = [
-  { label: "ERPs", y: 46 },
-  { label: "CRMs", y: 96 },
-  { label: "APIs", y: 146 },
-];
-const OUTPUTS = [
-  { label: "Painéis", y: 46 },
-  { label: "Assistentes", y: 96 },
-  { label: "Auditoria", y: 146 },
-];
+const LANE_Y = [46, 96, 146];
 
 const tagContainer = {
   hidden: {},
@@ -69,18 +103,15 @@ function FlowPath({ d, hot = false, variant = "" }) {
   );
 }
 
-function EngineeringFlow({ activeId, onActivate }) {
+function EngineeringFlow({ copy, activeId, onActivate }) {
   const ix = NODE_X.integration;
   const gx = NODE_X.governance;
+  const sources = copy.sources.map((label, i) => ({ label, y: LANE_Y[i] }));
+  const outputs = copy.outputs.map((label, i) => ({ label, y: LANE_Y[i] }));
 
   return (
-    <svg
-      className="flow-svg"
-      viewBox="0 0 1000 170"
-      role="img"
-      aria-label="Fluxo de engenharia: ERPs, CRMs e APIs passam por integração, dados e IA e governança até chegar a painéis, assistentes e trilhas de auditoria."
-    >
-      {SOURCES.map((src) => (
+    <svg className="flow-svg" viewBox="0 0 1000 170" role="img" aria-label={copy.flowLabel}>
+      {sources.map((src) => (
         <FlowPath
           key={src.label}
           d={`M118,${src.y} C210,${src.y} 220,${FLOW_Y} ${ix - 22},${FLOW_Y}`}
@@ -97,7 +128,7 @@ function EngineeringFlow({ activeId, onActivate }) {
         hot={activeId === "data" || activeId === "governance"}
       />
 
-      {OUTPUTS.map((out) => (
+      {outputs.map((out) => (
         <FlowPath
           key={out.label}
           d={`M${gx + 22},${FLOW_Y} C780,${FLOW_Y} 790,${out.y} 872,${out.y}`}
@@ -112,10 +143,10 @@ function EngineeringFlow({ activeId, onActivate }) {
         variant="flow-pulse--loop"
       />
       <text className="flow-loop-label" x="500" y="20" textAnchor="middle">
-        controles e evidências de auditoria
+        {copy.loopLabel}
       </text>
 
-      {SOURCES.map((src) => (
+      {sources.map((src) => (
         <g key={src.label} className="flow-endpoint">
           <rect x="30" y={src.y - 13} width="88" height="26" rx="7" />
           <text x="74" y={src.y + 4} textAnchor="middle">
@@ -124,7 +155,7 @@ function EngineeringFlow({ activeId, onActivate }) {
         </g>
       ))}
 
-      {OUTPUTS.map((out) => (
+      {outputs.map((out) => (
         <g key={out.label} className="flow-endpoint">
           <rect x="872" y={out.y - 13} width="104" height="26" rx="7" />
           <text x="924" y={out.y + 4} textAnchor="middle">
@@ -146,7 +177,7 @@ function EngineeringFlow({ activeId, onActivate }) {
             <circle className="flow-node-ring" cx={x} cy={FLOW_Y} r="22" />
             <circle className="flow-node-core" cx={x} cy={FLOW_Y} r="5" />
             <text className="flow-node-label" x={x} y={FLOW_Y + 46} textAnchor="middle">
-              {domain.stage}
+              {copy.domains[domain.id].stage}
             </text>
           </g>
         );
@@ -155,8 +186,9 @@ function EngineeringFlow({ activeId, onActivate }) {
   );
 }
 
-export default function Skills({ data }) {
+export default function Skills({ data, lang = "pt" }) {
   const [activeDomain, setActiveDomain] = useState(null);
+  const copy = SKILLS_COPY[lang] || SKILLS_COPY.pt;
 
   const deliverables = (data?.items || []).map((item) =>
     item.replace(/^⚡\s*/, "").trim()
@@ -173,7 +205,7 @@ export default function Skills({ data }) {
         variants={revealContainer}
       >
         <motion.h2 className="section-title" variants={revealItem}>
-          {data?.title || "Competências e entregas"}
+          {data?.title || copy.fallbackTitle}
         </motion.h2>
         {data?.subtitle && (
           <motion.p className="section-subtitle" variants={revealItem}>
@@ -190,36 +222,39 @@ export default function Skills({ data }) {
         variants={revealContainer}
       >
         <motion.div className="skills-flow" variants={revealItem}>
-          <EngineeringFlow activeId={activeDomain} onActivate={setActiveDomain} />
+          <EngineeringFlow copy={copy} activeId={activeDomain} onActivate={setActiveDomain} />
         </motion.div>
 
         <div className="skills-domains-grid">
-          {ARCHITECTURAL_DOMAINS.map((domain) => (
-            <motion.article
-              key={domain.id}
-              className={`domain-cell spotlight ${
-                activeDomain === domain.id ? "is-active" : ""
-              }`}
-              variants={revealItem}
-              onPointerMove={trackSpotlight}
-              onMouseEnter={() => setActiveDomain(domain.id)}
-              onMouseLeave={() => setActiveDomain(null)}
-            >
-              <span className="domain-stage">
-                <span className="domain-stage-dot" aria-hidden="true" />
-                {domain.stage}
-              </span>
-              <h3 className="domain-title">{domain.title}</h3>
-              <p className="domain-desc">{domain.description}</p>
-              <div className="tag-list domain-stack">
-                {domain.stack.map((tech) => (
-                  <span key={tech} className="tech-tag">
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </motion.article>
-          ))}
+          {ARCHITECTURAL_DOMAINS.map((domain) => {
+            const text = copy.domains[domain.id];
+            return (
+              <motion.article
+                key={domain.id}
+                className={`domain-cell spotlight ${
+                  activeDomain === domain.id ? "is-active" : ""
+                }`}
+                variants={revealItem}
+                onPointerMove={trackSpotlight}
+                onMouseEnter={() => setActiveDomain(domain.id)}
+                onMouseLeave={() => setActiveDomain(null)}
+              >
+                <span className="domain-stage">
+                  <span className="domain-stage-dot" aria-hidden="true" />
+                  {text.stage}
+                </span>
+                <h3 className="domain-title">{text.title}</h3>
+                <p className="domain-desc">{text.description}</p>
+                <div className="tag-list domain-stack">
+                  {domain.stack.map((tech) => (
+                    <span key={tech} className="tech-tag">
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </motion.article>
+            );
+          })}
         </div>
       </motion.div>
 
@@ -232,7 +267,7 @@ export default function Skills({ data }) {
           variants={revealContainer}
         >
           <motion.h3 className="subsection-label" variants={revealItem}>
-            Frentes de atuação
+            {copy.deliverablesLabel}
           </motion.h3>
           <ul className="deliverables-list">
             {deliverables.map((item, idx) => (
@@ -252,7 +287,7 @@ export default function Skills({ data }) {
             variants={revealContainer}
           >
             <motion.h3 className="subsection-label" variants={revealItem}>
-              Tecnologias e ferramentas
+              {copy.toolsLabel}
             </motion.h3>
             <motion.div className="tag-list" variants={tagContainer}>
               {tags.map((tag, idx) => (
