@@ -8,7 +8,7 @@ Plataforma fullstack de alta confiabilidade e segurança corporativa desenvolvid
 
 ## 1. Visão Geral e Pilares do Projeto
 
-O sistema opera como portfólio técnico de engenharia de software, automação e governança de TI. A aplicação combina uma vitrine pública sob **Design Editorial de Engenharia** (*Obsidian Graphite* no tema escuro e *Technical Paper* no tema claro), um assistente conversacional corporativo (**RAG com controle de contexto**) e um **Console de Governança** restrito (`/admin`) para telemetria operacional, auditoria e edição em tempo real do conteúdo.
+O sistema opera como portfólio técnico de engenharia de software, automação e governança de TI. A aplicação combina uma vitrine pública sob a direção visual **"Conferido"** (*Papel Razão* no tema claro e *Capa de Razão* no escuro: a página como registro conciliado de uma carreira), um assistente conversacional corporativo (**RAG com controle de contexto**) e um **Console de Governança** restrito (`/admin`) para telemetria operacional, auditoria e edição em tempo real do conteúdo.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -24,7 +24,7 @@ O sistema opera como portfólio técnico de engenharia de software, automação 
 
 | Camada | Tecnologia | Função no Sistema |
 |---|---|---|
-| **Frontend** | React 18, Vite 5, Framer Motion, Lucide Icons | SPA interativa (`Instrument Sans` + `JetBrains Mono`), coreografia `layoutId`, timeline dinâmica, diagrama SVG e console `/admin` |
+| **Frontend** | React 18, Vite 5, Framer Motion, Lucide Icons | SPA com fontes self-hosted (`Archivo` variável + `IBM Plex Mono`), esquema ISO 5807 no Hero, ledgers de entregas e trajetória e console `/admin` em lazy load |
 | **Borda / Edge** | Cloudflare Tunnel (`cloudflared`) & Cloudflare Turnstile | Tunelamento criptografado outbound, terminação TLS 1.3, mitigação DDoS e proteção antibot |
 | **Proxy / Servidor Web** | Nginx 1.27 Alpine | Proxy reverso interno `/api/`, compressão Gzip, cache de assets estáticos e SPA fallback |
 | **Backend API** | Python 3.12, FastAPI, Uvicorn, Pydantic V2 | API REST assíncrona, validação estrita (`extra='forbid'`), sessão por cookie `HttpOnly` e rate limiting |
@@ -87,19 +87,22 @@ A infraestrutura adota o paradigma **Zero Port Exposure**: o servidor não preci
 ## 3. Módulos e Recursos do Sistema
 
 ### 3.1 Interface do Usuário (Frontend)
-- **Design System & Motion Coreografado:** Tipografia `Instrument Sans` + `JetBrains Mono` com `tabular-nums`, profundidade atmosférica com grid esmaecido e superfícies translúcidas, além de utilitários centralizados de animação em `motion.js` respeitando `prefers-reduced-motion`.
-- **Navbar & Internacionalização Resiliente:** Indicadores deslizantes via `layoutId`, *drawer* móvel, *scroll spy* e tradução PT/EN via Google Website Translator (`googleTranslate.js`) sobre fonte única em português, acompanhada de patch defensivo de reconciliação DOM em `main.jsx` e blindagem `notranslate` no `/admin`.
-- **Hero & Credenciais:** Entrada coreografada (`staggerChildren`), caricatura autoral (`hero_developer.png`) em moldura com inclinação 3D sutil e feixe de borda, CTAs diretos e barra de credenciais com iluminação reativa ao hover.
-- **Matriz de Competências & Diagrama de Fluxo (`Skills`):** Diagrama SVG interativo (*ERPs/CRMs/APIs → Integração → Dados & IA → Governança*) sincronizado no hover com os 3 domínios arquiteturais, lista de entregas e `tags` dinâmicas lidas do JSON.
-- **Timeline Interativa (`Experience`):** Linha guia preenchida conforme a rolagem, marcador luminoso, destaque deslizante entre experiências e expansão animada (`AnimatePresence`) do histórico completo.
-- **Projetos & Modal de Especificação (`Projects`):** Abas de filtro derivadas dinamicamente das categorias cadastradas, grade uniforme em 2 colunas e modal condicional **Especificação** exibido quando o projeto possui detalhamento técnico (`architecture`).
-- **Certificações (`Certifications`):** Credenciais oficiais com emissor, ano tabular, escopo da competência e link de verificação externa.
-- **Assistente Conversacional (`ChatWidget`):** Painel discreto com sugestões rápidas, parser seguro de Markdown (negrito, listas, links externos, blocos de código copiáveis sem `dangerouslySetInnerHTML`) e fechamento por `Esc`.
+- **Direção "Conferido":** paleta *Papel Razão* (`#EEF2EC`, tinta `#17241E`, carimbo `#4338A8`) e *Capa de Razão* (`#0E1713`, tinta `#E6EDE7`, carimbo `#ADA2FF`), com todos os pares de texto em WCAG AA. Tokens em `src/styles/tokens.css`, organizados em `@layer tokens, base, site, admin`; escala tipográfica de 7 passos; sombra só em overlays.
+- **Tipografia self-hosted:** `Archivo` variável (eixo de largura para o display condensado) e `IBM Plex Mono` restrita a identificadores e código, servidas pelo próprio domínio via `@fontsource` (nenhuma chamada ao Google Fonts).
+- **Tema:** segue `prefers-color-scheme` até o visitante escolher; a escolha fica em `localStorage` e é aplicada antes do primeiro paint (script inline no `index.html`), com `color-scheme` e `theme-color` dinâmicos.
+- **Hero com esquema ISO 5807 (`EngineeringSchematic`):** fluxograma ERP → Integração → Dados → Conciliação → Governança → carimbo *Conferido*, horizontal a partir de 900px e vertical abaixo disso. Os nós de etapa são `<button>` (teclado, toque e hover) e levam à linha correspondente do ledger. Uma única animação de traçado no carregamento, desligada por `prefers-reduced-motion`.
+- **"O que entrego" (`Skills`):** ledger em tabela semântica (etapa, entregas, sistemas e evidência) que vira blocos empilhados no mobile. As entregas vêm de `skills.items` com prefixo de etapa (`Integração:`, `Dados:`, `Governança:`) e os sistemas de `skills.tags`.
+- **Trajetória (`Experience`):** ledger com período estruturado a partir do campo `time` (início, fim e duração calculada), separado entre *Engenharia e automação* e *Trajetória corporativa em ERPs*.
+- **Projetos:** casos em coluna única com arquitetura e decisões técnicas no corpo do projeto, sem filtros nem modal.
+- **Credenciais:** só itens com link de verificação recebem a marca *conferível*; os demais aparecem em *Especializações e formação técnica*, sem selo.
+- **Assistente (`ChatWidget`):** diálogo com foco contido, Esc, rótulo no campo, fonte de 16px no mobile e estado de erro com "Tentar de novo".
+- **Acessibilidade:** sheet de navegação com foco contido, Esc e rolagem travada (`useDialog`), alvos de toque de 44px, skip link e foco visível em todos os controles.
 - **Console de Governança (`/admin`):**
-  - Autenticação protegida por **Cloudflare Turnstile** (container DOM isolado sem filhos React) e cookie `HttpOnly`.
-  - Faixa tabular de KPIs reais (diálogos, `page_view`, latência média com status de SLA < 2.000 ms) integrada ao seletor de motor de resposta em runtime (`Gemini 1.5 Flash` ou `JSON Determinístico`).
-  - Tabela de auditoria de diálogos com busca textual, filtro de violação de SLA, exportação JSON (padrão ISO 27001 / SIEM) e modal de expurgo LGPD (90 dias).
-- **Editor Semântico de Conteúdo (`JsonEditor`):** Edição estruturada de `portfolio.json` (**Apresentação / Hero**, **Habilidades**, **Experiências**, **Projetos** com `architecture` e `tags`, **Certificações**) e de `portfolio_data.json` (base factual do RAG), com indicador de sincronização, download de backup e hierarquia visual focada em um único CTA primário (**Salvar alterações**).
+  - Carregado sob demanda (`React.lazy`): visitantes da vitrine não baixam o console nem o script do Turnstile.
+  - Barra de comando com no máximo 56px no mobile (seletor de área, idioma e Salvar); Salvar e Backup só aparecem nas áreas de edição.
+  - Exportar auditoria e expurgo LGPD de 90 dias ficam na aba Telemetria; o expurgo usa diálogo `alertdialog` com foco contido.
+  - Login sem placeholder com usuário real e Turnstile no tema ativo.
+- **Editor de conteúdo (`JsonEditor`):** atualizações imutáveis por caminho (`utils/immutable.js`), `<label htmlFor>` em todos os campos, remoção em dois passos e cópia JSON no cabeçalho de cada área. O conteúdo gravado respeita os schemas Pydantic (`Portfolio` e `PortfolioData`).
 
 ### 3.2 Segurança, Backend e RAG
 - **RAG Corporativo Econômico em Tokens:** Roteamento determinístico local em `json_only` (custo zero e latência sub-milissegundo) ou orquestração multi-provider (`gemini`, `openai`, `ollama`, `deepseek`) enviando ao prompt apenas as seções pertinentes de `portfolio_data.json`.
@@ -145,28 +148,42 @@ meu-portfolio/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.jsx         # Cabeçalho editorial, i18n, tema e scroll spy
-│   │   │   ├── Hero.jsx           # Apresentação, caricatura emoldurada e barra de credenciais
-│   │   │   ├── Skills.jsx         # Matriz arquitetural de 3 domínios, entregas e tags dinâmicas
-│   │   │   ├── Experience.jsx     # Ledger cronológico tabular em 2 colunas
-│   │   │   ├── Projects.jsx       # Projetos com abas dinâmicas e modal de especificação
-│   │   │   ├── Certifications.jsx # Grade de certificações e verificação externa
-│   │   │   ├── ChatWidget.jsx     # Assistente conversacional com parser seguro de Markdown
-│   │   │   ├── AdminDashboard.jsx # Console de governança, Turnstile, KPIs e auditoria
-│   │   │   └── JsonEditor.jsx     # Editor semântico do portfólio (Hero/Skills/Exp/Proj/Cert) e RAG
+│   │   │   ├── Navbar.jsx               # Navegação, idioma, tema e sheet lateral no mobile
+│   │   │   ├── Hero.jsx                 # Headline, contato e esquema do fluxo de engenharia
+│   │   │   ├── EngineeringSchematic.jsx # Fluxograma ISO 5807 interativo com carimbo de conferência
+│   │   │   ├── Skills.jsx               # Ledger "O que entrego" (etapa, entregas, sistemas, evidência)
+│   │   │   ├── Experience.jsx           # Ledger da trajetória com períodos estruturados
+│   │   │   ├── Projects.jsx             # Casos com arquitetura no corpo
+│   │   │   ├── Certifications.jsx       # Credenciais verificáveis e formação técnica
+│   │   │   ├── ChatWidget.jsx           # Assistente com parser seguro de Markdown
+│   │   │   ├── AdminDashboard.jsx       # Console de governança (lazy), Turnstile, KPIs e auditoria
+│   │   │   └── JsonEditor.jsx           # Editor imutável do portfólio e da base RAG
+│   │   ├── content/
+│   │   │   └── engineering.js           # Fonte única das etapas do fluxo (Hero + ledger)
 │   │   ├── hooks/
-│   │   │   └── useContentStore.js # Gerenciamento de estado de conteúdo e dirty tracking no admin
+│   │   │   ├── useContentStore.js       # Estado de conteúdo e alterações pendentes no admin
+│   │   │   ├── useDialog.js             # Foco contido, Esc, retorno de foco e trava de rolagem
+│   │   │   └── useMediaQuery.js         # Layout responsivo do esquema
+│   │   ├── styles/
+│   │   │   ├── tokens.css               # Paleta Conferido, escala tipográfica, espaço e raios
+│   │   │   ├── base.css                 # Reset, botões, formulários e movimento reduzido
+│   │   │   ├── site.css                 # Vitrine pública
+│   │   │   └── admin.css                # Console /admin
 │   │   ├── utils/
-│   │   │   ├── adminApi.js        # Utilitário centralizado de chamadas autenticadas à API admin
-│   │   │   ├── googleTranslate.js # Integração controlada com Google Website Translator
-│   │   │   └── motion.js          # Curvas, variantes e presets compartilhados de Framer Motion
-│   │   ├── App.jsx                # Orquestração de rotas (/ e /admin), tema e rodapé
-│   │   ├── index.css              # Design system Obsidian Graphite / Technical Paper
-│   │   └── main.jsx               # Bootstrap React + patch defensivo de reconciliação DOM
+│   │   │   ├── adminApi.js              # Chamadas autenticadas à API admin
+│   │   │   ├── googleTranslate.js       # Fallback de idioma via Google Website Translator
+│   │   │   ├── immutable.js             # setIn/updateIn para o editor
+│   │   │   ├── motion.js                # Curva e mola compartilhadas (movimento só em resposta a ações)
+│   │   │   └── period.js                # Parser de períodos ("setembro/2025 - Atual") e duração
+│   │   ├── App.jsx                      # Rotas (/ e /admin lazy), tema, idioma e rodapé
+│   │   ├── index.css                    # Ordem das camadas CSS
+│   │   └── main.jsx                     # Bootstrap React, fontes self-hosted e patch de reconciliação DOM
 │   ├── public/
 │   │   ├── images/
-│   │   │   └── hero_developer.png # Ilustração autoral exibida no Hero
-│   │   └── icon.ico               # Favicon
+│   │   │   ├── logo.png                 # Logo original (fonte)
+│   │   │   ├── logo-64.webp             # Logo da navbar
+│   │   │   └── og-cover.png             # Imagem de compartilhamento 1200x630
+│   │   └── icon.ico                     # Favicon 16/32/48/64
 │   ├── nginx.conf                 # Proxy reverso /api/, compressão Gzip e headers SPA
 │   ├── Dockerfile                 # Multi-stage Node 20 -> Nginx 1.27 Alpine
 │   └── package.json

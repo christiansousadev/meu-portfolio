@@ -1,0 +1,101 @@
+/* frontend/src/styles/tokens.css
+   Direção "Conferido": a página como registro conciliado de uma carreira.
+   Light "Razão" (papel de livro-razão) e Dark "Capa do razão" (capa verde-garrafa).
+   Todos os pares de texto/fundo abaixo passam WCAG AA (>= 4,5:1). */
+
+@layer tokens {
+  :root {
+    /* Tipografia: uma família para texto, mono só para identificadores e código */
+    --font-sans: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+    /* Escala de 7 passos (razão ~1,25, corpo em 17px) */
+    --text-xs: 0.8125rem;                                 /* 13 */
+    --text-sm: 0.9375rem;                                 /* 15 */
+    --text-md: 1.0625rem;                                 /* 17 */
+    --text-lg: 1.3125rem;                                 /* 21 */
+    --text-xl: 1.625rem;                                  /* 26 */
+    --text-2xl: clamp(1.625rem, 1.25rem + 1.4vw, 2.25rem); /* 26–36 */
+    --text-display: clamp(2.25rem, 1.35rem + 3.6vw, 3.75rem); /* 36–60 */
+
+    --stretch-display: 72%;
+    --stretch-heading: 86%;
+    --leading-tight: 1.04;
+    --leading-body: 1.6;
+
+    /* Espaçamento em base 4 */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 72px;
+    --space-9: 112px;
+
+    /* Raios por hierarquia: linhas e tabelas 0, controles 4, overlays 10 */
+    --radius-ctl: 4px;
+    --radius-panel: 10px;
+
+    --z-nav: 100;
+    --z-fab: 200;
+    --z-sheet: 300;
+    --z-dialog: 400;
+    --z-toast: 500;
+
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --container: 1180px;
+    --measure: 68ch;
+    --gutter: clamp(16px, 4vw, 32px);
+    --nav-h: 60px;
+  }
+
+  :root,
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --paper: #EEF2EC;        /* fundo: papel de razão */
+    --leaf: #F7F9F5;         /* superfície: folha avulsa */
+    --rule: #C3D1C0;         /* pauta: só linhas estruturais */
+    --rule-strong: #7D8C83;  /* borda de controle (>= 3:1) */
+    --ink: #17241E;          /* tinta: texto */
+    --graphite: #4E5E55;     /* texto secundário */
+    --stamp: #4338A8;        /* tinta de carimbo: ação principal e evidência */
+    --stamp-strong: #362C8F;
+    --on-stamp: #FFFFFF;
+    --stamp-wash: rgba(67, 56, 168, 0.09);
+    --red: #B3261E;          /* só violação e ação destrutiva */
+    --on-red: #FFFFFF;
+    --ok: #2E6B45;
+    --on-ok: #FFFFFF;
+    --warn: #7A5300;
+    --hover: rgba(23, 36, 30, 0.05);
+    --overlay: rgba(23, 36, 30, 0.42);
+    --shadow-overlay: 0 24px 48px -18px rgba(23, 36, 30, 0.35), 0 2px 6px rgba(23, 36, 30, 0.08);
+    --selection: rgba(67, 56, 168, 0.2);
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --paper: #0E1713;        /* capa de razão */
+    --leaf: #15211B;
+    --rule: #2B3B33;
+    --rule-strong: #5E7268;
+    --ink: #E6EDE7;
+    --graphite: #9CAEA3;
+    --stamp: #ADA2FF;
+    --stamp-strong: #C4BCFF;
+    --on-stamp: #0E1713;
+    --stamp-wash: rgba(173, 162, 255, 0.12);
+    --red: #FF8A80;
+    --on-red: #0E1713;
+    --ok: #8FD6A6;
+    --on-ok: #0E1713;
+    --warn: #F2C46D;
+    --hover: rgba(230, 237, 231, 0.06);
+    --overlay: rgba(4, 8, 6, 0.6);
+    --shadow-overlay: 0 28px 56px -18px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+    --selection: rgba(173, 162, 255, 0.28);
+  }
+}

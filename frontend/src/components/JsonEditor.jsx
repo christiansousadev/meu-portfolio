@@ -1,45 +1,71 @@
 // frontend/src/components/JsonEditor.jsx
 //
 // Editor controlado: a seção, o idioma de edição e o documento vêm do
-// AdminDashboard (useContentStore). Aqui ficam apenas os formulários.
+// AdminDashboard (useContentStore). Toda alteração produz um documento novo
+// via setIn/updateIn (nenhuma mutação do estado no lugar).
 
-import { useState } from "react";
+import {
+  Children,
+  cloneElement,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trash2, Plus, X, ChevronDown } from "lucide-react";
+import { ChevronDown, Download, Plus, Trash2, X } from "lucide-react";
 import { EASE_OUT } from "../utils/motion";
+import { insertAt, removeAt, setIn, updateIn } from "../utils/immutable";
 import { CONTENT_FILE, RAG_FILE } from "../hooks/useContentStore";
 
 const PROMPT_SOFT_LIMIT = 600;
-const MAX_ROW_TAGS = 4;
+const CONFIRM_WINDOW_MS = 4000;
 
 const LANG_NAMES = { pt: "Português", en: "English" };
 
 const SECTION_META = {
   hero: {
     title: "Apresentação",
-    description: "Título, texto de posicionamento e botões exibidos no topo do portfólio.",
+    description: "Headline, texto de apoio e chamadas exibidos na primeira dobra do portfólio.",
   },
   skills: {
-    title: "Habilidades",
-    description: "Título da seção, frentes de atuação e tecnologias listadas em Competências.",
+    title: "Entregas",
+    description:
+      "Título da seção, entregas por etapa do fluxo e sistemas listados no ledger \"O que entrego\".",
   },
   exp: {
-    title: "Experiências",
-    description: "Histórico profissional exibido na timeline, do mais recente ao mais antigo.",
+    title: "Trajetória",
+    description:
+      "Funções exibidas no ledger, na ordem desta lista. Funções iniciadas antes de 2022 aparecem em \"Trajetória corporativa em ERPs\".",
   },
   proj: {
     title: "Projetos",
-    description: "Projetos publicados com resumo, especificação técnica, categoria e tags.",
+    description: "Casos publicados com resumo, arquitetura, categoria e stack.",
   },
   cert: {
-    title: "Certificações",
-    description: "Credenciais com emissor, ano e link de verificação.",
+    title: "Credenciais",
+    description:
+      "Com link de verificação, a credencial aparece como conferível. Sem link, entra em \"Especializações e formação técnica\".",
   },
   rag: {
     title: "Base factual da IA",
-    description:
-      "Contexto que o assistente do chat consulta para responder. Vale para os dois idiomas.",
+    description: "Contexto que o assistente do chat consulta para responder. Vale para os dois idiomas.",
   },
+};
+
+const NEW_ITEMS = {
+  exp: () => ({ role: "", company: "", time: "", desc: "" }),
+  proj: (lang) => ({
+    name: "",
+    desc: "",
+    link: "",
+    category: lang === "en" ? "Governance & Data" : "Governança & Dados",
+    tags: [],
+    architecture: "",
+  }),
+  cert: () => ({ name: "", issuer: "", year: "", credential_url: "", description: "" }),
+  experiencias_profissionais: () => ({ empresa: "", resumo_tecnico: "" }),
+  projetos_destaque: () => ({ nome: "", descricao: "", github: "" }),
 };
 
 const preview = (text, max = 76) => {
@@ -48,823 +74,451 @@ const preview = (text, max = 76) => {
   return trimmed.length > max ? `${trimmed.slice(0, max).trim()}…` : trimmed;
 };
 
-export default function JsonEditor({ section, lang = "pt", data, setData }) {
-  const [expandedItem, setExpandedItem] = useState(null);
-  const activeFile = section === "rag" ? RAG_FILE : CONTENT_FILE;
+const getIn = (source, path) => path.reduce((acc, key) => (acc == null ? acc : acc[key]), source);
 
-  const addItem = (sectionKey, subArray = "items") => {
-    const newData = { ...data };
-    let createdItem = null;
-
-    if (activeFile === "portfolio.json") {
-      if (!newData[lang]) newData[lang] = {};
-      if (!newData[lang][sectionKey]) newData[lang][sectionKey] = {};
-      if (!newData[lang][sectionKey][subArray]) newData[lang][sectionKey][subArray] = [];
-
-      if (sectionKey === "exp") {
-        createdItem = { role: "", company: "", time: "", desc: "" };
-        newData[lang].exp.items.unshift(createdItem);
-      } else if (sectionKey === "proj") {
-        createdItem = {
-          name: "",
-          desc: "",
-          link: "",
-          category: lang === "en" ? "Governance & Data" : "Governança & Dados",
-          tags: [],
-          architecture: "",
-        };
-        newData[lang].proj.items.unshift(createdItem);
-      } else if (sectionKey === "cert") {
-        createdItem = {
-          name: "",
-          issuer: "",
-          year: "",
-          credential_url: "",
-          description: "",
-        };
-        newData[lang].cert.items.unshift(createdItem);
-      } else if (sectionKey === "skills") {
-        newData[lang].skills[subArray].push("");
-      }
-    } else if (activeFile === "portfolio_data.json") {
-      if (!newData[sectionKey]) newData[sectionKey] = [];
-
-      if (sectionKey === "experiencias_profissionais") {
-        createdItem = { empresa: "", resumo_tecnico: "" };
-        newData[sectionKey].unshift(createdItem);
-      } else if (sectionKey === "projetos_destaque") {
-        createdItem = { nome: "", descricao: "", github: "" };
-        newData[sectionKey].unshift(createdItem);
-      } else if (
-        sectionKey === "habilidades_tecnicas" ||
-        sectionKey === "governanca_e_processos"
-      ) {
-        newData[sectionKey].push("");
-      }
-    }
-
-    setData(newData);
-    if (createdItem) setExpandedItem(createdItem);
-  };
-
-  const removeItem = (sectionKey, index, subArray = "items") => {
-    const newData = { ...data };
-
-    if (activeFile === "portfolio.json" && newData[lang]?.[sectionKey]?.[subArray]) {
-      newData[lang][sectionKey][subArray].splice(index, 1);
-    } else if (activeFile === "portfolio_data.json" && newData[sectionKey]) {
-      newData[sectionKey].splice(index, 1);
-    }
-
-    setData(newData);
-  };
-
-  const addSkillTag = (value) => {
-    const d = { ...data };
-    if (!d[lang].skills.tags) d[lang].skills.tags = [];
-    d[lang].skills.tags = [...d[lang].skills.tags, value];
-    setData(d);
-  };
-
-  const renameSkillTag = (idx, value) => {
-    const d = { ...data };
-    d[lang].skills.tags[idx] = value;
-    setData(d);
-  };
-
-  const addProjectTag = (projIdx, value) => {
-    const d = { ...data };
-    const item = d[lang].proj.items[projIdx];
-    item.tags = [...(item.tags || []), value];
-    setData(d);
-  };
-
-  const removeProjectTag = (projIdx, tagIdx) => {
-    const d = { ...data };
-    d[lang].proj.items[projIdx].tags.splice(tagIdx, 1);
-    setData(d);
-  };
-
-  const renameProjectTag = (projIdx, tagIdx, value) => {
-    const d = { ...data };
-    d[lang].proj.items[projIdx].tags[tagIdx] = value;
-    setData(d);
-  };
+export default function JsonEditor({ section, lang = "pt", data, setData, onBackup }) {
+  // item aberto identificado por lista + índice (estável entre renders)
+  const [expanded, setExpanded] = useState(null);
 
   if (!data) {
-    return <p className="editor-empty-hint">Carregando estrutura de dados...</p>;
+    return <p className="editor-empty-hint">Carregando estrutura de dados…</p>;
   }
 
-  const toggleExpanded = (item) =>
-    setExpandedItem((prev) => (prev === item ? null : item));
+  const activeFile = section === "rag" ? RAG_FILE : CONTENT_FILE;
+  const L = (...path) => [lang, ...path];
+
+  const valueAt = (path) => getIn(data, path) ?? "";
+  const bind = (path) => ({
+    value: valueAt(path),
+    onChange: (e) => setData(setIn(data, path, e.target.value)),
+  });
+
+  const listKey = (path) => path.join(".");
+  const isOpen = (path, idx) => expanded?.list === listKey(path) && expanded.index === idx;
+  const toggle = (path, idx) =>
+    setExpanded((prev) =>
+      prev?.list === listKey(path) && prev.index === idx ? null : { list: listKey(path), index: idx }
+    );
+
+  const prependItem = (path, item) => {
+    setData(updateIn(data, path, (list) => insertAt(list, 0, item)));
+    setExpanded({ list: listKey(path), index: 0 });
+  };
+
+  const appendItem = (path, item) => {
+    setData(updateIn(data, path, (list) => insertAt(list, (list || []).length, item)));
+  };
+
+  const removeItem = (path, idx) => {
+    setData(updateIn(data, path, (list) => removeAt(list, idx)));
+    setExpanded((prev) => {
+      if (prev?.list !== listKey(path)) return prev;
+      if (prev.index === idx) return null;
+      return prev.index > idx ? { ...prev, index: prev.index - 1 } : prev;
+    });
+  };
+
+  const list = (path) => getIn(data, path) || [];
 
   return (
-    <div className="surface-card editor-panel">
-      <EditorHeader section={section} lang={lang} />
+    <div className="editor-panel">
+      <EditorHeader section={section} lang={lang} file={activeFile} onBackup={onBackup} />
 
-      {/* --- FRONTEND: APRESENTAÇÃO (HERO) --- */}
       {section === "hero" && (
         <div className="editor-section">
-          <div className="editor-item-grid">
-            <Field label="Título principal">
-              <input
-                className="form-input"
-                value={data?.[lang]?.hero?.greeting || ""}
-                onChange={(e) => {
-                  const d = { ...data };
-                  d[lang].hero.greeting = e.target.value;
-                  setData(d);
-                }}
-              />
+          <div className="editor-grid">
+            <Field label="Headline (título principal)" full>
+              <input className="form-input" {...bind(L("hero", "greeting"))} />
             </Field>
-            <Field label="Texto do botão de contato">
-              <input
-                className="form-input"
-                value={data?.[lang]?.hero?.contactBtn || ""}
-                onChange={(e) => {
-                  const d = { ...data };
-                  d[lang].hero.contactBtn = e.target.value;
-                  setData(d);
-                }}
-              />
+            <Field label="Texto de apoio" full hint="Quem você é e de onde vem a experiência, em uma ou duas frases.">
+              <textarea className="form-input field-textarea" {...bind(L("hero", "subtitle"))} />
             </Field>
-            <Field label="Texto do botão secundário">
-              <input
-                className="form-input"
-                value={data?.[lang]?.hero?.resumeBtn || ""}
-                onChange={(e) => {
-                  const d = { ...data };
-                  d[lang].hero.resumeBtn = e.target.value;
-                  setData(d);
-                }}
-              />
+            <Field label="Botão de e-mail">
+              <input className="form-input" {...bind(L("hero", "contactBtn"))} />
             </Field>
-            <Field label="Descrição de posicionamento" full>
-              <textarea
-                className="form-input field-textarea"
-                value={data?.[lang]?.hero?.subtitle || ""}
-                onChange={(e) => {
-                  const d = { ...data };
-                  d[lang].hero.subtitle = e.target.value;
-                  setData(d);
-                }}
-              />
+            <Field label="Link para a trajetória">
+              <input className="form-input" {...bind(L("hero", "resumeBtn"))} />
             </Field>
           </div>
         </div>
       )}
 
-      {/* --- FRONTEND: HABILIDADES --- */}
       {section === "skills" && (
         <div className="editor-section">
-          <div className="editor-item-grid editor-item-grid--2">
+          <div className="editor-grid">
             <Field label="Título da seção">
-              <input
-                className="form-input"
-                value={data?.[lang]?.skills?.title || ""}
-                onChange={(e) => {
-                  const d = { ...data };
-                  d[lang].skills.title = e.target.value;
-                  setData(d);
-                }}
-              />
+              <input className="form-input" {...bind(L("skills", "title"))} />
             </Field>
             <Field label="Subtítulo">
-              <input
-                className="form-input"
-                value={data?.[lang]?.skills?.subtitle || ""}
-                onChange={(e) => {
-                  const d = { ...data };
-                  d[lang].skills.subtitle = e.target.value;
-                  setData(d);
-                }}
-              />
+              <input className="form-input" {...bind(L("skills", "subtitle"))} />
             </Field>
           </div>
 
           <div className="editor-section-head">
-            <h4 className="editor-section-title">Frentes de atuação</h4>
+            <h3 className="editor-section-title">Entregas por etapa</h3>
             <button
               type="button"
               className="btn-secondary btn-sm"
-              onClick={() => addItem("skills", "items")}
+              onClick={() => appendItem(L("skills", "items"), "")}
             >
-              <Plus size={14} />
-              <span>Adicionar item</span>
+              <Plus size={16} aria-hidden="true" />
+              <span>Adicionar entrega</span>
             </button>
           </div>
-          <div className="editor-tag-list">
-            {data?.[lang]?.skills?.items?.map((item, idx) => (
-              <div key={`item-${idx}`} className="editor-tag-row">
+          <p className="field-hint">
+            Comece cada entrega com a etapa: <code>Integração:</code>, <code>Dados:</code> ou{" "}
+            <code>Governança:</code> (no inglês, <code>Integration:</code>, <code>Data:</code>,{" "}
+            <code>Governance:</code>). Sem etapa, a entrega vai para &ldquo;Outras frentes&rdquo;.
+          </p>
+          <div className="editor-row-list">
+            {list(L("skills", "items")).map((item, idx) => (
+              <div key={`item-${idx}`} className="editor-row">
                 <input
                   className="form-input"
+                  aria-label={`Entrega ${idx + 1}`}
                   value={item}
-                  onChange={(e) => {
-                    const d = { ...data };
-                    d[lang].skills.items[idx] = e.target.value;
-                    setData(d);
-                  }}
+                  onChange={(e) => setData(setIn(data, L("skills", "items", idx), e.target.value))}
                 />
                 <TrashButton
-                  onClick={() => removeItem("skills", idx, "items")}
-                  label="Remover item"
+                  label={`Remover entrega ${idx + 1}`}
+                  onConfirm={() => removeItem(L("skills", "items"), idx)}
                 />
               </div>
             ))}
-            {!data?.[lang]?.skills?.items?.length && (
-              <EmptyHint text="Nenhum item cadastrado." />
-            )}
+            {!list(L("skills", "items")).length && <EmptyHint text="Nenhuma entrega cadastrada." />}
           </div>
 
           <div className="editor-section-head">
-            <h4 className="editor-section-title">Tecnologias e ferramentas</h4>
+            <h3 className="editor-section-title">Sistemas e ferramentas</h3>
           </div>
+          <p className="field-hint">
+            Cada ferramenta conhecida entra na linha da etapa correspondente; as demais aparecem em
+            &ldquo;Também no dia a dia&rdquo;.
+          </p>
           <ChipInput
-            tags={data?.[lang]?.skills?.tags || []}
-            onAdd={addSkillTag}
-            onRemove={(idx) => removeItem("skills", idx, "tags")}
-            onRename={renameSkillTag}
+            tags={list(L("skills", "tags"))}
+            onAdd={(value) => appendItem(L("skills", "tags"), value)}
+            onRemove={(idx) => removeItem(L("skills", "tags"), idx)}
+            onRename={(idx, value) => setData(setIn(data, L("skills", "tags", idx), value))}
           />
         </div>
       )}
 
-      {/* --- FRONTEND: EXPERIÊNCIAS --- */}
       {section === "exp" && (
         <div className="editor-section">
           <ListToolbar
-            count={data?.[lang]?.exp?.items?.length}
-            noun="experiência"
-            addLabel="Nova experiência"
-            onAdd={() => addItem("exp")}
+            count={list(L("exp", "items")).length}
+            singular="função"
+            plural="funções"
+            addLabel="Nova função"
+            onAdd={() => prependItem(L("exp", "items"), NEW_ITEMS.exp())}
           />
           <div className="accordion-list">
-            {data?.[lang]?.exp?.items?.map((item, idx) => (
-              <AccordionItem
-                key={idx}
-                title={item.role}
-                placeholderTitle="Nova experiência"
-                subtitle={item.company || "Empresa não informada"}
-                badge={item.time || null}
-                isOpen={expandedItem === item}
-                onToggle={() => toggleExpanded(item)}
-                onDelete={() => removeItem("exp", idx)}
-                deleteLabel="Remover experiência"
-              >
-                <div className="editor-item-grid">
-                  <Field label="Empresa">
-                    <input
-                      className="form-input"
-                      value={item.company || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].exp.items[idx].company = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Cargo / Função">
-                    <input
-                      className="form-input"
-                      value={item.role || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].exp.items[idx].role = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Período">
-                    <input
-                      className="form-input"
-                      value={item.time || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].exp.items[idx].time = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Descrição das atividades" full>
-                    <textarea
-                      className="form-input field-textarea"
-                      value={item.desc || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].exp.items[idx].desc = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                </div>
-              </AccordionItem>
-            ))}
-            {!data?.[lang]?.exp?.items?.length && (
-              <EmptyHint text="Nenhuma experiência cadastrada." />
-            )}
+            {list(L("exp", "items")).map((item, idx) => {
+              const path = L("exp", "items", idx);
+              return (
+                <AccordionItem
+                  key={idx}
+                  title={item.role}
+                  placeholderTitle="Nova função"
+                  subtitle={[item.company || "Empresa não informada", item.time].filter(Boolean).join(", ")}
+                  isOpen={isOpen(L("exp", "items"), idx)}
+                  onToggle={() => toggle(L("exp", "items"), idx)}
+                  onDelete={() => removeItem(L("exp", "items"), idx)}
+                  deleteLabel={`Remover ${item.role || "função"}`}
+                >
+                  <div className="editor-grid editor-grid--3">
+                    <Field label="Cargo ou função">
+                      <input className="form-input" {...bind([...path, "role"])} />
+                    </Field>
+                    <Field label="Empresa">
+                      <input className="form-input" {...bind([...path, "company"])} />
+                    </Field>
+                    <Field label="Período" hint="Ex.: setembro/2025 - Atual ou 09/2023 - 02/2024.">
+                      <input className="form-input" {...bind([...path, "time"])} />
+                    </Field>
+                    <Field label="Descrição das atividades" full>
+                      <textarea className="form-input field-textarea" {...bind([...path, "desc"])} />
+                    </Field>
+                  </div>
+                </AccordionItem>
+              );
+            })}
+            {!list(L("exp", "items")).length && <EmptyHint text="Nenhuma função cadastrada." />}
           </div>
         </div>
       )}
 
-      {/* --- FRONTEND: PROJETOS --- */}
       {section === "proj" && (
         <div className="editor-section">
           <ListToolbar
-            count={data?.[lang]?.proj?.items?.length}
-            noun="projeto"
+            count={list(L("proj", "items")).length}
+            singular="projeto"
+            plural="projetos"
             addLabel="Novo projeto"
-            onAdd={() => addItem("proj")}
+            onAdd={() => prependItem(L("proj", "items"), NEW_ITEMS.proj(lang))}
           />
           <div className="accordion-list">
-            {data?.[lang]?.proj?.items?.map((item, idx) => (
-              <AccordionItem
-                key={idx}
-                title={item.name}
-                placeholderTitle="Novo projeto"
-                subtitle={item.category || "Sem categoria"}
-                tags={item.tags}
-                isOpen={expandedItem === item}
-                onToggle={() => toggleExpanded(item)}
-                onDelete={() => removeItem("proj", idx)}
-                deleteLabel="Remover projeto"
-              >
-                <div className="editor-item-grid">
-                  <Field label="Nome do projeto">
-                    <input
-                      className="form-input"
-                      value={item.name || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].proj.items[idx].name = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Categoria">
-                    <input
-                      className="form-input"
-                      placeholder="ex.: Governança & Dados"
-                      value={item.category || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].proj.items[idx].category = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="URL do repositório / projeto">
-                    <input
-                      className="form-input"
-                      value={item.link || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].proj.items[idx].link = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Resumo público" full>
-                    <textarea
-                      className="form-input field-textarea"
-                      value={item.desc || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].proj.items[idx].desc = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Especificação técnica / arquitetura (opcional)" full>
-                    <textarea
-                      className="form-input field-textarea"
-                      placeholder="Descreva fluxo de dados, isolamento, decisões técnicas e resultados..."
-                      value={item.architecture || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].proj.items[idx].architecture = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Tags de tecnologia" full>
-                    <ChipInput
-                      tags={item.tags || []}
-                      onAdd={(val) => addProjectTag(idx, val)}
-                      onRemove={(tagIdx) => removeProjectTag(idx, tagIdx)}
-                      onRename={(tagIdx, val) => renameProjectTag(idx, tagIdx, val)}
-                    />
-                  </Field>
-                </div>
-              </AccordionItem>
-            ))}
-            {!data?.[lang]?.proj?.items?.length && (
-              <EmptyHint text="Nenhum projeto cadastrado." />
-            )}
+            {list(L("proj", "items")).map((item, idx) => {
+              const path = L("proj", "items", idx);
+              return (
+                <AccordionItem
+                  key={idx}
+                  title={item.name}
+                  placeholderTitle="Novo projeto"
+                  subtitle={item.category || "Sem categoria"}
+                  isOpen={isOpen(L("proj", "items"), idx)}
+                  onToggle={() => toggle(L("proj", "items"), idx)}
+                  onDelete={() => removeItem(L("proj", "items"), idx)}
+                  deleteLabel={`Remover ${item.name || "projeto"}`}
+                >
+                  <div className="editor-grid editor-grid--3">
+                    <Field label="Nome do projeto">
+                      <input className="form-input" {...bind([...path, "name"])} />
+                    </Field>
+                    <Field label="Categoria">
+                      <input className="form-input" {...bind([...path, "category"])} />
+                    </Field>
+                    <Field label="URL do repositório">
+                      <input className="form-input" type="url" inputMode="url" {...bind([...path, "link"])} />
+                    </Field>
+                    <Field label="Resumo público" full>
+                      <textarea className="form-input field-textarea" {...bind([...path, "desc"])} />
+                    </Field>
+                    <Field
+                      label="Arquitetura e decisões técnicas"
+                      full
+                      hint="Exibida no corpo do projeto. Quebras de linha viram parágrafos."
+                    >
+                      <textarea className="form-input field-textarea" {...bind([...path, "architecture"])} />
+                    </Field>
+                    <Field label="Stack" full group>
+                      <ChipInput
+                        tags={item.tags || []}
+                        onAdd={(value) => appendItem([...path, "tags"], value)}
+                        onRemove={(tagIdx) => setData(updateIn(data, [...path, "tags"], (tags) => removeAt(tags, tagIdx)))}
+                        onRename={(tagIdx, value) => setData(setIn(data, [...path, "tags", tagIdx], value))}
+                      />
+                    </Field>
+                  </div>
+                </AccordionItem>
+              );
+            })}
+            {!list(L("proj", "items")).length && <EmptyHint text="Nenhum projeto cadastrado." />}
           </div>
         </div>
       )}
 
-      {/* --- FRONTEND: CERTIFICAÇÕES --- */}
       {section === "cert" && (
         <div className="editor-section">
+          <div className="editor-grid">
+            <Field label="Título da seção">
+              <input className="form-input" {...bind(L("cert", "title"))} />
+            </Field>
+            <Field label="Subtítulo">
+              <input className="form-input" {...bind(L("cert", "subtitle"))} />
+            </Field>
+          </div>
           <ListToolbar
-            count={data?.[lang]?.cert?.items?.length}
-            noun="certificação"
-            addLabel="Nova certificação"
-            onAdd={() => addItem("cert")}
+            count={list(L("cert", "items")).length}
+            singular="credencial"
+            plural="credenciais"
+            addLabel="Nova credencial"
+            onAdd={() => prependItem(L("cert", "items"), NEW_ITEMS.cert())}
           />
           <div className="accordion-list">
-            {data?.[lang]?.cert?.items?.map((item, idx) => (
-              <AccordionItem
-                key={idx}
-                title={item.name}
-                placeholderTitle="Nova certificação"
-                subtitle={item.issuer || "Emissor não informado"}
-                badge={item.year || null}
-                isOpen={expandedItem === item}
-                onToggle={() => toggleExpanded(item)}
-                onDelete={() => removeItem("cert", idx)}
-                deleteLabel="Remover certificação"
-              >
-                <div className="editor-item-grid">
-                  <Field label="Nome da certificação">
-                    <input
-                      className="form-input"
-                      value={item.name || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].cert.items[idx].name = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Emissor">
-                    <input
-                      className="form-input"
-                      placeholder="ex.: Axelos / PeopleCert"
-                      value={item.issuer || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].cert.items[idx].issuer = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Ano">
-                    <input
-                      className="form-input"
-                      value={item.year || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].cert.items[idx].year = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="URL de verificação (opcional)" full>
-                    <input
-                      className="form-input"
-                      value={item.credential_url || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].cert.items[idx].credential_url = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                  <Field label="Escopo da competência" full>
-                    <textarea
-                      className="form-input field-textarea"
-                      value={item.description || ""}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d[lang].cert.items[idx].description = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                  </Field>
-                </div>
-              </AccordionItem>
-            ))}
-            {!data?.[lang]?.cert?.items?.length && (
-              <EmptyHint text="Nenhuma certificação cadastrada." />
-            )}
+            {list(L("cert", "items")).map((item, idx) => {
+              const path = L("cert", "items", idx);
+              const verifiable = /^https?:\/\//i.test(item.credential_url || "");
+              return (
+                <AccordionItem
+                  key={idx}
+                  title={item.name}
+                  placeholderTitle="Nova credencial"
+                  subtitle={`${item.issuer || "Emissor não informado"}${item.year ? `, ${item.year}` : ""}`}
+                  badge={verifiable ? "conferível" : "formação"}
+                  isOpen={isOpen(L("cert", "items"), idx)}
+                  onToggle={() => toggle(L("cert", "items"), idx)}
+                  onDelete={() => removeItem(L("cert", "items"), idx)}
+                  deleteLabel={`Remover ${item.name || "credencial"}`}
+                >
+                  <div className="editor-grid editor-grid--3">
+                    <Field label="Nome">
+                      <input className="form-input" {...bind([...path, "name"])} />
+                    </Field>
+                    <Field label="Emissor">
+                      <input className="form-input" {...bind([...path, "issuer"])} />
+                    </Field>
+                    <Field label="Ano">
+                      <input className="form-input" inputMode="numeric" {...bind([...path, "year"])} />
+                    </Field>
+                    <Field
+                      label="Link de verificação"
+                      full
+                      hint="Use a página de verificação da credencial (PeopleCert, Credly etc.). Deixe vazio para formação sem comprovante externo."
+                    >
+                      <input className="form-input" type="url" inputMode="url" {...bind([...path, "credential_url"])} />
+                    </Field>
+                    <Field label="Escopo da competência" full>
+                      <textarea className="form-input field-textarea" {...bind([...path, "description"])} />
+                    </Field>
+                  </div>
+                </AccordionItem>
+              );
+            })}
+            {!list(L("cert", "items")).length && <EmptyHint text="Nenhuma credencial cadastrada." />}
           </div>
         </div>
       )}
 
-      {/* --- RAG: CONTEXTO DA IA --- */}
       {section === "rag" && (
         <div className="editor-section">
-          <div className="editor-rag-columns">
-            <div className="editor-rag-col">
-              <div className="editor-static-card">
-                <h4 className="editor-section-title">Dados pessoais</h4>
-                <Field label="Nome">
-                  <input
-                    className="form-input"
-                    value={data?.dados_pessoais?.nome || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.dados_pessoais.nome = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-                <Field label="Localização">
-                  <input
-                    className="form-input"
-                    value={data?.dados_pessoais?.localizacao || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.dados_pessoais.localizacao = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-                <Field label="Perfil técnico">
-                  <textarea
-                    className="form-input field-textarea"
-                    value={data?.dados_pessoais?.perfil || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.dados_pessoais.perfil = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-              </div>
+          <div className="editor-grid">
+            <fieldset className="editor-fieldset">
+              <legend className="editor-section-title">Dados pessoais</legend>
+              <Field label="Nome" full>
+                <input className="form-input" {...bind(["dados_pessoais", "nome"])} />
+              </Field>
+              <Field label="Localização" full>
+                <input className="form-input" {...bind(["dados_pessoais", "localizacao"])} />
+              </Field>
+              <Field label="Perfil técnico" full>
+                <textarea className="form-input field-textarea" {...bind(["dados_pessoais", "perfil"])} />
+              </Field>
+            </fieldset>
 
-              <div className="editor-static-card">
-                <h4 className="editor-section-title">Contatos</h4>
-                <Field label="E-mail">
-                  <input
-                    className="form-input"
-                    value={data?.contatos?.email || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.contatos.email = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-                <Field label="LinkedIn">
-                  <input
-                    className="form-input"
-                    value={data?.contatos?.linkedin || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.contatos.linkedin = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-                <Field label="GitHub">
-                  <input
-                    className="form-input"
-                    value={data?.contatos?.github || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.contatos.github = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-                <Field label="Site principal">
-                  <input
-                    className="form-input"
-                    value={data?.contatos?.portfolio_web || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.contatos.portfolio_web = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-              </div>
-            </div>
+            <fieldset className="editor-fieldset">
+              <legend className="editor-section-title">Contatos</legend>
+              <Field label="E-mail" full>
+                <input className="form-input" type="email" {...bind(["contatos", "email"])} />
+              </Field>
+              <Field label="LinkedIn" full>
+                <input className="form-input" type="url" {...bind(["contatos", "linkedin"])} />
+              </Field>
+              <Field label="GitHub" full>
+                <input className="form-input" type="url" {...bind(["contatos", "github"])} />
+              </Field>
+              <Field label="Site principal" full>
+                <input className="form-input" type="url" {...bind(["contatos", "portfolio_web"])} />
+              </Field>
+            </fieldset>
+          </div>
 
-            <div className="editor-rag-col">
-              <div className="editor-static-card">
-                <h4 className="editor-section-title">Diretrizes do assistente (System Prompt)</h4>
-                <Field label="Instruções de comportamento">
-                  <textarea
-                    className="form-input field-textarea field-textarea--tall"
-                    value={data?.instrucoes_ia || ""}
-                    onChange={(e) => {
-                      const d = { ...data };
-                      d.instrucoes_ia = e.target.value;
-                      setData(d);
-                    }}
-                  />
-                </Field>
-                <div className="prompt-meta">
-                  <span>
-                    Escreva em terceira pessoa (&ldquo;O Christian atua em...&rdquo;) e evite repetir listas já presentes abaixo.
-                  </span>
-                  <span className="prompt-meta-count">
-                    {(data?.instrucoes_ia || "").length} / {PROMPT_SOFT_LIMIT}
-                  </span>
+          <Field
+            label="Diretrizes do assistente (system prompt)"
+            full
+            hint={`Escreva em terceira pessoa ("O Christian atua em…") e evite repetir as listas abaixo. ${
+              String(data?.instrucoes_ia || "").length
+            } de ${PROMPT_SOFT_LIMIT} caracteres recomendados.`}
+          >
+            <textarea className="form-input field-textarea field-textarea--tall" {...bind(["instrucoes_ia"])} />
+          </Field>
+
+          <div className="editor-grid">
+            {[
+              { key: "habilidades_tecnicas", title: "Habilidades técnicas", noun: "Habilidade" },
+              { key: "governanca_e_processos", title: "Governança e processos", noun: "Item" },
+            ].map(({ key, title, noun }) => (
+              <div key={key} className="editor-section">
+                <div className="editor-section-head">
+                  <h3 className="editor-section-title">{title}</h3>
+                  <button type="button" className="btn-secondary btn-sm" onClick={() => appendItem([key], "")}>
+                    <Plus size={16} aria-hidden="true" />
+                    <span>Adicionar</span>
+                  </button>
+                </div>
+                <div className="editor-row-list">
+                  {list([key]).map((item, idx) => (
+                    <div key={`${key}-${idx}`} className="editor-row">
+                      <input
+                        className="form-input"
+                        aria-label={`${noun} ${idx + 1}`}
+                        value={item}
+                        onChange={(e) => setData(setIn(data, [key, idx], e.target.value))}
+                      />
+                      <TrashButton label={`Remover ${noun.toLowerCase()} ${idx + 1}`} onConfirm={() => removeItem([key], idx)} />
+                    </div>
+                  ))}
+                  {!list([key]).length && <EmptyHint text="Nenhum item cadastrado." />}
                 </div>
               </div>
-            </div>
+            ))}
           </div>
 
-          <div className="editor-grid-2">
-            <div className="editor-section">
-              <div className="editor-section-head">
-                <h4 className="editor-section-title">Habilidades técnicas (RAG)</h4>
-                <button
-                  type="button"
-                  className="btn-secondary btn-sm"
-                  onClick={() => addItem("habilidades_tecnicas")}
-                >
-                  <Plus size={14} />
-                  <span>Adicionar</span>
-                </button>
-              </div>
-              <div className="editor-tag-list">
-                {data?.habilidades_tecnicas?.map((item, idx) => (
-                  <div key={`hab-${idx}`} className="editor-tag-row">
-                    <input
-                      className="form-input"
-                      value={item}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d.habilidades_tecnicas[idx] = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                    <TrashButton
-                      onClick={() => removeItem("habilidades_tecnicas", idx)}
-                      label="Remover habilidade"
-                    />
-                  </div>
-                ))}
-                {!data?.habilidades_tecnicas?.length && (
-                  <EmptyHint text="Nenhuma habilidade cadastrada." />
-                )}
-              </div>
-            </div>
-
-            <div className="editor-section">
-              <div className="editor-section-head">
-                <h4 className="editor-section-title">Governança e processos (RAG)</h4>
-                <button
-                  type="button"
-                  className="btn-secondary btn-sm"
-                  onClick={() => addItem("governanca_e_processos")}
-                >
-                  <Plus size={14} />
-                  <span>Adicionar</span>
-                </button>
-              </div>
-              <div className="editor-tag-list">
-                {data?.governanca_e_processos?.map((item, idx) => (
-                  <div key={`gov-${idx}`} className="editor-tag-row">
-                    <input
-                      className="form-input"
-                      value={item}
-                      onChange={(e) => {
-                        const d = { ...data };
-                        d.governanca_e_processos[idx] = e.target.value;
-                        setData(d);
-                      }}
-                    />
-                    <TrashButton
-                      onClick={() => removeItem("governanca_e_processos", idx)}
-                      label="Remover item"
-                    />
-                  </div>
-                ))}
-                {!data?.governanca_e_processos?.length && (
-                  <EmptyHint text="Nenhum item cadastrado." />
-                )}
-              </div>
+          <div className="editor-section">
+            <ListToolbar
+              count={list(["experiencias_profissionais"]).length}
+              singular="resumo de experiência"
+              plural="resumos de experiência"
+              addLabel="Novo resumo"
+              onAdd={() => prependItem(["experiencias_profissionais"], NEW_ITEMS.experiencias_profissionais())}
+            />
+            <div className="accordion-list">
+              {list(["experiencias_profissionais"]).map((item, idx) => {
+                const path = ["experiencias_profissionais", idx];
+                return (
+                  <AccordionItem
+                    key={idx}
+                    title={item.empresa}
+                    placeholderTitle="Nova experiência"
+                    subtitle={preview(item.resumo_tecnico) || "Sem resumo técnico"}
+                    isOpen={isOpen(["experiencias_profissionais"], idx)}
+                    onToggle={() => toggle(["experiencias_profissionais"], idx)}
+                    onDelete={() => removeItem(["experiencias_profissionais"], idx)}
+                    deleteLabel={`Remover ${item.empresa || "resumo"}`}
+                  >
+                    <div className="editor-grid">
+                      <Field label="Empresa" full>
+                        <input className="form-input" {...bind([...path, "empresa"])} />
+                      </Field>
+                      <Field label="Resumo técnico" full>
+                        <textarea className="form-input field-textarea" {...bind([...path, "resumo_tecnico"])} />
+                      </Field>
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+              {!list(["experiencias_profissionais"]).length && <EmptyHint text="Nenhum resumo cadastrado." />}
             </div>
           </div>
 
           <div className="editor-section">
-            <div className="editor-section-head">
-              <h4 className="editor-section-title">Experiências profissionais (Resumo IA)</h4>
-              <button
-                type="button"
-                className="btn-secondary btn-sm"
-                onClick={() => addItem("experiencias_profissionais")}
-              >
-                <Plus size={14} />
-                <span>Adicionar resumo</span>
-              </button>
-            </div>
+            <ListToolbar
+              count={list(["projetos_destaque"]).length}
+              singular="projeto"
+              plural="projetos"
+              addLabel="Novo projeto"
+              onAdd={() => prependItem(["projetos_destaque"], NEW_ITEMS.projetos_destaque())}
+            />
             <div className="accordion-list">
-              {data?.experiencias_profissionais?.map((item, idx) => (
-                <AccordionItem
-                  key={idx}
-                  title={item.empresa}
-                  placeholderTitle="Nova experiência"
-                  subtitle={preview(item.resumo_tecnico) || "Sem resumo técnico"}
-                  isOpen={expandedItem === item}
-                  onToggle={() => toggleExpanded(item)}
-                  onDelete={() => removeItem("experiencias_profissionais", idx)}
-                  deleteLabel="Remover experiência"
-                >
-                  <div className="editor-item-grid editor-item-grid--2">
-                    <Field label="Empresa">
-                      <input
-                        className="form-input"
-                        value={item.empresa || ""}
-                        onChange={(e) => {
-                          const d = { ...data };
-                          d.experiencias_profissionais[idx].empresa =
-                            e.target.value;
-                          setData(d);
-                        }}
-                      />
-                    </Field>
-                    <Field label="Resumo técnico" full>
-                      <textarea
-                        className="form-input field-textarea"
-                        value={item.resumo_tecnico || ""}
-                        onChange={(e) => {
-                          const d = { ...data };
-                          d.experiencias_profissionais[idx].resumo_tecnico =
-                            e.target.value;
-                          setData(d);
-                        }}
-                      />
-                    </Field>
-                  </div>
-                </AccordionItem>
-              ))}
-              {!data?.experiencias_profissionais?.length && (
-                <EmptyHint text="Nenhum resumo cadastrado." />
-              )}
-            </div>
-          </div>
-
-          <div className="editor-section">
-            <div className="editor-section-head">
-              <h4 className="editor-section-title">Projetos de destaque (Resumo IA)</h4>
-              <button
-                type="button"
-                className="btn-secondary btn-sm"
-                onClick={() => addItem("projetos_destaque")}
-              >
-                <Plus size={14} />
-                <span>Adicionar projeto</span>
-              </button>
-            </div>
-            <div className="accordion-list">
-              {data?.projetos_destaque?.map((item, idx) => (
-                <AccordionItem
-                  key={idx}
-                  title={item.nome}
-                  placeholderTitle="Novo projeto"
-                  subtitle={preview(item.descricao) || "Sem descrição"}
-                  isOpen={expandedItem === item}
-                  onToggle={() => toggleExpanded(item)}
-                  onDelete={() => removeItem("projetos_destaque", idx)}
-                  deleteLabel="Remover projeto"
-                >
-                  <div className="editor-item-grid">
-                    <Field label="Nome">
-                      <input
-                        className="form-input"
-                        value={item.nome || ""}
-                        onChange={(e) => {
-                          const d = { ...data };
-                          d.projetos_destaque[idx].nome = e.target.value;
-                          setData(d);
-                        }}
-                      />
-                    </Field>
-                    <Field label="URL do GitHub">
-                      <input
-                        className="form-input"
-                        value={item.github || ""}
-                        onChange={(e) => {
-                          const d = { ...data };
-                          d.projetos_destaque[idx].github = e.target.value;
-                          setData(d);
-                        }}
-                      />
-                    </Field>
-                    <Field label="Descrição técnica" full>
-                      <textarea
-                        className="form-input field-textarea"
-                        value={item.descricao || ""}
-                        onChange={(e) => {
-                          const d = { ...data };
-                          d.projetos_destaque[idx].descricao = e.target.value;
-                          setData(d);
-                        }}
-                      />
-                    </Field>
-                  </div>
-                </AccordionItem>
-              ))}
-              {!data?.projetos_destaque?.length && (
-                <EmptyHint text="Nenhum projeto cadastrado." />
-              )}
+              {list(["projetos_destaque"]).map((item, idx) => {
+                const path = ["projetos_destaque", idx];
+                return (
+                  <AccordionItem
+                    key={idx}
+                    title={item.nome}
+                    placeholderTitle="Novo projeto"
+                    subtitle={preview(item.descricao) || "Sem descrição"}
+                    isOpen={isOpen(["projetos_destaque"], idx)}
+                    onToggle={() => toggle(["projetos_destaque"], idx)}
+                    onDelete={() => removeItem(["projetos_destaque"], idx)}
+                    deleteLabel={`Remover ${item.nome || "projeto"}`}
+                  >
+                    <div className="editor-grid">
+                      <Field label="Nome">
+                        <input className="form-input" {...bind([...path, "nome"])} />
+                      </Field>
+                      <Field label="URL do GitHub">
+                        <input className="form-input" type="url" {...bind([...path, "github"])} />
+                      </Field>
+                      <Field label="Descrição técnica" full>
+                        <textarea className="form-input field-textarea" {...bind([...path, "descricao"])} />
+                      </Field>
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+              {!list(["projetos_destaque"]).length && <EmptyHint text="Nenhum projeto cadastrado." />}
             </div>
           </div>
         </div>
@@ -873,18 +527,8 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
   );
 }
 
-function AccordionItem({
-  title,
-  placeholderTitle,
-  subtitle,
-  badge,
-  tags,
-  isOpen,
-  onToggle,
-  onDelete,
-  deleteLabel,
-  children,
-}) {
+function AccordionItem({ title, placeholderTitle, subtitle, badge, isOpen, onToggle, onDelete, deleteLabel, children }) {
+  const bodyId = useId();
   return (
     <div className={`accordion-item ${isOpen ? "is-open" : ""}`}>
       <div className="accordion-row">
@@ -893,53 +537,25 @@ function AccordionItem({
           className="accordion-toggle"
           onClick={onToggle}
           aria-expanded={isOpen}
+          aria-controls={bodyId}
         >
           <span className="accordion-heading">
-            <span
-              className={`accordion-title ${
-                !title ? "accordion-title--placeholder" : ""
-              }`}
-            >
-              {title || placeholderTitle}
-            </span>
+            <span className={`accordion-title ${!title ? "is-placeholder" : ""}`}>{title || placeholderTitle}</span>
             {subtitle && <span className="accordion-subtitle">{subtitle}</span>}
           </span>
-          {tags?.length > 0 && (
-            <span className="accordion-tags" aria-hidden="true">
-              {tags.slice(0, MAX_ROW_TAGS).map((tag, idx) => (
-                <span key={`${tag}-${idx}`} className="accordion-tag">
-                  {tag}
-                </span>
-              ))}
-              {tags.length > MAX_ROW_TAGS && (
-                <span className="accordion-tag accordion-tag--more">
-                  +{tags.length - MAX_ROW_TAGS}
-                </span>
-              )}
-            </span>
-          )}
-          {badge && <span className="badge-neutral">{badge}</span>}
+          {badge && <span className="accordion-badge">{badge}</span>}
+          <ChevronDown size={18} className="accordion-chevron" aria-hidden="true" />
         </button>
-        <span className="accordion-actions">
-          <TrashButton onClick={onDelete} label={deleteLabel} />
-          <button
-            type="button"
-            className="btn-icon accordion-chevron"
-            onClick={onToggle}
-            aria-label={isOpen ? "Recolher" : "Expandir"}
-            aria-expanded={isOpen}
-          >
-            <ChevronDown size={16} />
-          </button>
-        </span>
+        <TrashButton onConfirm={onDelete} label={deleteLabel} />
       </div>
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
+            id={bodyId}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.32, ease: EASE_OUT }}
+            transition={{ duration: 0.28, ease: EASE_OUT }}
             className="accordion-body-wrap"
           >
             <div className="accordion-body">{children}</div>
@@ -952,6 +568,7 @@ function AccordionItem({
 
 function ChipInput({ tags, onAdd, onRemove, onRename }) {
   const [draft, setDraft] = useState("");
+  const addId = useId();
 
   const commit = () => {
     const value = draft.trim();
@@ -961,29 +578,33 @@ function ChipInput({ tags, onAdd, onRemove, onRename }) {
   };
 
   return (
-    <div className="editor-chip-list">
+    <div className="chip-list">
       {tags.map((tag, idx) => (
-        <span key={`tag-${idx}`} className="editor-chip">
+        <span key={`tag-${idx}`} className="chip">
           <input
-            className="editor-chip-input"
+            className="chip-input"
             value={tag}
-            aria-label={`Editar tag ${idx + 1}`}
+            aria-label={`Editar ${tag || `item ${idx + 1}`}`}
             onChange={(e) => onRename(idx, e.target.value)}
-            style={{ width: `${Math.max(tag.length * 7.8, 28)}px` }}
+            style={{ width: `${Math.max(tag.length, 3) + 1}ch` }}
           />
           <button
             type="button"
-            className="editor-chip-remove"
+            className="chip-remove"
             onClick={() => onRemove(idx)}
-            aria-label={`Remover tag ${tag || idx + 1}`}
+            aria-label={`Remover ${tag || `item ${idx + 1}`}`}
           >
-            <X size={12} />
+            <X size={14} aria-hidden="true" />
           </button>
         </span>
       ))}
+      <label htmlFor={addId} className="visually-hidden">
+        Adicionar item (Enter confirma)
+      </label>
       <input
-        className="editor-chip-add-input"
-        placeholder="Digitar tag + Enter…"
+        id={addId}
+        className="chip-add"
+        placeholder="Adicionar e Enter"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
@@ -992,33 +613,92 @@ function ChipInput({ tags, onAdd, onRemove, onRename }) {
             commit();
           }
         }}
+        onBlur={commit}
       />
     </div>
   );
 }
 
-function Field({ label, full = false, children }) {
+function Field({ label, full = false, hint, group = false, children }) {
+  const id = useId();
+  const hintId = hint ? `${id}-hint` : undefined;
+  const className = `field-group ${full ? "field-group--full" : ""}`;
+
+  if (group) {
+    return (
+      <div className={className} role="group" aria-labelledby={`${id}-label`}>
+        <span id={`${id}-label`} className="field-label">
+          {label}
+        </span>
+        {children}
+        {hint && (
+          <p id={hintId} className="field-hint">
+            {hint}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  const control = Children.only(children);
   return (
-    <div className={`field-group ${full ? "field-group--full" : ""}`}>
-      <span className="field-label">{label}</span>
-      {children}
+    <div className={className}>
+      <label htmlFor={id} className="field-label">
+        {label}
+      </label>
+      {cloneElement(control, { id, "aria-describedby": hintId })}
+      {hint && (
+        <p id={hintId} className="field-hint">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
 
-function TrashButton({ onClick, label, size = 15 }) {
+// Remoção em dois passos: o primeiro clique arma, o segundo confirma
+function TrashButton({ onConfirm, label }) {
+  const [armed, setArmed] = useState(false);
+  const confirmRef = useRef(null);
+
+  useEffect(() => {
+    if (!armed) return undefined;
+    confirmRef.current?.focus();
+    const id = window.setTimeout(() => setArmed(false), CONFIRM_WINDOW_MS);
+    return () => window.clearTimeout(id);
+  }, [armed]);
+
+  if (armed) {
+    return (
+      <button
+        ref={confirmRef}
+        type="button"
+        className="btn-confirm-delete"
+        onClick={(e) => {
+          e.stopPropagation();
+          setArmed(false);
+          onConfirm();
+        }}
+        onBlur={() => setArmed(false)}
+        aria-label={`Confirmar: ${label}`}
+      >
+        Confirmar remoção
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
-      className="btn-icon btn-icon--danger-hover"
+      className="btn-icon btn-icon--danger"
       onClick={(e) => {
         e.stopPropagation();
-        onClick();
+        setArmed(true);
       }}
       aria-label={label}
       title={label}
     >
-      <Trash2 size={size} />
+      <Trash2 size={16} aria-hidden="true" />
     </button>
   );
 }
@@ -1027,7 +707,7 @@ function EmptyHint({ text }) {
   return <p className="editor-empty-hint">{text}</p>;
 }
 
-function EditorHeader({ section, lang }) {
+function EditorHeader({ section, lang, file, onBackup }) {
   const meta = SECTION_META[section];
   if (!meta) return null;
   return (
@@ -1035,34 +715,31 @@ function EditorHeader({ section, lang }) {
       <div className="editor-header-text">
         <h2 className="editor-header-title">{meta.title}</h2>
         <p className="editor-header-desc">{meta.description}</p>
+        <p className="editor-header-file">
+          <code>backend/data/{file}</code>
+          {section !== "rag" && <span>, conteúdo em {LANG_NAMES[lang]}</span>}
+        </p>
       </div>
-      {section === "rag" ? (
-        <code className="editor-header-file">backend/data/portfolio_data.json</code>
-      ) : (
-        <span className="editor-lang-chip" title={`Editando o conteúdo em ${LANG_NAMES[lang]}`}>
-          {LANG_NAMES[lang]} ({lang.toUpperCase()})
-        </span>
+      {onBackup && (
+        <button type="button" className="btn-secondary btn-sm" onClick={onBackup}>
+          <Download size={16} aria-hidden="true" />
+          <span>Baixar cópia (JSON)</span>
+        </button>
       )}
     </div>
   );
 }
 
-function ListToolbar({ count = 0, noun, addLabel, onAdd }) {
-  const plural = noun.endsWith("ão") ? `${noun.slice(0, -2)}ões` : `${noun}s`;
+function ListToolbar({ count = 0, singular, plural, addLabel, onAdd }) {
   return (
     <div className="editor-list-toolbar">
-      <span className="editor-list-count">
-        {count} {count === 1 ? noun : plural}
-      </span>
-      <motion.button
-        type="button"
-        className="btn-secondary btn-sm btn-add"
-        onClick={onAdd}
-        whileTap={{ scale: 0.97 }}
-      >
-        <Plus size={14} aria-hidden="true" />
+      <p className="editor-list-count">
+        <span className="tnum">{count}</span> {count === 1 ? singular : plural}
+      </p>
+      <button type="button" className="btn-secondary btn-sm" onClick={onAdd}>
+        <Plus size={16} aria-hidden="true" />
         <span>{addLabel}</span>
-      </motion.button>
+      </button>
     </div>
   );
 }
