@@ -13,6 +13,7 @@ import { EASE_OUT, trackSpotlight } from "../utils/motion";
 import ContactModal from "./ContactModal";
 
 const CONTACT_EMAIL = "christiansousadev@gmail.com";
+const TERMINAL_PROMPT = "christian@srv-prod:~$";
 
 function GithubIcon({ size = 14, className = "" }) {
   return (
@@ -62,7 +63,7 @@ const HERO_COPY = {
     profileTab: "Perfil",
     avatarAlt: "Christian Sousa - Engenheiro de Software",
     terminal: [
-      { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status" },
+      { kind: "cmd", user: TERMINAL_PROMPT, text: "python -m stack.status" },
       { kind: "step", tag: "BACKEND", tagColor: "backend", label: "Python · Node.js · PHP", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "FRONT", tagColor: "front", label: "TypeScript · React · Next.js", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · MySQL · Firebird", leader: true, badge: "[OK]", statusType: "ok" },
@@ -117,7 +118,7 @@ const HERO_COPY = {
     profileTab: "Profile",
     avatarAlt: "Christian Sousa - Software Engineer",
     terminal: [
-      { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status" },
+      { kind: "cmd", user: TERMINAL_PROMPT, text: "python -m stack.status" },
       { kind: "step", tag: "BACKEND", tagColor: "backend", label: "Python · Node.js · PHP", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "FRONT", tagColor: "front", label: "TypeScript · React · Next.js", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · MySQL · Firebird", leader: true, badge: "[OK]", statusType: "ok" },
@@ -208,11 +209,24 @@ const terminalLine = {
 
 const TILT_SPRING = { stiffness: 140, damping: 18, mass: 0.6 };
 
+// O host ("@srv-prod") some em telas estreitas para o comando caber na mesma linha
+function PromptUser({ value = TERMINAL_PROMPT }) {
+  const match = value.match(/^([^@]+)(@[^:]+)(:.*)$/);
+  if (!match) return <span className="terminal-user">{value}</span>;
+  return (
+    <span className="terminal-user">
+      {match[1]}
+      <span className="terminal-host">{match[2]}</span>
+      {match[3]}
+    </span>
+  );
+}
+
 function TerminalLine({ line }) {
   if (line.kind === "cmd") {
     return (
       <>
-        <span className="terminal-user">{line.user || "$"}</span>
+        <PromptUser value={line.user || "$"} />
         <span className="terminal-cmd">{line.text}</span>
       </>
     );
@@ -223,7 +237,15 @@ function TerminalLine({ line }) {
         <span className={`terminal-tag terminal-tag--${line.tagColor || "info"}`}>
           [{line.tag}]
         </span>
-        <span className="terminal-key">{line.label}</span>
+        <span className="terminal-key">
+          {/* cada tecnologia é indivisível: se faltar espaço, a quebra ocorre entre itens */}
+          {line.label.split(" · ").map((item, i) => (
+            <span key={item}>
+              {i > 0 && " "}
+              <span className="terminal-key-item">{i > 0 ? `· ${item}` : item}</span>
+            </span>
+          ))}
+        </span>
         {line.leader && <span className="terminal-leader" />}
         {line.badge && (
           <span className={`terminal-status terminal-status--${line.statusType || "ok"}`}>
@@ -413,7 +435,7 @@ function PortraitFrame({ copy }) {
                         </motion.li>
                       ))}
                       <motion.li className="terminal-line terminal-line--cmd" variants={terminalLine}>
-                        <span className="terminal-user">christian@srv-prod:~$</span>
+                        <PromptUser />
                         <span className="terminal-cursor" />
                       </motion.li>
                     </motion.ol>

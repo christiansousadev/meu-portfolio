@@ -1,5 +1,6 @@
 // frontend/src/components/ContactModal.jsx
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Mail, Check, Copy, ArrowUpRight, MapPin } from "lucide-react";
 
@@ -31,9 +32,11 @@ const COPY = {
         action: "Enviar mensagem",
       },
       email: {
-        title: "E-mail Direto",
+        title: "E-mail",
         detail: CONTACTS.email,
-        action: "Copiar e-mail",
+        action: "Copiar",
+        actionLabel: "Copiar e-mail",
+        openLabel: "Abrir no cliente de e-mail",
       },
       linkedin: {
         title: "LinkedIn",
@@ -66,9 +69,11 @@ const COPY = {
         action: "Send message",
       },
       email: {
-        title: "Direct Email",
+        title: "Email",
         detail: CONTACTS.email,
-        action: "Copy email",
+        action: "Copy",
+        actionLabel: "Copy email address",
+        openLabel: "Open in your email app",
       },
       linkedin: {
         title: "LinkedIn",
@@ -171,14 +176,30 @@ export default function ContactModal({ isOpen, onClose, lang = "pt" }) {
   const handleCopyEmail = async () => {
     try {
       await navigator.clipboard.writeText(CONTACTS.email);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2400);
     } catch {
-      // fallback
+      // Clipboard API indisponível (contexto não seguro/permissão negada): seleção manual
+      try {
+        const field = document.createElement("textarea");
+        field.value = CONTACTS.email;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(field);
+        if (!ok) return;
+      } catch (err) {
+        console.warn("falha ao copiar e-mail", err);
+        return;
+      }
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2400);
   };
 
-  return (
+  // Portal no body: o Hero usa `isolation: isolate`, o que prenderia o modal abaixo da navbar
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className="contact-modal-portal">
@@ -280,7 +301,8 @@ export default function ContactModal({ isOpen, onClose, lang = "pt" }) {
                           type="button"
                           onClick={handleCopyEmail}
                           className="contact-copy-pill"
-                          title={copy.channels.email.action}
+                          title={copy.channels.email.actionLabel}
+                          aria-label={copied ? copy.copySuccess : copy.channels.email.actionLabel}
                         >
                           {copied ? (
                             <>
@@ -297,7 +319,8 @@ export default function ContactModal({ isOpen, onClose, lang = "pt" }) {
                         <a
                           href={`mailto:${CONTACTS.email}`}
                           className="contact-email-direct"
-                          title="Abrir no cliente de e-mail"
+                          title={copy.channels.email.openLabel}
+                          aria-label={copy.channels.email.openLabel}
                         >
                           <ArrowUpRight size={14} aria-hidden="true" />
                         </a>
@@ -358,7 +381,8 @@ export default function ContactModal({ isOpen, onClose, lang = "pt" }) {
           </div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

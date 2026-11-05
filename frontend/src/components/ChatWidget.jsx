@@ -109,10 +109,14 @@ export default function ChatWidget({ data, lang = "pt" }) {
     }
   };
 
-  const copyToClipboard = (text, idx) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(idx);
-    setTimeout(() => setCopiedIndex(null), 2000);
+  const copyToClipboard = async (text, idx) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIndex(idx);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    } catch (error) {
+      console.warn("[ChatWidget] falha ao copiar bloco de código", error);
+    }
   };
 
   const formatInline = (str) => {

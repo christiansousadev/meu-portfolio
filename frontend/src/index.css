@@ -22,10 +22,12 @@
 
   --text-color: #0C1118;
   --text-secondary: #46505F;
-  --text-muted: #6A7484;
+  --text-muted: #5E6878;
 
   --accent-color: #2A5BE0;
   --accent-hover: #1F4BC4;
+  --btn-primary-bg: #2A5BE0;
+  --btn-primary-hover: #1F4BC4;
   --accent-subtle: rgba(42, 91, 224, 0.08);
   --accent-ring: rgba(42, 91, 224, 0.22);
   --signal-color: #0B9DBF;
@@ -81,10 +83,12 @@
 
   --text-color: #E9EDF4;
   --text-secondary: #98A2B3;
-  --text-muted: #667085;
+  --text-muted: #7D879A;
 
   --accent-color: #5B8CFF;
   --accent-hover: #779FFF;
+  --btn-primary-bg: #3D6BF0;
+  --btn-primary-hover: #3360E6;
   --accent-subtle: rgba(91, 140, 255, 0.12);
   --accent-ring: rgba(91, 140, 255, 0.3);
   --signal-color: #4FD3E6;
@@ -412,7 +416,7 @@ select:focus-visible,
 
 .btn-primary {
   position: relative;
-  background: var(--accent-color);
+  background: var(--btn-primary-bg);
   color: #FFFFFF;
   padding: 10px 18px;
   border-radius: var(--radius-sm);
@@ -437,7 +441,7 @@ select:focus-visible,
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
+  background: var(--btn-primary-hover);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     0 6px 20px -6px var(--accent-color),
@@ -1144,6 +1148,7 @@ select:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .terminal-tabs {
@@ -1157,7 +1162,9 @@ select:focus-visible,
 }
 
 .terminal-tab {
+  position: relative;
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 5px;
   padding: 3px 9px;
@@ -1210,6 +1217,7 @@ select:focus-visible,
 .terminal-title {
   font-size: 0.72rem;
   color: var(--term-muted);
+  white-space: nowrap;
 }
 
 .hero-frame-body {
@@ -1369,6 +1377,7 @@ select:focus-visible,
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 6px 11px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.04);
@@ -1409,6 +1418,7 @@ select:focus-visible,
   font-weight: 600;
   color: #FFFFFF;
   font-size: 0.74rem;
+  white-space: nowrap;
 }
 
 .profile-social-handle {
@@ -1468,6 +1478,8 @@ select:focus-visible,
 
 .terminal-line--cmd {
   margin-bottom: 2px;
+  flex-wrap: wrap;
+  row-gap: 0;
 }
 
 .terminal-user {
@@ -1522,8 +1534,8 @@ select:focus-visible,
   color: var(--term-muted);
   flex-shrink: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .terminal-muted {
@@ -2100,9 +2112,10 @@ select:focus-visible,
 
 .project-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
   padding-top: 16px;
   border-top: 1px solid var(--card-border);
 }
@@ -2255,7 +2268,7 @@ select:focus-visible,
   padding: 26px 28px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   transition: border-color 0.25s ease, box-shadow 0.35s var(--ease-out);
 }
 
@@ -2269,9 +2282,9 @@ select:focus-visible,
 .cert-badge-wrapper {
   position: relative;
   flex-shrink: 0;
-  width: 58px;
-  height: 58px;
-  padding: 4px;
+  width: 64px;
+  height: 64px;
+  padding: 3px;
   border-radius: 14px;
   background: var(--card-bg-translucent);
   border: 1px solid var(--card-border);
@@ -2284,8 +2297,8 @@ select:focus-visible,
 }
 
 .cert-badge-img {
-  width: 100%;
-  height: 100%;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
   transition: transform 0.3s var(--ease-out);
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
@@ -2655,13 +2668,15 @@ select:focus-visible,
   padding: 10px 14px;
   border-radius: var(--radius-md);
   max-width: 88%;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: 0.88rem;
   line-height: 1.5;
   border: 1px solid var(--card-border);
 }
 
 .chat-bubble.is-user {
-  background: var(--accent-color);
+  background: var(--btn-primary-bg);
   color: #FFFFFF;
   border-color: transparent;
 }
@@ -3768,6 +3783,16 @@ select:focus-visible,
   gap: 12px;
 }
 
+.badge-input-group .form-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-input-group .btn-upload-file {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .badge-preview-slot {
   flex-shrink: 0;
   width: 44px;
@@ -4245,7 +4270,7 @@ select:focus-visible,
   .editor-item-grid--2,
   .editor-grid-2,
   .editor-rag-columns {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .skills-detail-split {
@@ -4548,6 +4573,7 @@ select:focus-visible,
 
 .contact-modal-status-badge {
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 6px;
   font-size: 0.7rem;
@@ -4687,6 +4713,7 @@ select:focus-visible,
   font-size: 0.88rem;
   font-weight: 600;
   color: #FFFFFF;
+  white-space: nowrap;
 }
 
 .contact-channel-arrow {
@@ -4703,9 +4730,7 @@ select:focus-visible,
 .contact-channel-detail {
   font-size: 0.72rem;
   color: #94A3B8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .contact-channel-actions {
@@ -4715,7 +4740,9 @@ select:focus-visible,
 }
 
 .contact-copy-pill {
+  position: relative;
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 5px;
   font-size: 0.68rem;
@@ -4736,6 +4763,7 @@ select:focus-visible,
 }
 
 .contact-email-direct {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4752,9 +4780,10 @@ select:focus-visible,
 
 .contact-modal-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 6px 12px;
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.72rem;
@@ -4765,6 +4794,7 @@ select:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .contact-modal-brand {
@@ -4794,7 +4824,7 @@ select:focus-visible,
   font-weight: 500;
   padding: 4px 9px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
   border: 1px solid var(--card-border, rgba(255, 255, 255, 0.12));
   color: var(--text-secondary, #94A3B8);
   cursor: pointer;
@@ -4802,15 +4832,15 @@ select:focus-visible,
 }
 
 .badge-preset-btn:hover {
-  background: rgba(126, 162, 255, 0.15);
+  background: var(--accent-subtle);
   border-color: var(--accent-color, #7EA2FF);
-  color: #FFFFFF;
+  color: var(--text-color);
 }
 
 .badge-preset-btn.is-active {
-  background: rgba(74, 222, 155, 0.16);
-  border-color: #4ADE9B;
-  color: #4ADE9B;
+  background: var(--success-subtle);
+  border-color: var(--success-color);
+  color: var(--text-color);
   font-weight: 600;
 }
 
@@ -4828,7 +4858,7 @@ select:focus-visible,
   font-weight: 500;
   padding: 6px 12px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
   border: 1px solid var(--card-border, rgba(255, 255, 255, 0.14));
   color: var(--text-color, #FFFFFF);
   cursor: pointer;
@@ -4836,7 +4866,7 @@ select:focus-visible,
 }
 
 .btn-upload-file:hover {
-  background: rgba(126, 162, 255, 0.2);
+  background: var(--accent-subtle);
   border-color: var(--accent-color, #7EA2FF);
 }
 
@@ -4859,4 +4889,246 @@ select:focus-visible,
 
 .resume-test-link:hover {
   text-decoration: underline;
+}
+
+/* ==========================================================================
+   QA visual: telas estreitas, alvos de toque e console admin
+   ========================================================================== */
+
+.contact-modal-brand {
+  white-space: nowrap;
+}
+
+/* Área de toque estendida sem alterar o desenho dos controles compactos */
+.terminal-tab::after,
+.contact-copy-pill::after,
+.contact-email-direct::after {
+  content: '';
+  position: absolute;
+}
+
+.terminal-tab::after {
+  inset: -10px 0;
+}
+
+.hero-terminal {
+  container: terminal / inline-size;
+}
+
+.terminal-key-item {
+  white-space: nowrap;
+}
+
+/* Terminal estreito (mobile e coluna do hero em 1024px): "[TAG] ···· [STATUS]"
+   na primeira linha e a stack completa logo abaixo, sem reticências */
+@container terminal (max-width: 390px) {
+  .terminal-line--step {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .terminal-line--step .terminal-leader {
+    order: 1;
+  }
+
+  .terminal-line--step .terminal-status {
+    order: 2;
+  }
+
+  .terminal-line--step .terminal-key {
+    order: 3;
+    flex: 1 0 100%;
+    padding-left: 2ch;
+  }
+}
+
+@media (max-width: 860px), (pointer: coarse) {
+  .contact-modal-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .contact-channel-actions {
+    gap: 6px;
+  }
+
+  .contact-copy-pill {
+    min-height: 32px;
+  }
+
+  .contact-copy-pill::after {
+    inset: -6px 0;
+  }
+
+  .contact-email-direct {
+    width: 32px;
+    height: 32px;
+  }
+
+  .contact-email-direct::after {
+    inset: -6px;
+  }
+
+  /* Console admin */
+  .admin-section-tab,
+  .segmented-option,
+  .provider-select,
+  .btn-upload-file,
+  .badge-preset-btn {
+    min-height: 44px;
+  }
+
+  .admin-breadcrumb a,
+  .login-footer-link a,
+  .resume-test-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .editor-chip-input,
+  .editor-chip-add-input {
+    font-size: 16px;
+  }
+
+  .editor-chip {
+    min-height: 46px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .editor-chip-input {
+    align-self: stretch;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .editor-chip-add-input {
+    min-height: 44px;
+  }
+
+  .search-input,
+  .sla-toggle {
+    min-height: 44px;
+  }
+
+  .admin-toolbar-actions .btn-secondary {
+    min-width: 44px;
+  }
+
+  .editor-chip-remove {
+    position: relative;
+    width: 28px;
+    height: 28px;
+  }
+
+  .editor-chip-remove::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Títulos de itens do editor quebram linha em vez de reticências */
+  .accordion-title,
+  .accordion-subtitle {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-card-content {
+    padding: 14px;
+  }
+
+  .profile-social-item {
+    padding: 7px 10px;
+  }
+
+  /* Nome da rede acima do identificador: o e-mail cabe inteiro em 320px */
+  .profile-social-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .profile-social-handle {
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .terminal-title,
+  .terminal-host {
+    display: none;
+  }
+
+  .terminal-bar {
+    padding: 9px 10px;
+  }
+
+  .contact-modal-portal {
+    padding: 12px;
+  }
+
+  .contact-modal-card {
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .contact-modal-header {
+    gap: 10px;
+  }
+
+  .contact-channel-item {
+    gap: 11px;
+    padding: 10px 12px;
+  }
+
+  .contact-channel-icon-wrap {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+@media (max-width: 340px) {
+  .contact-modal-card {
+    padding: 16px;
+  }
+}
+
+/* Card de certificação: descrição colada ao título; o link de verificação
+   desce para o rodapé quando o card vizinho da linha é mais alto */
+.cert-body {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  /* Faixa de filtros rolável: a borda direita esmaece para indicar mais abas,
+     e o respiro final evita esmaecer a última aba ao fim da rolagem */
+  .underline-tabs {
+    padding-right: 28px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+  }
+
+  .underline-tab {
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 480px) {
+  /* URL do selo/currículo em linha própria; upload e preview logo abaixo */
+  .badge-input-group {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .badge-input-group .form-input {
+    flex-basis: 100%;
+  }
 }
