@@ -8,7 +8,7 @@ maliciosos ou inflacao maliciosa do JSON.
 """
 
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field, HttpUrl
 
@@ -241,3 +241,9 @@ class UploadFileRequest(BaseModel):
     filename: Annotated[str, Field(min_length=3, max_length=150)]
     content_base64: str
     category: Annotated[str, Field(pattern=r"^(resume|badge|image)$")]
+    old_url: Optional[str] = None
+
+
+class DeleteFileRequest(BaseModel):
+    url: Annotated[str, Field(min_length=5, max_length=500)]
+

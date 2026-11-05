@@ -1,7 +1,10 @@
 """endpoints administrativos (autenticados via cookie httponly)."""
 
+import base64
 import hmac
 import logging
+import os
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import ValidationError
@@ -19,6 +22,7 @@ from core.security import (
 from schemas.portfolio import (
     AllowedConfigFile,
     ConfigUpdateRequest,
+    DeleteFileRequest,
     InterpreterRequest,
     LoginRequest,
     UploadFileRequest,
@@ -351,12 +355,28 @@ async def update_config(req: ConfigUpdateRequest, admin: str = Depends(verify_to
     }
 
 
-# UPLOAD DE ARQUIVOS (CURRÍCULOS E SELOS DE CERTIFICAÇÕES)
+# UPLOAD E GERENCIAMENTO DE ARQUIVOS (CURRÍCULOS E SELOS DE CERTIFICAÇÕES)
+UPLOAD_BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "data", "uploads")
+)
+CATEGORY_DIR_MAP = {
+    "resume": "resumes",
+    "badge": "badges",
+    "image": "images",
+}
+
+
 @router.post("/upload-file")
 async def upload_file(req: UploadFileRequest, admin: str = Depends(verify_token)):
     import base64
-    import os
     import re
+
+    category_folder = CATEGORY_DIR_MAP.get(req.category)
+    if not category_folder:
+        raise HTTPException(status_code=400, detail="Categoria de upload inválida.")
+
+    target_dir = os.path.join(UPLOAD_BASE_DIR, category_folder)
+    os.makedirs(target_dir, exist_ok=True)
 
     safe_name = os.path.basename(req.filename)
     safe_name = re.sub(r"[^a-zA-Z0-9_\-\.]", "_", safe_name)
@@ -365,18 +385,30 @@ async def upload_file(req: UploadFileRequest, admin: str = Depends(verify_token)
     if req.category == "resume":
         if ext != ".pdf":
             raise HTTPException(status_code=400, detail="Apenas arquivos PDF são permitidos para currículos.")
-        frontend_public = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "public"))
-        target_path = os.path.join(frontend_public, safe_name)
-        url_path = f"/{safe_name}"
     elif req.category in ("badge", "image"):
         if ext not in (".svg", ".png", ".webp", ".jpg", ".jpeg"):
             raise HTTPException(status_code=400, detail="Formato não suportado para selos. Use SVG, PNG ou WebP.")
-        frontend_public = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "public", "images", "badges"))
-        os.makedirs(frontend_public, exist_ok=True)
-        target_path = os.path.join(frontend_public, safe_name)
-        url_path = f"/images/badges/{safe_name}"
-    else:
-        raise HTTPException(status_code=400, detail="Categoria de upload inválida.")
+
+    target_path = os.path.abspath(os.path.join(target_dir, safe_name))
+    if os.path.commonpath([UPLOAD_BASE_DIR, target_path]) != UPLOAD_BASE_DIR:
+        raise HTTPException(status_code=400, detail="Caminho de arquivo inválido.")
+
+    # Se informado old_url de arquivo anterior em uploads, removemos o antigo para não deixar lixo no disco
+    old_deleted = False
+    if req.old_url and req.old_url.startswith(f"/api/uploads/{category_folder}/"):
+        old_filename = os.path.basename(req.old_url)
+        old_safe = re.sub(r"[^a-zA-Z0-9_\-\.]", "_", old_filename)
+        old_path = os.path.abspath(os.path.join(target_dir, old_safe))
+        if (
+            os.path.commonpath([UPLOAD_BASE_DIR, old_path]) == UPLOAD_BASE_DIR
+            and os.path.isfile(old_path)
+            and old_path != target_path
+        ):
+            try:
+                os.remove(old_path)
+                old_deleted = True
+            except Exception as exc:
+                logging.warning(f"Não foi possível remover arquivo anterior {old_path}: {exc}")
 
     content = req.content_base64
     if "," in content:
@@ -392,21 +424,25 @@ async def upload_file(req: UploadFileRequest, admin: str = Depends(verify_token)
         raise HTTPException(status_code=413, detail="Arquivo excede o tamanho máximo permitido.")
 
     try:
+        # Modo 'wb' trunca e sobrescreve o arquivo no disco se já existir o mesmo nome
         with open(target_path, "wb") as f:
             f.write(raw_bytes)
     except Exception as exc:
         logging.error(f"Falha ao salvar arquivo {target_path}: {exc}")
         raise HTTPException(status_code=500, detail="Erro interno ao salvar arquivo no servidor.")
 
+    url_path = f"/api/uploads/{category_folder}/{safe_name}"
+
     audit_logger.info(
         "arquivo anexado via console admin",
         extra={
             "event": "admin_file_uploaded",
             "actor": admin,
-            "filename": safe_name,
+            "target_file": safe_name,
             "category": req.category,
             "size": len(raw_bytes),
             "url": url_path,
+            "old_deleted": old_deleted,
         },
     )
 
@@ -415,5 +451,39 @@ async def upload_file(req: UploadFileRequest, admin: str = Depends(verify_token)
         "url": url_path,
         "filename": safe_name,
         "size": len(raw_bytes),
+        "replaced_previous": old_deleted or (os.path.isfile(target_path)),
     }
+
+
+@router.post("/delete-file")
+async def delete_file(req: DeleteFileRequest, admin: str = Depends(verify_token)):
+    """Remove um arquivo enviado anteriormente pelo painel da pasta uploads."""
+    if not req.url or not req.url.startswith("/api/uploads/"):
+        return {"status": "ignorado", "message": "Arquivo padrão ou externo não requer exclusão do disco."}
+
+    rel_path = req.url.replace("/api/uploads/", "", 1)
+    target_path = os.path.abspath(os.path.join(UPLOAD_BASE_DIR, rel_path))
+
+    if os.path.commonpath([UPLOAD_BASE_DIR, target_path]) != UPLOAD_BASE_DIR:
+        raise HTTPException(status_code=400, detail="Caminho de arquivo inválido.")
+
+    if os.path.isfile(target_path):
+        try:
+            os.remove(target_path)
+            audit_logger.info(
+                "arquivo removido via admin",
+                extra={
+                    "event": "admin_file_deleted",
+                    "actor": admin,
+                    "path": target_path,
+                    "url": req.url,
+                },
+            )
+            return {"status": "sucesso", "message": "Arquivo removido do disco com sucesso."}
+        except Exception as exc:
+            logging.error(f"Erro ao remover {target_path}: {exc}")
+            raise HTTPException(status_code=500, detail="Erro interno ao excluir arquivo.")
+
+    return {"status": "inexistente", "message": "Arquivo não encontrado no disco."}
+
 

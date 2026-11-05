@@ -37,6 +37,10 @@ backend/data/*.jsonl
 # Dados operacionais / cadastros (persistidos em prod/dev, nunca sobrescrever via git pull)
 backend/data/portfolio.json
 backend/data/portfolio_data.json
+backend/data/uploads/**
+!backend/data/uploads/
+!backend/data/uploads/**/
+!backend/data/uploads/**/.gitkeep
 
 # ============================================================
 # Frontend - Node/Vite

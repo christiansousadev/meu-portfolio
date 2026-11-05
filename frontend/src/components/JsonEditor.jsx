@@ -20,7 +20,7 @@ const BADGE_PRESETS = [
   { label: "Scrum Agile", url: "/images/badges/scrum-agile.svg" },
 ];
 
-const uploadAdminFile = async (file, category) => {
+const uploadAdminFile = async (file, category, oldUrl = null) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async () => {
@@ -32,6 +32,7 @@ const uploadAdminFile = async (file, category) => {
             filename: file.name,
             content_base64: reader.result,
             category: category,
+            old_url: oldUrl || "",
           }),
         });
         if (!res.ok) {
@@ -47,6 +48,19 @@ const uploadAdminFile = async (file, category) => {
     reader.onerror = () => reject(new Error("Erro ao ler arquivo local"));
     reader.readAsDataURL(file);
   });
+};
+
+const deleteAdminFile = async (url) => {
+  if (!url || !url.startsWith("/api/uploads/")) return;
+  try {
+    await fetch("/api/admin/delete-file", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+  } catch (err) {
+    console.warn("Falha ao remover arquivo do servidor:", err);
+  }
 };
 
 
@@ -148,6 +162,10 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
     const newData = { ...data };
 
     if (activeFile === "portfolio.json" && newData[lang]?.[sectionKey]?.[subArray]) {
+      const removed = newData[lang][sectionKey][subArray][index];
+      if (sectionKey === "cert" && removed?.badge_url?.startsWith("/api/uploads/")) {
+        deleteAdminFile(removed.badge_url);
+      }
       newData[lang][sectionKey][subArray].splice(index, 1);
     } else if (activeFile === "portfolio_data.json" && newData[sectionKey]) {
       newData[sectionKey].splice(index, 1);
@@ -260,7 +278,8 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       try {
-                        const url = await uploadAdminFile(file, "resume");
+                        const oldUrl = data?.[lang]?.hero?.resumeUrl;
+                        const url = await uploadAdminFile(file, "resume", oldUrl);
                         const d = { ...data };
                         d[lang].hero.resumeUrl = url;
                         setData(d);
@@ -639,7 +658,8 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                             const file = e.target.files?.[0];
                             if (!file) return;
                             try {
-                              const url = await uploadAdminFile(file, "badge");
+                              const oldUrl = item.badge_url;
+                              const url = await uploadAdminFile(file, "badge", oldUrl);
                               const d = { ...data };
                               d[lang].cert.items[idx].badge_url = url;
                               setData(d);
@@ -670,6 +690,9 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                           type="button"
                           className={`badge-preset-btn ${item.badge_url === preset.url ? "is-active" : ""}`}
                           onClick={() => {
+                            if (item.badge_url && item.badge_url.startsWith("/api/uploads/")) {
+                              deleteAdminFile(item.badge_url);
+                            }
                             const d = { ...data };
                             d[lang].cert.items[idx].badge_url = preset.url;
                             setData(d);
@@ -685,6 +708,9 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                           className="badge-preset-btn"
                           style={{ color: "#F2706A" }}
                           onClick={() => {
+                            if (item.badge_url && item.badge_url.startsWith("/api/uploads/")) {
+                              deleteAdminFile(item.badge_url);
+                            }
                             const d = { ...data };
                             d[lang].cert.items[idx].badge_url = "";
                             setData(d);

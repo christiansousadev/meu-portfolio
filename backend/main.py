@@ -9,7 +9,7 @@ from core.rate_limit import RateLimitMiddleware
 from core.security_headers import SecurityHeadersMiddleware
 from core.trace_middleware import TRACE_HEADER, TraceIdMiddleware
 from core.trace_context import get_trace_id
-from routers import admin, chat
+from routers import admin, chat, uploads
 
 # configura o logger estruturado em json antes de instanciar o fastapi
 # para que qualquer evento de boot ja saia no formato padronizado
@@ -80,3 +80,4 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 # registro de rotas (modulares)
 app.include_router(chat.router)
 app.include_router(admin.router)
+app.include_router(uploads.router)
