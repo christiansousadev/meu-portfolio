@@ -1,26 +1,26 @@
 {
   "pt": {
     "nav": {
-      "skills": "Entregas",
-      "exp": "Trajetória",
+      "skills": "Habilidades",
+      "exp": "Experiência",
       "proj": "Projetos",
-      "certs": "Credenciais"
+      "certs": "Certificações"
     },
     "hero": {
-      "greeting": "Integro ERPs, automatizo rotinas contábeis e deixo trilha de auditoria em cada etapa.",
-      "subtitle": "Sou Christian Sousa, engenheiro de software. Participei da implantação de SAP e TOTVS do lado do negócio antes de integrá-los por código. Hoje construo APIs em Python (FastAPI), pipelines em PostgreSQL e automações com n8n, seguindo práticas de ITIL® 4, ISO/IEC 27001 e LGPD.",
-      "contactBtn": "Enviar e-mail",
+      "greeting": "Olá, eu sou o Christian",
+      "subtitle": "Engenheiro de Software voltado à integração de ERPs, automação de fluxos contábeis/financeiros e governança de TI. Construo APIs em Python (FastAPI), pipelines em PostgreSQL e arquiteturas sob práticas ITIL® 4, ISO/IEC 27001 e LGPD.",
+      "contactBtn": "Entrar em contato",
       "resumeBtn": "Ver trajetória"
     },
     "skills": {
-      "title": "O que entrego",
-      "subtitle": "Três etapas do mesmo fluxo: integrar sistemas, organizar os dados e governar a operação.",
+      "title": "Competências e entregas",
+      "subtitle": "Arquitetura, dados e governança operacional",
       "items": [
-        "Integração: APIs assíncronas em Python (FastAPI) e Node.js com validação estrita de contratos.",
-        "Integração: Conexões entre ERPs (SAP, TOTVS), CRMs e rotinas contábeis, orquestradas com n8n.",
-        "Dados: Modelagem relacional em PostgreSQL e MySQL, consultas analíticas com CTEs e painéis no Metabase.",
-        "Dados: Assistentes com RAG focado, controle de contexto e baixo consumo de tokens.",
-        "Governança: Infraestrutura em Docker e Linux com Nginx, Cloudflare Zero Trust, mascaramento de PII e trilhas de auditoria."
+        "Integração: APIs assíncronas em Python (FastAPI) e Node.js com validação estrita e contratos seguros.",
+        "Integração: Integrações de sistemas corporativos (SAP, TOTVS, CRMs) e orquestração de workflows com n8n.",
+        "Dados: Modelagem relacional em PostgreSQL/MySQL, consultas analíticas com CTEs e painéis executivos no Metabase.",
+        "Dados: Assistentes corporativos com RAG focado, controle de contexto e baixo consumo de tokens.",
+        "Governança: Infraestrutura containerizada em Docker/Linux com proxy reverso Nginx, Cloudflare Zero Trust e trilhas de auditoria."
       ],
       "tags": [
         "Python",
@@ -42,7 +42,7 @@
       ]
     },
     "exp": {
-      "title": "Trajetória",
+      "title": "Experiência Profissional",
       "items": [
         {
           "role": "Analista de Automação",
@@ -137,7 +137,7 @@
       ]
     },
     "proj": {
-      "title": "Projetos",
+      "title": "Projetos selecionados",
       "items": [
         {
           "name": "ITSM Health Dashboard",
@@ -187,8 +187,8 @@
       ]
     },
     "cert": {
-      "title": "Credenciais e formação",
-      "subtitle": "Governança de serviços de TI, segurança da informação e engenharia de software.",
+      "title": "Certificações & Credenciais",
+      "subtitle": "Governança de TI, segurança e engenharia de software",
       "items": [
         {
           "name": "ITIL® 4 Foundation in IT Service Management",
@@ -221,34 +221,34 @@
       ]
     },
     "chat": {
-      "title": "Assistente do portfólio",
-      "placeholder": "Pergunte sobre a trajetória do Christian",
+      "title": "Assistente Virtual",
+      "placeholder": "Pergunte sobre meus projetos...",
       "send": "Enviar",
-      "loading": "Consultando os dados do portfólio…"
+      "loading": "Processando dados..."
     }
   },
   "en": {
     "nav": {
-      "skills": "Deliverables",
-      "exp": "Track record",
+      "skills": "Skills",
+      "exp": "Experience",
       "proj": "Projects",
-      "certs": "Credentials"
+      "certs": "Certifications"
     },
     "hero": {
-      "greeting": "I integrate ERPs, automate accounting routines and leave an audit trail at every step.",
-      "subtitle": "I'm Christian Sousa, a software engineer. I took part in SAP and TOTVS rollouts on the business side before integrating them through code. Today I build Python (FastAPI) APIs, PostgreSQL pipelines and n8n automations, following ITIL® 4, ISO/IEC 27001 and LGPD practices.",
-      "contactBtn": "Send email",
-      "resumeBtn": "See track record"
+      "greeting": "Hi all, I'm Christian",
+      "subtitle": "Software Engineer focused on ERP integration, accounting/financial workflow automation and IT governance. I build Python (FastAPI) APIs, PostgreSQL pipelines and architectures under ITIL® 4, ISO/IEC 27001 and LGPD practices.",
+      "contactBtn": "Contact Me",
+      "resumeBtn": "See Resume"
     },
     "skills": {
-      "title": "What I deliver",
-      "subtitle": "Three stages of the same flow: integrate systems, organize the data and govern the operation.",
+      "title": "Skills and deliverables",
+      "subtitle": "Architecture, data and operational governance",
       "items": [
         "Integration: Asynchronous APIs in Python (FastAPI) and Node.js with strict contract validation.",
         "Integration: Connections between ERPs (SAP, TOTVS), CRMs and accounting routines, orchestrated with n8n.",
         "Data: Relational modeling in PostgreSQL and MySQL, analytical queries with CTEs and Metabase dashboards.",
         "Data: Assistants with focused RAG, context control and low token consumption.",
-        "Governance: Docker and Linux infrastructure with Nginx, Cloudflare Zero Trust, PII masking and audit trails."
+        "Governance: Containerized infrastructure in Docker/Linux with Nginx, Cloudflare Zero Trust, PII masking and audit trails."
       ],
       "tags": [
         "Python",
@@ -270,7 +270,7 @@
       ]
     },
     "exp": {
-      "title": "Track record",
+      "title": "Work Experience",
       "items": [
         {
           "role": "Automation Analyst",
@@ -365,7 +365,7 @@
       ]
     },
     "proj": {
-      "title": "Projects",
+      "title": "Featured Projects",
       "items": [
         {
           "name": "ITSM Health Dashboard",
@@ -415,8 +415,8 @@
       ]
     },
     "cert": {
-      "title": "Credentials and training",
-      "subtitle": "IT service governance, information security and software engineering.",
+      "title": "Certifications & Credentials",
+      "subtitle": "IT governance, security and software engineering",
       "items": [
         {
           "name": "ITIL® 4 Foundation in IT Service Management",
@@ -449,10 +449,10 @@
       ]
     },
     "chat": {
-      "title": "Portfolio assistant",
-      "placeholder": "Ask about Christian's track record",
+      "title": "AI Assistant",
+      "placeholder": "Ask about my projects...",
       "send": "Send",
-      "loading": "Checking the portfolio data…"
+      "loading": "Processing data..."
     }
   }
 }
