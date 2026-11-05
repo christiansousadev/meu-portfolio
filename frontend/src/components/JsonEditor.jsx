@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trash2, Plus, X, ChevronDown } from "lucide-react";
+import { Trash2, Plus, X, ChevronDown, Upload, FileText, ArrowUpRight } from "lucide-react";
 import { EASE_OUT } from "../utils/motion";
 import { CONTENT_FILE, RAG_FILE } from "../hooks/useContentStore";
 
@@ -13,6 +13,42 @@ const PROMPT_SOFT_LIMIT = 600;
 const MAX_ROW_TAGS = 4;
 
 const LANG_NAMES = { pt: "Português", en: "English" };
+const BADGE_PRESETS = [
+  { label: "ITIL 4", url: "/images/badges/itil4.svg" },
+  { label: "ISO 27001 & LGPD", url: "/images/badges/iso27001.svg" },
+  { label: "Python & FastAPI", url: "/images/badges/python-fastapi.svg" },
+  { label: "Scrum Agile", url: "/images/badges/scrum-agile.svg" },
+];
+
+const uploadAdminFile = async (file, category) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await fetch("/api/admin/upload-file", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: file.name,
+            content_base64: reader.result,
+            category: category,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: "Falha no upload" }));
+          throw new Error(err.detail || "Falha no upload");
+        }
+        const json = await res.json();
+        resolve(json.url);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = () => reject(new Error("Erro ao ler arquivo local"));
+    reader.readAsDataURL(file);
+  });
+};
+
 
 const SECTION_META = {
   hero: {
@@ -189,9 +225,10 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                 }}
               />
             </Field>
-            <Field label="Texto do botão secundário">
+            <Field label="Texto do botão do currículo">
               <input
                 className="form-input"
+                placeholder={lang === "en" ? "Download Resume" : "Download do currículo"}
                 value={data?.[lang]?.hero?.resumeBtn || ""}
                 onChange={(e) => {
                   const d = { ...data };
@@ -199,6 +236,53 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                   setData(d);
                 }}
               />
+            </Field>
+            <Field label={`Arquivo do Currículo (PDF) — [${lang.toUpperCase()}]`} full>
+              <div className="badge-input-group">
+                <input
+                  className="form-input"
+                  placeholder={lang === "en" ? "/cv-christian-sousa-en.pdf" : "/curriculo-christian-sousa.pdf"}
+                  value={data?.[lang]?.hero?.resumeUrl || ""}
+                  onChange={(e) => {
+                    const d = { ...data };
+                    d[lang].hero.resumeUrl = e.target.value;
+                    setData(d);
+                  }}
+                />
+                <label className="btn-upload-file" title="Fazer upload de um arquivo PDF">
+                  <Upload size={14} aria-hidden="true" />
+                  <span>Anexar PDF</span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const url = await uploadAdminFile(file, "resume");
+                        const d = { ...data };
+                        d[lang].hero.resumeUrl = url;
+                        setData(d);
+                      } catch (err) {
+                        alert(`Erro ao anexar currículo: ${err.message}`);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="resume-upload-row">
+                <a
+                  href={data?.[lang]?.hero?.resumeUrl || (lang === "en" ? "/cv-christian-sousa-en.pdf" : "/curriculo-christian-sousa.pdf")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="resume-test-link"
+                >
+                  <FileText size={13} aria-hidden="true" />
+                  <span>Visualizar / testar PDF atual</span>
+                  <ArrowUpRight size={12} aria-hidden="true" />
+                </a>
+              </div>
             </Field>
             <Field label="Descrição de posicionamento" full>
               <textarea
@@ -532,7 +616,7 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                       }}
                     />
                   </Field>
-                  <Field label="URL / Caminho da Imagem do Badge" full>
+                  <Field label="Selo / Badge Visual da Certificação" full>
                     <div className="badge-input-group">
                       <input
                         className="form-input"
@@ -544,8 +628,29 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                           setData(d);
                         }}
                       />
+                      <label className="btn-upload-file" title="Anexar selo personalizado (SVG/PNG)">
+                        <Upload size={14} aria-hidden="true" />
+                        <span>Upload de Selo</span>
+                        <input
+                          type="file"
+                          accept=".svg,.png,.webp,.jpg,.jpeg"
+                          style={{ display: "none" }}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              const url = await uploadAdminFile(file, "badge");
+                              const d = { ...data };
+                              d[lang].cert.items[idx].badge_url = url;
+                              setData(d);
+                            } catch (err) {
+                              alert(`Erro ao enviar selo: ${err.message}`);
+                            }
+                          }}
+                        />
+                      </label>
                       {item.badge_url && (
-                        <div className="badge-preview-slot" title="Preview do Badge">
+                        <div className="badge-preview-slot" title="Preview do Selo Atual">
                           <img
                             src={item.badge_url}
                             alt="Preview do Badge"
@@ -553,6 +658,40 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                             onLoad={(e) => { e.currentTarget.style.display = 'block'; }}
                           />
                         </div>
+                      )}
+                    </div>
+                    <div className="badge-preset-list">
+                      <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)", alignSelf: "center", marginRight: 4 }}>
+                        Selos oficiais:
+                      </span>
+                      {BADGE_PRESETS.map((preset) => (
+                        <button
+                          key={preset.url}
+                          type="button"
+                          className={`badge-preset-btn ${item.badge_url === preset.url ? "is-active" : ""}`}
+                          onClick={() => {
+                            const d = { ...data };
+                            d[lang].cert.items[idx].badge_url = preset.url;
+                            setData(d);
+                          }}
+                        >
+                          <img src={preset.url} alt="" className="badge-preset-icon" />
+                          <span>{preset.label}</span>
+                        </button>
+                      ))}
+                      {item.badge_url && (
+                        <button
+                          type="button"
+                          className="badge-preset-btn"
+                          style={{ color: "#F2706A" }}
+                          onClick={() => {
+                            const d = { ...data };
+                            d[lang].cert.items[idx].badge_url = "";
+                            setData(d);
+                          }}
+                        >
+                          <span>Remover selo</span>
+                        </button>
                       )}
                     </div>
                   </Field>

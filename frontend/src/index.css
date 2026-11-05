@@ -1443,7 +1443,15 @@ select:focus-visible,
   font-variant-numeric: tabular-nums;
   min-width: 0;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.terminal-body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .terminal-line {
@@ -1475,8 +1483,10 @@ select:focus-visible,
   font-size: 0.72rem;
 }
 
-.terminal-tag--info  { color: #7EA2FF; }
-.terminal-tag--stack { color: #7EA2FF; }
+.terminal-tag--info    { color: #7EA2FF; }
+.terminal-tag--stack   { color: #7EA2FF; }
+.terminal-tag--backend { color: #7EA2FF; }
+.terminal-tag--front   { color: #38BDF8; }
 .terminal-tag--sync  { color: #F5C451; }
 .terminal-tag--flow  { color: #F5C451; }
 .terminal-tag--data  { color: #A78BFA; }
@@ -4762,4 +4772,87 @@ select:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Selos de Certificacoes e Uploads no Console Admin */
+.badge-preset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.badge-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.12));
+  color: var(--text-secondary, #94A3B8);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.badge-preset-btn:hover {
+  background: rgba(126, 162, 255, 0.15);
+  border-color: var(--accent-color, #7EA2FF);
+  color: #FFFFFF;
+}
+
+.badge-preset-btn.is-active {
+  background: rgba(74, 222, 155, 0.16);
+  border-color: #4ADE9B;
+  color: #4ADE9B;
+  font-weight: 600;
+}
+
+.badge-preset-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+.btn-upload-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.14));
+  color: var(--text-color, #FFFFFF);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-upload-file:hover {
+  background: rgba(126, 162, 255, 0.2);
+  border-color: var(--accent-color, #7EA2FF);
+}
+
+.resume-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.resume-test-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  color: var(--accent-color, #7EA2FF);
+  text-decoration: none;
+}
+
+.resume-test-link:hover {
+  text-decoration: underline;
 }

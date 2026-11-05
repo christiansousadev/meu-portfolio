@@ -57,18 +57,18 @@ const HERO_COPY = {
     downloadResumeLabel: "Baixar Currículo de Christian Sousa em PDF",
     terminalTitle: "stack — bash",
     terminalLabel:
-      "Terminal demonstrativo: stack técnica com Python, FastAPI, PostgreSQL, n8n, LGPD e Docker.",
+      "Terminal demonstrativo: stack técnica completa com Python, Node.js, TypeScript, React, Next.js, PostgreSQL, MySQL, Firebird, PHP, n8n, LGPD e Docker.",
     terminalTab: "Terminal",
     profileTab: "Perfil",
     avatarAlt: "Christian Sousa - Engenheiro de Software",
     terminal: [
       { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status" },
-      { kind: "step", tag: "STACK", tagColor: "stack", label: "Python · FastAPI · AsyncIO", leader: true, badge: "[OK]", statusType: "ok" },
-      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · SQLAlchemy · SQL", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "BACKEND", tagColor: "backend", label: "Python · Node.js · PHP", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "FRONT", tagColor: "front", label: "TypeScript · React · Next.js", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · MySQL · Firebird", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "FLOW", tagColor: "flow", label: "n8n Engine · Webhooks REST", leader: true, badge: "[READY]", statusType: "sync" },
       { kind: "step", tag: "SEC", tagColor: "sec", label: "LGPD · Anonimização PII · ISO 27001", leader: true, badge: "[CONFORME]", statusType: "ok" },
-      { kind: "step", tag: "AI", tagColor: "ai", label: "RAG Pipeline · Vector Embeddings", leader: true, badge: "[ATIVO]", statusType: "signal" },
-      { kind: "step", tag: "OPS", tagColor: "ops", label: "Docker Container · Nginx Proxy", leader: true, badge: "[UP]", statusType: "ok" },
+      { kind: "step", tag: "OPS", tagColor: "ops", label: "Docker · Nginx · Linux", leader: true, badge: "[UP]", statusType: "ok" },
       { kind: "meta", items: [["Latência", "12ms"], ["Erros", "0"], ["SLA ITIL", "99.98%"]] },
     ],
     profile: {
@@ -77,7 +77,19 @@ const HERO_COPY = {
       location: "Fortaleza, CE · Remoto",
       status: "Disponível",
       summary: "Especialista em integrações ERP, automação de fluxos críticos e arquiteturas seguras sob práticas ITIL® 4 e LGPD.",
-      skills: ["Python & FastAPI", "PostgreSQL", "n8n Automations", "ITIL® 4", "LGPD & ISO 27001", "Docker"],
+      skills: [
+        "Python",
+        "Node.js",
+        "TypeScript & React",
+        "Next.js",
+        "PostgreSQL & MySQL",
+        "Firebird",
+        "PHP",
+        "n8n Automations",
+        "ITIL® 4",
+        "LGPD & ISO 27001",
+        "Docker",
+      ],
       socials: [
         { name: "GitHub", handle: "@christiansousadev", url: "https://github.com/christiansousadev", type: "github" },
         { name: "LinkedIn", handle: "in/christiansousasilva", url: "https://www.linkedin.com/in/christiansousasilva/", type: "linkedin" },
@@ -100,18 +112,18 @@ const HERO_COPY = {
     downloadResumeLabel: "Download Christian Sousa Resume (PDF)",
     terminalTitle: "stack — bash",
     terminalLabel:
-      "Demonstrative terminal: technical stack with Python, FastAPI, PostgreSQL, n8n, LGPD and Docker.",
+      "Demonstrative terminal: complete technical stack with Python, Node.js, TypeScript, React, Next.js, PostgreSQL, MySQL, Firebird, PHP, n8n, LGPD and Docker.",
     terminalTab: "Terminal",
     profileTab: "Profile",
     avatarAlt: "Christian Sousa - Software Engineer",
     terminal: [
       { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status" },
-      { kind: "step", tag: "STACK", tagColor: "stack", label: "Python · FastAPI · AsyncIO", leader: true, badge: "[OK]", statusType: "ok" },
-      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · SQLAlchemy · SQL", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "BACKEND", tagColor: "backend", label: "Python · Node.js · PHP", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "FRONT", tagColor: "front", label: "TypeScript · React · Next.js", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · MySQL · Firebird", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "FLOW", tagColor: "flow", label: "n8n Engine · REST Webhooks", leader: true, badge: "[READY]", statusType: "sync" },
       { kind: "step", tag: "SEC", tagColor: "sec", label: "LGPD · PII Anonymization · ISO 27001", leader: true, badge: "[COMPLIANT]", statusType: "ok" },
-      { kind: "step", tag: "AI", tagColor: "ai", label: "RAG Pipeline · Vector Embeddings", leader: true, badge: "[ACTIVE]", statusType: "signal" },
-      { kind: "step", tag: "OPS", tagColor: "ops", label: "Docker Container · Nginx Proxy", leader: true, badge: "[UP]", statusType: "ok" },
+      { kind: "step", tag: "OPS", tagColor: "ops", label: "Docker · Nginx · Linux", leader: true, badge: "[UP]", statusType: "ok" },
       { kind: "meta", items: [["Latency", "12ms"], ["Errors", "0"], ["ITIL SLA", "99.98%"]] },
     ],
     profile: {
@@ -120,7 +132,19 @@ const HERO_COPY = {
       location: "Fortaleza, CE · Remote",
       status: "Available",
       summary: "Specialist in ERP integrations, critical workflow automation and secure architectures under ITIL® 4 and LGPD.",
-      skills: ["Python & FastAPI", "PostgreSQL", "n8n Automations", "ITIL® 4", "LGPD & ISO 27001", "Docker"],
+      skills: [
+        "Python",
+        "Node.js",
+        "TypeScript & React",
+        "Next.js",
+        "PostgreSQL & MySQL",
+        "Firebird",
+        "PHP",
+        "n8n Automations",
+        "ITIL® 4",
+        "LGPD & ISO 27001",
+        "Docker",
+      ],
       socials: [
         { name: "GitHub", handle: "@christiansousadev", url: "https://github.com/christiansousadev", type: "github" },
         { name: "LinkedIn", handle: "in/christiansousasilva", url: "https://www.linkedin.com/in/christiansousasilva/", type: "linkedin" },
@@ -419,6 +443,16 @@ export default function Hero({ data, lang = "pt" }) {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const copy = HERO_COPY[lang] || HERO_COPY.pt;
 
+  const resumeHref =
+    data.resumeUrl ||
+    (lang === "en" ? "/cv-christian-sousa-en.pdf" : "/curriculo-christian-sousa.pdf");
+  const resumeFilename =
+    lang === "en" ? "Resume_Christian_Sousa.pdf" : "Curriculo_Christian_Sousa.pdf";
+  const resumeBtnLabel =
+    data.resumeBtn && data.resumeBtn !== "Ver trajetória"
+      ? data.resumeBtn
+      : copy.resumeBtn;
+
   return (
     <section className="hero-section">
       <div className="hero-atmosphere" aria-hidden="true">
@@ -464,14 +498,14 @@ export default function Hero({ data, lang = "pt" }) {
             </motion.button>
 
             <motion.a
-              href="/curriculo-christian-sousa.pdf"
-              download="Curriculo_Christian_Sousa.pdf"
+              href={resumeHref}
+              download={resumeFilename}
               className="btn-secondary btn-download-cv"
               aria-label={copy.downloadResumeLabel}
               whileTap={{ scale: 0.97 }}
             >
               <Download size={16} aria-hidden="true" />
-              <span>{data.resumeBtn || copy.resumeBtn}</span>
+              <span>{resumeBtnLabel}</span>
             </motion.a>
           </motion.div>
         </div>

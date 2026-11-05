@@ -21,6 +21,7 @@ from schemas.portfolio import (
     ConfigUpdateRequest,
     InterpreterRequest,
     LoginRequest,
+    UploadFileRequest,
     validate_payload,
 )
 from services.config_repo import read_config, write_config
@@ -348,3 +349,71 @@ async def update_config(req: ConfigUpdateRequest, admin: str = Depends(verify_to
         "message": f"{req.filename.value} atualizado",
         "bytes_written": bytes_written,
     }
+
+
+# UPLOAD DE ARQUIVOS (CURRÍCULOS E SELOS DE CERTIFICAÇÕES)
+@router.post("/upload-file")
+async def upload_file(req: UploadFileRequest, admin: str = Depends(verify_token)):
+    import base64
+    import os
+    import re
+
+    safe_name = os.path.basename(req.filename)
+    safe_name = re.sub(r"[^a-zA-Z0-9_\-\.]", "_", safe_name)
+    ext = os.path.splitext(safe_name)[1].lower()
+
+    if req.category == "resume":
+        if ext != ".pdf":
+            raise HTTPException(status_code=400, detail="Apenas arquivos PDF são permitidos para currículos.")
+        frontend_public = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "public"))
+        target_path = os.path.join(frontend_public, safe_name)
+        url_path = f"/{safe_name}"
+    elif req.category in ("badge", "image"):
+        if ext not in (".svg", ".png", ".webp", ".jpg", ".jpeg"):
+            raise HTTPException(status_code=400, detail="Formato não suportado para selos. Use SVG, PNG ou WebP.")
+        frontend_public = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "public", "images", "badges"))
+        os.makedirs(frontend_public, exist_ok=True)
+        target_path = os.path.join(frontend_public, safe_name)
+        url_path = f"/images/badges/{safe_name}"
+    else:
+        raise HTTPException(status_code=400, detail="Categoria de upload inválida.")
+
+    content = req.content_base64
+    if "," in content:
+        content = content.split(",", 1)[1]
+
+    try:
+        raw_bytes = base64.b64decode(content)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Codificação Base64 inválida.")
+
+    max_size = 15 * 1024 * 1024 if req.category == "resume" else 5 * 1024 * 1024
+    if len(raw_bytes) > max_size:
+        raise HTTPException(status_code=413, detail="Arquivo excede o tamanho máximo permitido.")
+
+    try:
+        with open(target_path, "wb") as f:
+            f.write(raw_bytes)
+    except Exception as exc:
+        logging.error(f"Falha ao salvar arquivo {target_path}: {exc}")
+        raise HTTPException(status_code=500, detail="Erro interno ao salvar arquivo no servidor.")
+
+    audit_logger.info(
+        "arquivo anexado via console admin",
+        extra={
+            "event": "admin_file_uploaded",
+            "actor": admin,
+            "filename": safe_name,
+            "category": req.category,
+            "size": len(raw_bytes),
+            "url": url_path,
+        },
+    )
+
+    return {
+        "status": "sucesso",
+        "url": url_path,
+        "filename": safe_name,
+        "size": len(raw_bytes),
+    }
+

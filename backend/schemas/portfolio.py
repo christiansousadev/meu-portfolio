@@ -111,6 +111,7 @@ class HeroSection(StrictModel):
     subtitle: LongStr
     contactBtn: ShortStr
     resumeBtn: ShortStr
+    resumeUrl: Annotated[str, Field(default="", max_length=500)] = ""
 
 
 class SkillsSection(StrictModel):
@@ -234,3 +235,9 @@ class AnalyticsEvent(BaseModel):
     event: Annotated[str, Field(min_length=1, max_length=64)]
     path: Annotated[str, Field(min_length=1, max_length=2_000)]
     browser: Annotated[str, Field(min_length=1, max_length=512)]
+
+
+class UploadFileRequest(BaseModel):
+    filename: Annotated[str, Field(min_length=3, max_length=150)]
+    content_base64: str
+    category: Annotated[str, Field(pattern=r"^(resume|badge|image)$")]

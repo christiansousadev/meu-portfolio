@@ -361,3 +361,4 @@ export default function ContactModal({ isOpen, onClose, lang = "pt" }) {
     </AnimatePresence>
   );
 }
+
