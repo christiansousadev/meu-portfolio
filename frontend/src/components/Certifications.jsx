@@ -1,89 +1,92 @@
 // frontend/src/components/Certifications.jsx
-//
-// Distinção honesta: só credencial com emissor e link externo recebe o
-// carimbo de conferência. O restante aparece como formação técnica, sem selo.
+import { motion } from "framer-motion";
+import { ArrowUpRight, BadgeCheck, GraduationCap } from "lucide-react";
+import {
+  VIEWPORT_ONCE,
+  revealContainer,
+  revealItem,
+  trackSpotlight,
+} from "../utils/motion";
 
-const CERT_COPY = {
-  pt: {
-    verified: "Credenciais verificáveis",
-    training: "Especializações e formação técnica",
-    stamp: "conferível",
-    check: "Consultar no emissor",
-    checkLabel: (name) => `Consultar ${name} no site do emissor (abre em nova aba)`,
-  },
-  en: {
-    verified: "Verifiable credentials",
-    training: "Specializations and technical training",
-    stamp: "verifiable",
-    check: "Check with the issuer",
-    checkLabel: (name) => `Check ${name} on the issuer's website (opens in a new tab)`,
-  },
-};
-
-const isVerifiable = (cert) => /^https?:\/\//i.test(String(cert.credential_url || "").trim());
+const VERIFY_LABEL = { pt: "Verificar credencial", en: "Verify credential" };
 
 export default function Certifications({ data, lang = "pt" }) {
-  const copy = CERT_COPY[lang] || CERT_COPY.pt;
-  const items = data?.items || [];
-  if (!items.length) return null;
-
-  const verified = items.filter(isVerifiable);
-  const training = items.filter((c) => !isVerifiable(c));
+  if (!data || !data.items || data.items.length === 0) {
+    return null;
+  }
 
   return (
-    <section id="certifications" className="section" aria-labelledby="certifications-title">
-      <header className="section-head">
-        <h2 id="certifications-title" className="section-title">
+    <section id="certifications" className="section-block">
+      <motion.div
+        className="section-header"
+        initial="hidden"
+        whileInView="show"
+        viewport={VIEWPORT_ONCE}
+        variants={revealContainer}
+      >
+        <motion.h2 className="section-title" variants={revealItem}>
           {data.title}
-        </h2>
-        {data.subtitle && <p className="section-lede">{data.subtitle}</p>}
-      </header>
+        </motion.h2>
+        {data.subtitle && (
+          <motion.p className="section-subtitle" variants={revealItem}>
+            {data.subtitle}
+          </motion.p>
+        )}
+      </motion.div>
 
-      {verified.length > 0 && (
-        <div className="cred-group">
-          <h3 className="cred-group-title">{copy.verified}</h3>
-          <ul className="cred-list">
-            {verified.map((cert, idx) => (
-              <li key={`${cert.name}-${idx}`} className="cred-row cred-row--verified">
-                <p className="cred-meta">
-                  <span className="stamp-mark">{copy.stamp}</span>
-                  <span>{cert.issuer}</span>
-                  {cert.year && <span className="tnum">{cert.year}</span>}
-                </p>
-                <h4 className="cred-name">{cert.name}</h4>
-                {cert.description && <p className="cred-desc">{cert.description}</p>}
+      <motion.div
+        className="cert-grid"
+        initial="hidden"
+        whileInView="show"
+        viewport={VIEWPORT_ONCE}
+        variants={revealContainer}
+      >
+        {data.items.map((cert, index) => (
+          <motion.article
+            key={`${cert.name}-${index}`}
+            className="surface-card cert-card spotlight"
+            variants={revealItem}
+            whileHover={{ y: -3 }}
+            onPointerMove={trackSpotlight}
+          >
+            <div className="cert-body">
+              <div className="cert-meta-row">
+                <span className="cert-issuer">
+                  {/* Selo de verificado só em credencial com link oficial do emissor */}
+                  {cert.credential_url ? (
+                    <span className="cert-seal" aria-hidden="true">
+                      <BadgeCheck size={14} />
+                    </span>
+                  ) : (
+                    <span className="cert-seal cert-seal--neutral" aria-hidden="true">
+                      <GraduationCap size={14} />
+                    </span>
+                  )}
+                  {cert.issuer}
+                </span>
+                {cert.year && <span className="cert-year">{cert.year}</span>}
+              </div>
+
+              <h3 className="cert-name">{cert.name}</h3>
+              {cert.description && <p className="cert-desc">{cert.description}</p>}
+            </div>
+
+            {cert.credential_url && (
+              <div className="cert-link-row">
                 <a
-                  className="evidence-link"
                   href={cert.credential_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={copy.checkLabel(cert.name)}
+                  className="cert-link"
                 >
-                  {copy.check}
+                  <span>{VERIFY_LABEL[lang] || VERIFY_LABEL.pt}</span>
+                  <ArrowUpRight size={14} aria-hidden="true" />
                 </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {training.length > 0 && (
-        <div className="cred-group">
-          <h3 className="cred-group-title">{copy.training}</h3>
-          <ul className="cred-list">
-            {training.map((cert, idx) => (
-              <li key={`${cert.name}-${idx}`} className="cred-row">
-                <p className="cred-meta">
-                  <span>{cert.issuer}</span>
-                  {cert.year && <span className="tnum">{cert.year}</span>}
-                </p>
-                <h4 className="cred-name">{cert.name}</h4>
-                {cert.description && <p className="cred-desc">{cert.description}</p>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+              </div>
+            )}
+          </motion.article>
+        ))}
+      </motion.div>
     </section>
   );
 }

@@ -2,48 +2,41 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Trash2, Copy, Check } from "lucide-react";
-import useDialog from "../hooks/useDialog";
 
 const CHAT_COPY = {
   pt: {
     suggestions: [
-      "Quais tecnologias o Christian usa no dia a dia?",
-      "Como o Christian aplica ITIL 4 e LGPD?",
-      "Quais projetos ele publicou?",
-      "Como falar com o Christian?",
+      "Quais são suas principais tecnologias?",
+      "Fale sobre sua experiência com Governança e ITIL",
+      "Quais projetos você desenvolveu?",
+      "Como entrar em contato com o Christian?",
     ],
-    intro:
-      "As respostas são geradas a partir dos dados publicados neste portfólio: trajetória, projetos, stack e contatos.",
-    error: "A pergunta não foi respondida porque o serviço não respondeu a tempo.",
-    retry: "Tentar de novo",
+    intro: "Consulte informações objetivas sobre trajetória, projetos, stack e contatos do Christian.",
+    error: "Não foi possível obter resposta agora. Tente novamente em instantes.",
     copied: "Copiado",
     copy: "Copiar",
-    open: "Abrir assistente do portfólio",
-    fab: "Perguntar",
+    open: "Abrir assistente",
     close: "Fechar assistente",
     clear: "Limpar conversa",
-    inputLabel: "Sua pergunta",
-    send: "Enviar pergunta",
+    loading: "Consultando base...",
+    send: "Enviar mensagem",
   },
   en: {
     suggestions: [
-      "Which technologies does Christian use day to day?",
-      "How does Christian apply ITIL 4 and LGPD?",
-      "Which projects has he published?",
-      "How can I reach Christian?",
+      "What are your main technologies?",
+      "Tell me about your experience with governance and ITIL",
+      "Which projects have you built?",
+      "How can I get in touch with Christian?",
     ],
-    intro:
-      "Answers are generated from the data published on this portfolio: track record, projects, stack and contacts.",
-    error: "The question went unanswered because the service did not respond in time.",
-    retry: "Try again",
+    intro: "Ask for straightforward facts about Christian's career, projects, stack and contact details.",
+    error: "Could not get a response right now. Please try again in a moment.",
     copied: "Copied",
     copy: "Copy",
-    open: "Open the portfolio assistant",
-    fab: "Ask",
+    open: "Open assistant",
     close: "Close assistant",
     clear: "Clear conversation",
-    inputLabel: "Your question",
-    send: "Send question",
+    loading: "Searching the knowledge base...",
+    send: "Send message",
   },
 };
 
@@ -53,60 +46,60 @@ export default function ChatWidget({ data, lang = "pt" }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [failedPrompt, setFailedPrompt] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
 
-  const panelRef = useRef(null);
-  const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
-
-  useDialog({
-    open: isChatOpen,
-    containerRef: panelRef,
-    initialFocusRef: inputRef,
-    onClose: () => setIsChatOpen(false),
-  });
 
   useEffect(() => {
     if (!isChatOpen) return;
-    messagesEndRef.current?.scrollIntoView({ block: "end" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading, isChatOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && isChatOpen) {
+        setIsChatOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isChatOpen]);
 
   const handleSend = async (overrideMessage = null) => {
     const messageToSend = typeof overrideMessage === "string" ? overrideMessage : input;
     const trimmed = messageToSend.trim();
     if (!trimmed || loading) return;
 
-    setFailedPrompt(null);
-    setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
-    if (typeof overrideMessage !== "string") setInput("");
+    const userMsg = { role: "user", content: trimmed };
+    setMessages((prev) => [...prev, userMsg]);
+    if (!overrideMessage) setInput("");
     setLoading(true);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: userMsg.content }),
       });
-      if (!response.ok) throw new Error(`http error: ${response.status}`);
+
+      if (!response.ok) {
+        throw new Error(`http error: ${response.status}`);
+      }
+
       const resData = await response.json();
       setMessages((prev) => [...prev, { role: "ai", content: resData.reply }]);
     } catch (error) {
-      console.error("[ChatWidget] falha ao consultar o assistente:", error.message);
-      setFailedPrompt(trimmed);
+      console.error("[ChatWidget] falha na integracao com llm:", error.message);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content: copy.error,
+        },
+      ]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const retry = () => {
-    if (!failedPrompt) return;
-    const prompt = failedPrompt;
-    setMessages((prev) => {
-      const last = prev[prev.length - 1];
-      return last?.role === "user" && last.content === prompt ? prev.slice(0, -1) : prev;
-    });
-    handleSend(prompt);
   };
 
   const handleKeyDown = (e) => {
@@ -116,45 +109,54 @@ export default function ChatWidget({ data, lang = "pt" }) {
     }
   };
 
-  const copyToClipboard = async (text, key) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedIndex(key);
-      window.setTimeout(() => setCopiedIndex(null), 2000);
-    } catch (error) {
-      console.warn("clipboard indisponível", error);
-    }
+  const copyToClipboard = (text, idx) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(idx);
+    setTimeout(() => setCopiedIndex(null), 2000);
   };
 
   const formatInline = (str) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return str.split(urlRegex).map((seg, sIdx) => {
-      if (/^https?:\/\//.test(seg)) {
+    const segments = str.split(urlRegex);
+
+    return segments.map((seg, sIdx) => {
+      if (seg.match(urlRegex)) {
         return (
           <a key={sIdx} href={seg} target="_blank" rel="noopener noreferrer">
             {seg}
           </a>
         );
       }
-      return seg.split(/\*\*(.*?)\*\*/g).map((part, bIdx) =>
-        bIdx % 2 === 1 ? <strong key={`${sIdx}-${bIdx}`}>{part}</strong> : part
-      );
+
+      const boldParts = seg.split(/\*\*(.*?)\*\*/g);
+      return boldParts.map((bPart, bIdx) => {
+        if (bIdx % 2 === 1) {
+          return <strong key={bIdx}>{bPart}</strong>;
+        }
+        return bPart;
+      });
     });
   };
 
   const renderMarkdown = (text, msgIdx) => {
     if (!text) return null;
+
     const codeBlockRegex = /```([\s\S]*?)```/g;
     const parts = [];
     let lastIndex = 0;
     let match;
 
     while ((match = codeBlockRegex.exec(text)) !== null) {
-      if (match.index > lastIndex) parts.push({ type: "text", content: text.slice(lastIndex, match.index) });
+      if (match.index > lastIndex) {
+        parts.push({ type: "text", content: text.slice(lastIndex, match.index) });
+      }
       parts.push({ type: "code", content: match[1].trim() });
       lastIndex = match.index + match[0].length;
     }
-    if (lastIndex < text.length) parts.push({ type: "text", content: text.slice(lastIndex) });
+
+    if (lastIndex < text.length) {
+      parts.push({ type: "text", content: text.slice(lastIndex) });
+    }
 
     return parts.map((part, pIdx) => {
       if (part.type === "code") {
@@ -164,9 +166,9 @@ export default function ChatWidget({ data, lang = "pt" }) {
             <button
               type="button"
               onClick={() => copyToClipboard(part.content, copyKey)}
-              className="btn-text chat-code-copy"
+              className="chat-code-copy"
             >
-              {copiedIndex === copyKey ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+              {copiedIndex === copyKey ? <Check size={12} /> : <Copy size={12} />}
               {copiedIndex === copyKey ? copy.copied : copy.copy}
             </button>
             <pre className="chat-code-pre">
@@ -176,35 +178,20 @@ export default function ChatWidget({ data, lang = "pt" }) {
         );
       }
 
-      const blocks = [];
-      let list = null;
-      part.content.split("\n").forEach((line, lIdx) => {
-        const trimmed = line.trim();
-        if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-          if (!list) {
-            list = [];
-            blocks.push({ type: "list", items: list, key: `l-${lIdx}` });
-          }
-          list.push(formatInline(trimmed.substring(2)));
-          return;
-        }
-        list = null;
-        if (trimmed) blocks.push({ type: "p", content: formatInline(trimmed), key: `p-${lIdx}` });
-      });
-
+      const lines = part.content.split("\n");
       return (
         <div key={pIdx} className="chat-markdown">
-          {blocks.map((block) =>
-            block.type === "list" ? (
-              <ul key={block.key}>
-                {block.items.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            ) : (
-              <p key={block.key}>{block.content}</p>
-            )
-          )}
+          {lines.map((line, lIdx) => {
+            const trimmed = line.trim();
+            if (!trimmed) return <div key={lIdx} className="chat-line-break" />;
+
+            if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+              const itemContent = trimmed.substring(2);
+              return <li key={lIdx}>{formatInline(itemContent)}</li>;
+            }
+
+            return <p key={lIdx}>{formatInline(trimmed)}</p>;
+          })}
         </div>
       );
     });
@@ -216,47 +203,39 @@ export default function ChatWidget({ data, lang = "pt" }) {
         type="button"
         aria-label={isChatOpen ? copy.close : copy.open}
         aria-expanded={isChatOpen}
-        aria-controls="chat-panel"
-        onClick={() => setIsChatOpen((prev) => !prev)}
+        onClick={() => setIsChatOpen(!isChatOpen)}
         className="chat-fab"
       >
-        {isChatOpen ? <X size={20} aria-hidden="true" /> : <MessageSquare size={20} aria-hidden="true" />}
-        <span className="chat-fab-label" aria-hidden="true">
-          {copy.fab}
-        </span>
+        {isChatOpen ? <X size={20} /> : <MessageSquare size={20} />}
       </button>
 
       <AnimatePresence>
         {isChatOpen && (
           <motion.div
-            id="chat-panel"
-            ref={panelRef}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.18 }}
-            className="chat-panel"
+            className="surface-card chat-panel"
             role="dialog"
-            aria-modal="true"
-            aria-labelledby="chat-title"
+            aria-label={data.title}
           >
-            <div className="chat-head">
-              <h2 id="chat-title" className="chat-title">
-                {data.title}
-              </h2>
-              <div className="chat-head-actions">
+            <div className="chat-panel-header">
+              <div className="chat-panel-title">
+                <span className="chat-status-indicator" aria-hidden="true" />
+                <span>{data.title}</span>
+              </div>
+
+              <div className="chat-panel-actions">
                 {messages.length > 0 && (
                   <button
                     type="button"
                     title={copy.clear}
                     aria-label={copy.clear}
-                    onClick={() => {
-                      setMessages([]);
-                      setFailedPrompt(null);
-                    }}
+                    onClick={() => setMessages([])}
                     className="btn-icon"
                   >
-                    <Trash2 size={16} aria-hidden="true" />
+                    <Trash2 size={15} />
                   </button>
                 )}
                 <button
@@ -265,7 +244,7 @@ export default function ChatWidget({ data, lang = "pt" }) {
                   onClick={() => setIsChatOpen(false)}
                   className="btn-icon"
                 >
-                  <X size={18} aria-hidden="true" />
+                  <X size={18} />
                 </button>
               </div>
             </div>
@@ -273,16 +252,21 @@ export default function ChatWidget({ data, lang = "pt" }) {
             <div className="chat-body" aria-live="polite" aria-busy={loading}>
               {messages.length === 0 && (
                 <div className="chat-empty">
-                  <p className="chat-empty-text">{copy.intro}</p>
-                  <ul className="chat-suggestions">
-                    {copy.suggestions.map((s) => (
-                      <li key={s}>
-                        <button type="button" className="chat-suggestion" onClick={() => handleSend(s)}>
-                          {s}
-                        </button>
-                      </li>
+                  <p className="chat-empty-text">
+                    {copy.intro}
+                  </p>
+                  <div className="chat-suggestions">
+                    {copy.suggestions.map((s, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className="chat-suggestion-btn"
+                        onClick={() => handleSend(s)}
+                      >
+                        {s}
+                      </button>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
 
@@ -294,49 +278,37 @@ export default function ChatWidget({ data, lang = "pt" }) {
                 </div>
               ))}
 
-              {loading && <p className="chat-typing">{data.loading}</p>}
-
-              {failedPrompt && !loading && (
-                <div className="chat-error" role="alert">
-                  <p>{copy.error}</p>
-                  <button type="button" className="btn-secondary btn-sm" onClick={retry}>
-                    {copy.retry}
-                  </button>
+              {loading && (
+                <div className="chat-typing">
+                  <span className="chat-typing-text">
+                    {data.loading || copy.loading}
+                  </span>
                 </div>
               )}
 
               <div ref={messagesEndRef} aria-hidden="true" />
             </div>
 
-            <form
-              className="chat-footer"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSend();
-              }}
-            >
-              <label htmlFor="chat-input" className="visually-hidden">
-                {copy.inputLabel}
-              </label>
+            <div className="chat-footer">
               <textarea
                 id="chat-input"
-                ref={inputRef}
                 rows={1}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={data.placeholder}
-                className="chat-input"
+                className="chat-textarea"
               />
               <button
-                type="submit"
-                aria-label={copy.send}
+                type="button"
+                aria-label={data.send || copy.send}
+                onClick={() => handleSend()}
                 disabled={loading || !input.trim()}
-                className="btn-primary chat-send"
+                className="btn-primary chat-send-btn"
               >
-                <Send size={16} aria-hidden="true" />
+                <Send size={15} />
               </button>
-            </form>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

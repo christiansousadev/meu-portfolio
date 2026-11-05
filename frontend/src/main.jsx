@@ -2,13 +2,6 @@
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-
-// Fontes servidas pelo próprio domínio: sem chamada a terceiros na carga
-// da página (nenhum IP de visitante enviado ao Google Fonts).
-import "@fontsource-variable/archivo/wdth.css";
-import "@fontsource/ibm-plex-mono/latin-400.css";
-import "@fontsource/ibm-plex-mono/latin-500.css";
-
 import App from "./App.jsx";
 import "./index.css";
 
@@ -38,6 +31,7 @@ if (typeof Node === "function" && Node.prototype) {
   };
 }
 
+// INICIA A RENDERIZACAO DO APP REACT
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
