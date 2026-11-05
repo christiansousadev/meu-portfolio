@@ -10,7 +10,7 @@
       "greeting": "Olá, eu sou o Christian",
       "subtitle": "Engenheiro de Software voltado à integração de ERPs, automação de fluxos contábeis/financeiros e governança de TI. Construo APIs em Python (FastAPI), pipelines em PostgreSQL e arquiteturas sob práticas ITIL® 4, ISO/IEC 27001 e LGPD.",
       "contactBtn": "Entrar em contato",
-      "resumeBtn": "Ver trajetória"
+      "resumeBtn": "Download do currículo"
     },
     "skills": {
       "title": "Competências e entregas",
@@ -242,7 +242,7 @@
       "greeting": "Hi all, I'm Christian",
       "subtitle": "Software Engineer focused on ERP integration, accounting/financial workflow automation and IT governance. I build Python (FastAPI) APIs, PostgreSQL pipelines and architectures under ITIL® 4, ISO/IEC 27001 and LGPD practices.",
       "contactBtn": "Contact Me",
-      "resumeBtn": "See Resume"
+      "resumeBtn": "Download Resume"
     },
     "skills": {
       "title": "Skills and deliverables",

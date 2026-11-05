@@ -8,8 +8,9 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { Mail, ArrowUpRight, Terminal, User, MapPin } from "lucide-react";
+import { Mail, Download, ArrowUpRight, Terminal, User, MapPin } from "lucide-react";
 import { EASE_OUT, trackSpotlight } from "../utils/motion";
+import ContactModal from "./ContactModal";
 
 const CONTACT_EMAIL = "christiansousadev@gmail.com";
 
@@ -50,7 +51,10 @@ function LinkedinIcon({ size = 14, className = "" }) {
 const HERO_COPY = {
   pt: {
     status: "Disponível para novos projetos e liderança técnica",
-    emailLabel: `Enviar e-mail para ${CONTACT_EMAIL}`,
+    contactBtn: "Entrar em contato",
+    resumeBtn: "Download do currículo",
+    contactModalOpenLabel: "Abrir opções de contato",
+    downloadResumeLabel: "Baixar Currículo de Christian Sousa em PDF",
     terminalTitle: "stack — bash",
     terminalLabel:
       "Terminal demonstrativo: stack técnica com Python, FastAPI, PostgreSQL, n8n, LGPD e Docker.",
@@ -58,9 +62,9 @@ const HERO_COPY = {
     profileTab: "Perfil",
     avatarAlt: "Christian Sousa - Engenheiro de Software",
     terminal: [
-      { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status --live" },
-      { kind: "step", tag: "STACK", tagColor: "stack", label: "Python 3.12 · FastAPI · AsyncIO", leader: true, badge: "[OK]", statusType: "ok" },
-      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL 16 · SQLAlchemy · SQL", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status" },
+      { kind: "step", tag: "STACK", tagColor: "stack", label: "Python · FastAPI · AsyncIO", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · SQLAlchemy · SQL", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "FLOW", tagColor: "flow", label: "n8n Engine · Webhooks REST", leader: true, badge: "[READY]", statusType: "sync" },
       { kind: "step", tag: "SEC", tagColor: "sec", label: "LGPD · Anonimização PII · ISO 27001", leader: true, badge: "[CONFORME]", statusType: "ok" },
       { kind: "step", tag: "AI", tagColor: "ai", label: "RAG Pipeline · Vector Embeddings", leader: true, badge: "[ATIVO]", statusType: "signal" },
@@ -90,7 +94,10 @@ const HERO_COPY = {
   },
   en: {
     status: "Available for new projects and technical leadership",
-    emailLabel: `Send an email to ${CONTACT_EMAIL}`,
+    contactBtn: "Get in touch",
+    resumeBtn: "Download Resume",
+    contactModalOpenLabel: "Open contact options",
+    downloadResumeLabel: "Download Christian Sousa Resume (PDF)",
     terminalTitle: "stack — bash",
     terminalLabel:
       "Demonstrative terminal: technical stack with Python, FastAPI, PostgreSQL, n8n, LGPD and Docker.",
@@ -98,9 +105,9 @@ const HERO_COPY = {
     profileTab: "Profile",
     avatarAlt: "Christian Sousa - Software Engineer",
     terminal: [
-      { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status --live" },
-      { kind: "step", tag: "STACK", tagColor: "stack", label: "Python 3.12 · FastAPI · AsyncIO", leader: true, badge: "[OK]", statusType: "ok" },
-      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL 16 · SQLAlchemy · SQL", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "cmd", user: "christian@srv-prod:~$", text: "python -m stack.status" },
+      { kind: "step", tag: "STACK", tagColor: "stack", label: "Python · FastAPI · AsyncIO", leader: true, badge: "[OK]", statusType: "ok" },
+      { kind: "step", tag: "DATA", tagColor: "data", label: "PostgreSQL · SQLAlchemy · SQL", leader: true, badge: "[OK]", statusType: "ok" },
       { kind: "step", tag: "FLOW", tagColor: "flow", label: "n8n Engine · REST Webhooks", leader: true, badge: "[READY]", statusType: "sync" },
       { kind: "step", tag: "SEC", tagColor: "sec", label: "LGPD · PII Anonymization · ISO 27001", leader: true, badge: "[COMPLIANT]", statusType: "ok" },
       { kind: "step", tag: "AI", tagColor: "ai", label: "RAG Pipeline · Vector Embeddings", leader: true, badge: "[ACTIVE]", statusType: "signal" },
@@ -409,6 +416,7 @@ function PortraitFrame({ copy }) {
 }
 
 export default function Hero({ data, lang = "pt" }) {
+  const [isContactOpen, setIsContactOpen] = useState(false);
   const copy = HERO_COPY[lang] || HERO_COPY.pt;
 
   return (
@@ -444,42 +452,27 @@ export default function Hero({ data, lang = "pt" }) {
           </motion.p>
 
           <motion.div className="hero-actions" variants={copyItem}>
-            <motion.a
-              href={`mailto:${CONTACT_EMAIL}`}
+            <motion.button
+              type="button"
               className="btn-primary"
-              aria-label={copy.emailLabel}
+              onClick={() => setIsContactOpen(true)}
+              aria-label={copy.contactModalOpenLabel}
               whileTap={{ scale: 0.97 }}
             >
               <Mail size={16} aria-hidden="true" />
-              <span>{data.contactBtn}</span>
-            </motion.a>
+              <span>{data.contactBtn || copy.contactBtn}</span>
+            </motion.button>
 
             <motion.a
-              href="#experience"
-              className="btn-secondary"
+              href="/curriculo-christian-sousa.pdf"
+              download="Curriculo_Christian_Sousa.pdf"
+              className="btn-secondary btn-download-cv"
+              aria-label={copy.downloadResumeLabel}
               whileTap={{ scale: 0.97 }}
             >
-              <span>{data.resumeBtn}</span>
+              <Download size={16} aria-hidden="true" />
+              <span>{data.resumeBtn || copy.resumeBtn}</span>
             </motion.a>
-
-            <div className="hero-external-links">
-              <a
-                href="https://github.com/christiansousadev"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hero-text-link"
-              >
-                GitHub <ArrowUpRight size={14} aria-hidden="true" />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/christiansousasilva/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hero-text-link"
-              >
-                LinkedIn <ArrowUpRight size={14} aria-hidden="true" />
-              </a>
-            </div>
           </motion.div>
         </div>
 
@@ -505,6 +498,12 @@ export default function Hero({ data, lang = "pt" }) {
           </motion.div>
         ))}
       </motion.dl>
+
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+        lang={lang}
+      />
     </section>
   );
 }

@@ -1504,6 +1504,7 @@ select:focus-visible,
 
 .terminal-cmd {
   color: var(--term-text);
+  white-space: nowrap;
 }
 
 .terminal-key {
@@ -4472,4 +4473,293 @@ select:focus-visible,
   .project-link {
     white-space: nowrap;
   }
+}
+
+/* ============================================================
+   Contact Modal (Canais de Contato)
+   ============================================================ */
+
+.contact-modal-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.contact-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 9, 15, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.contact-modal-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.contact-modal-card {
+  background: linear-gradient(180deg, #101726 0%, #0A0E17 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #E2E8F0;
+  font-family: var(--font-sans);
+}
+
+.contact-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.contact-modal-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-modal-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #4ADE9B;
+  background: rgba(74, 222, 155, 0.12);
+  border: 1px solid rgba(74, 222, 155, 0.25);
+  border-radius: 20px;
+  padding: 2px 9px;
+  align-self: flex-start;
+}
+
+.contact-modal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ADE9B;
+  box-shadow: 0 0 6px #4ADE9B;
+}
+
+.contact-modal-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.contact-modal-subtitle {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #94A3B8;
+  margin: 0;
+}
+
+.contact-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94A3B8;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.contact-modal-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+}
+
+.contact-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-channel-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.contact-channel-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(126, 162, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.contact-channel-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-channel-icon-wrap.whatsapp {
+  background: rgba(37, 211, 102, 0.14);
+  color: #25D366;
+  border: 1px solid rgba(37, 211, 102, 0.28);
+}
+
+.contact-channel-icon-wrap.telegram {
+  background: rgba(34, 158, 217, 0.14);
+  color: #229ED9;
+  border: 1px solid rgba(34, 158, 217, 0.28);
+}
+
+.contact-channel-icon-wrap.email {
+  background: rgba(126, 162, 255, 0.14);
+  color: #7EA2FF;
+  border: 1px solid rgba(126, 162, 255, 0.28);
+}
+
+.contact-channel-icon-wrap.linkedin {
+  background: rgba(10, 102, 194, 0.14);
+  color: #38BDF8;
+  border: 1px solid rgba(10, 102, 194, 0.28);
+}
+
+.contact-channel-icon-wrap.github {
+  background: rgba(255, 255, 255, 0.09);
+  color: #F1F5F9;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.contact-channel-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-channel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.contact-channel-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.contact-channel-arrow {
+  color: #64748B;
+  transition: transform 0.18s ease, color 0.18s ease;
+  flex-shrink: 0;
+}
+
+.contact-channel-item:hover .contact-channel-arrow {
+  color: #7EA2FF;
+  transform: translate(2px, -2px);
+}
+
+.contact-channel-detail {
+  font-size: 0.72rem;
+  color: #94A3B8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-channel-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contact-copy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #DCE3EE;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.contact-copy-pill:hover {
+  background: rgba(126, 162, 255, 0.22);
+  border-color: #7EA2FF;
+  color: #FFFFFF;
+}
+
+.contact-email-direct {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: #64748B;
+  transition: all 0.18s ease;
+}
+
+.contact-email-direct:hover {
+  color: #7EA2FF;
+}
+
+.contact-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.72rem;
+  color: #94A3B8;
+}
+
+.contact-modal-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.contact-modal-brand {
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.btn-download-cv {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
