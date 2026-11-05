@@ -1,4 +1,5 @@
 // frontend/src/components/Certifications.jsx
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight, BadgeCheck, GraduationCap } from "lucide-react";
 import {
@@ -11,6 +12,8 @@ import {
 const VERIFY_LABEL = { pt: "Verificar credencial", en: "Verify credential" };
 
 export default function Certifications({ data, lang = "pt" }) {
+  const [hasInView, setHasInView] = useState(false);
+
   if (!data || !data.items || data.items.length === 0) {
     return null;
   }
@@ -39,11 +42,13 @@ export default function Certifications({ data, lang = "pt" }) {
         initial="hidden"
         whileInView="show"
         viewport={VIEWPORT_ONCE}
+        onViewportEnter={() => setHasInView(true)}
+        animate={hasInView ? "show" : undefined}
         variants={revealContainer}
       >
         {data.items.map((cert, index) => (
           <motion.article
-            key={`${cert.name}-${index}`}
+            key={index}
             className="surface-card cert-card spotlight"
             variants={revealItem}
             whileHover={{ y: -3 }}

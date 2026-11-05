@@ -68,6 +68,7 @@ export default function Experience({ data, lang = "pt" }) {
   const copy = EXP_COPY[lang] || EXP_COPY.pt;
   const [showAll, setShowAll] = useState(false);
   const [activeIdx, setActiveIdx] = useState(null);
+  const [hasInView, setHasInView] = useState(false);
   const timelineRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
@@ -115,6 +116,8 @@ export default function Experience({ data, lang = "pt" }) {
         initial="hidden"
         whileInView="show"
         viewport={VIEWPORT_ONCE}
+        onViewportEnter={() => setHasInView(true)}
+        animate={hasInView ? "show" : undefined}
         variants={revealContainer}
       >
         <div className="exp-rail" aria-hidden="true">
@@ -123,7 +126,7 @@ export default function Experience({ data, lang = "pt" }) {
 
         {initialItems.map((exp, idx) => (
           <ExperienceRow
-            key={`${exp.company}-${exp.role}-${idx}`}
+            key={idx}
             exp={exp}
             idx={idx}
             isActive={activeIdx === idx}
@@ -146,7 +149,7 @@ export default function Experience({ data, lang = "pt" }) {
                 const idx = INITIAL_COUNT + extraIdx;
                 return (
                   <ExperienceRow
-                    key={`${exp.company}-${exp.role}-${idx}`}
+                    key={idx}
                     exp={exp}
                     idx={idx}
                     isActive={activeIdx === idx}
