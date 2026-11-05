@@ -52,6 +52,10 @@ dist/
 build/
 .vite/
 
+# Arquivos de currículo e documentos pessoais (não versionar no repositório)
+*.pdf
+frontend/public/*.pdf
+
 # Lockfile do npm: manter no repositorio para reproducibilidade
 # (NAO ignorar package-lock.json em projetos com deploy)
 
