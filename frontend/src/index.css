@@ -1054,7 +1054,7 @@ select:focus-visible,
 .hero-portrait {
   position: relative;
   width: 100%;
-  max-width: 440px;
+  max-width: 470px;
 }
 
 .hero-portrait-halo {
@@ -1434,11 +1434,11 @@ select:focus-visible,
 .terminal-body {
   list-style: none;
   margin: 0;
-  padding: 16px 16px 20px;
+  padding: 14px 14px 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 0.78rem;
+  font-size: clamp(0.70rem, 1.6vw, 0.76rem);
   line-height: 1.55;
   font-variant-numeric: tabular-nums;
   min-width: 0;
@@ -1457,14 +1457,13 @@ select:focus-visible,
 .terminal-line {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   white-space: nowrap;
 }
 
 .terminal-line > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .terminal-line--cmd {
@@ -1501,6 +1500,8 @@ select:focus-visible,
   flex-shrink: 0;
   font-weight: 600;
   font-size: 0.72rem;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .terminal-status--ok { color: #4ADE9B; }
@@ -1519,7 +1520,10 @@ select:focus-visible,
 
 .terminal-key {
   color: var(--term-muted);
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .terminal-muted {
@@ -1528,7 +1532,7 @@ select:focus-visible,
 
 .terminal-leader {
   flex: 1;
-  min-width: 8px;
+  min-width: 4px;
   border-bottom: 1px dotted rgba(140, 152, 171, 0.35);
   transform: translateY(-4px);
 }
