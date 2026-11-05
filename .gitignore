@@ -79,3 +79,5 @@ docker-compose.override.yml
 # Relatorios e auditorias internas
 # ============================================================
 auditorias/
+scratch/
+
