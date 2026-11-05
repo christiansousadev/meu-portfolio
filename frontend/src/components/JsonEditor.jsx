@@ -81,6 +81,7 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
           year: "",
           credential_url: "",
           description: "",
+          badge_url: "",
         };
         newData[lang].cert.items.unshift(createdItem);
       } else if (sectionKey === "skills") {
@@ -530,6 +531,30 @@ export default function JsonEditor({ section, lang = "pt", data, setData }) {
                         setData(d);
                       }}
                     />
+                  </Field>
+                  <Field label="URL / Caminho da Imagem do Badge" full>
+                    <div className="badge-input-group">
+                      <input
+                        className="form-input"
+                        placeholder="ex.: /images/badges/itil4.svg ou https://..."
+                        value={item.badge_url || ""}
+                        onChange={(e) => {
+                          const d = { ...data };
+                          d[lang].cert.items[idx].badge_url = e.target.value;
+                          setData(d);
+                        }}
+                      />
+                      {item.badge_url && (
+                        <div className="badge-preview-slot" title="Preview do Badge">
+                          <img
+                            src={item.badge_url}
+                            alt="Preview do Badge"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            onLoad={(e) => { e.currentTarget.style.display = 'block'; }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </Field>
                   <Field label="Escopo da competência" full>
                     <textarea

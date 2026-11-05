@@ -54,25 +54,51 @@ export default function Certifications({ data, lang = "pt" }) {
             whileHover={{ y: -3 }}
             onPointerMove={trackSpotlight}
           >
-            <div className="cert-body">
-              <div className="cert-meta-row">
-                <span className="cert-issuer">
-                  {/* Selo de verificado só em credencial com link oficial do emissor */}
+            <div className="cert-top-layout">
+              {cert.badge_url ? (
+                <div className="cert-badge-wrapper">
+                  <img
+                    src={cert.badge_url}
+                    alt=""
+                    className="cert-badge-img"
+                    width={56}
+                    height={56}
+                    loading="lazy"
+                  />
+                </div>
+              ) : (
+                <div className="cert-badge-placeholder" aria-hidden="true">
                   {cert.credential_url ? (
-                    <span className="cert-seal" aria-hidden="true">
-                      <BadgeCheck size={14} />
-                    </span>
+                    <BadgeCheck size={24} />
                   ) : (
-                    <span className="cert-seal cert-seal--neutral" aria-hidden="true">
-                      <GraduationCap size={14} />
-                    </span>
+                    <GraduationCap size={24} />
                   )}
-                  {cert.issuer}
-                </span>
-                {cert.year && <span className="cert-year">{cert.year}</span>}
-              </div>
+                </div>
+              )}
 
-              <h3 className="cert-name">{cert.name}</h3>
+              <div className="cert-header-text">
+                <div className="cert-meta-row">
+                  <span className="cert-issuer">
+                    {!cert.badge_url && (
+                      cert.credential_url ? (
+                        <span className="cert-seal" aria-hidden="true">
+                          <BadgeCheck size={14} />
+                        </span>
+                      ) : (
+                        <span className="cert-seal cert-seal--neutral" aria-hidden="true">
+                          <GraduationCap size={14} />
+                        </span>
+                      )
+                    )}
+                    {cert.issuer}
+                  </span>
+                  {cert.year && <span className="cert-year">{cert.year}</span>}
+                </div>
+                <h3 className="cert-name">{cert.name}</h3>
+              </div>
+            </div>
+
+            <div className="cert-body">
               {cert.description && <p className="cert-desc">{cert.description}</p>}
             </div>
 

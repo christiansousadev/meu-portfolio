@@ -152,6 +152,7 @@ class CertItem(StrictModel):
     year: Annotated[str, Field(default="", max_length=50)] = ""
     credential_url: Annotated[str, Field(default="", max_length=500)] = ""
     description: Annotated[str, Field(default="", max_length=1000)] = ""
+    badge_url: Annotated[str, Field(default="", max_length=500)] = ""
 
 
 class CertSection(StrictModel):

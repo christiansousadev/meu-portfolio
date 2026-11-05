@@ -195,28 +195,32 @@
           "issuer": "Axelos / PeopleCert",
           "year": "2024",
           "credential_url": "https://www.axelos.com/certifications/itil-service-management",
-          "description": "Governança de serviços de TI, gerenciamento de incidentes, mudanças, acordos de nível de serviço (SLA) e melhoria contínua."
+          "description": "Governança de serviços de TI, gerenciamento de incidentes, mudanças, acordos de nível de serviço (SLA) e melhoria contínua.",
+          "badge_url": "/images/badges/itil4.svg"
         },
         {
           "name": "ISO/IEC 27001 & LGPD - Governança de Dados",
           "issuer": "Conformidade & Segurança da Informação",
           "year": "2023",
           "credential_url": "",
-          "description": "Práticas de defesa em profundidade, auditoria estruturada (A.12.4), minimização de dados e segurança de aplicações."
+          "description": "Práticas de defesa em profundidade, auditoria estruturada (A.12.4), minimização de dados e segurança de aplicações.",
+          "badge_url": "/images/badges/iso27001.svg"
         },
         {
           "name": "Especialista em Arquitetura Python & FastAPI",
           "issuer": "Engenharia de Software",
           "year": "2023",
           "credential_url": "",
-          "description": "Microsserviços de alto throughput, concorrência assíncrona com asyncio/uvicorn, validação estrita e persistência atômica."
+          "description": "Microsserviços de alto throughput, concorrência assíncrona com asyncio/uvicorn, validação estrita e persistência atômica.",
+          "badge_url": "/images/badges/python-fastapi.svg"
         },
         {
           "name": "Metodologias Ágeis & Scrum Specialist",
           "issuer": "Gestão de Projetos Ágeis",
           "year": "2022",
           "credential_url": "",
-          "description": "Gestão de sprints, facilitação de cerimônias ágeis, entregas contínuas e integração estratégica de negócios e TI."
+          "description": "Gestão de sprints, facilitação de cerimônias ágeis, entregas contínuas e integração estratégica de negócios e TI.",
+          "badge_url": "/images/badges/scrum-agile.svg"
         }
       ]
     },
@@ -423,28 +427,32 @@
           "issuer": "Axelos / PeopleCert",
           "year": "2024",
           "credential_url": "https://www.axelos.com/certifications/itil-service-management",
-          "description": "IT service governance, incident and change management, service level agreements (SLA) and continual improvement."
+          "description": "IT service governance, incident and change management, service level agreements (SLA) and continual improvement.",
+          "badge_url": "/images/badges/itil4.svg"
         },
         {
           "name": "ISO/IEC 27001 & LGPD: data governance",
           "issuer": "Compliance & Information Security",
           "year": "2023",
           "credential_url": "",
-          "description": "Defense in depth, structured auditing (A.12.4), data minimization and application security."
+          "description": "Defense in depth, structured auditing (A.12.4), data minimization and application security.",
+          "badge_url": "/images/badges/iso27001.svg"
         },
         {
           "name": "Python & FastAPI Architecture Specialist",
           "issuer": "Software Engineering",
           "year": "2023",
           "credential_url": "",
-          "description": "High-throughput microservices, async concurrency with asyncio/uvicorn, strict validation and atomic persistence."
+          "description": "High-throughput microservices, async concurrency with asyncio/uvicorn, strict validation and atomic persistence.",
+          "badge_url": "/images/badges/python-fastapi.svg"
         },
         {
           "name": "Agile Methodologies & Scrum Specialist",
           "issuer": "Agile Project Management",
           "year": "2022",
           "credential_url": "",
-          "description": "Sprint management, facilitation of agile ceremonies, continuous delivery and strategic alignment between business and IT."
+          "description": "Sprint management, facilitation of agile ceremonies, continuous delivery and strategic alignment between business and IT.",
+          "badge_url": "/images/badges/scrum-agile.svg"
         }
       ]
     },
